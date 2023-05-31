@@ -288,6 +288,7 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
 
 <details>
 <summary> <b>【推荐组合】   </b> </summary>
+
 | 质量 | 效率 | 组合 |
 | --- | --- | --- |
 | 还行 | 尚可 | 全程GPT-3.5 |
@@ -296,6 +297,7 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
 | 最好 | 最慢 | 主线NewBing + 特殊GPT-4 + 主线NewBing二次润色 + 特殊GPT-4二次润色(或不做) |
    
 从上到下效率递减，质量递增。注意，以上所有的“质量”，指的是机翻质量，可以结合人工修transl_cache进一步提高质量（见transl_cache章节）。    
+
 </details>
 
 ## GalTransl核心功能介绍

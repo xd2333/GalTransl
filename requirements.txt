@@ -1,0 +1,5 @@
+EdgeGPT
+Requests
+revChatGPT
+ttkbootstrap
+zhconv

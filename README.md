@@ -14,6 +14,8 @@
 
   * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群，有时间会回复）   
 
+  **Readme还有好多图没贴，这两天陆续补上**
+
 ## 使用GalTransl翻译的游戏
 
 * 《指尖连结/ゆびさきコネクション》 [链接](https://www.2dfan.com/downloads/16358)   
@@ -30,12 +32,12 @@
 美工：cx2333   
 
 ## 导航
-* 环境准备：环境与软件的安装   
-* 上手教程：全流程介绍如何制作一个机翻补丁，只想看怎么使用本工具的话，可以只看第2章   
-* 翻译引擎介绍：本篇介绍各个翻译引擎的优缺点与推荐的组合   
-* 翻译引擎调用：本篇详细介绍各个翻译引擎API的调用与配置方式。   
-* GalTransl核心功能介绍：galtransl_core是整个系统的中枢，负责读写待翻译的json文件、实现缓存、字典、找问题等功能。  
-* 结语：结语。   
+* [环境准备](https://github.com/XD2333/GalTransl#环境准备)：环境与软件的安装   
+* [上手教程](https://github.com/XD2333/GalTransl#上手教程)：全流程介绍如何制作一个机翻补丁，只想看怎么使用本工具的话，可以只看第2章   
+* [翻译引擎介绍](https://github.com/XD2333/GalTransl#翻译引擎介绍)：本篇介绍各个翻译引擎的优缺点与推荐的组合   
+* [翻译引擎调用](https://github.com/XD2333/GalTransl#翻译引擎调用配置)：本篇详细介绍各个翻译引擎API的调用与配置方式。   
+* [GalTransl核心功能介绍](https://github.com/XD2333/GalTransl#galtransl核心功能介绍)：galtransl_core是整个系统的中枢，负责读写待翻译的json文件、实现缓存、字典、找问题等功能。  
+* [结语](https://github.com/XD2333/GalTransl#结语)：结语。   
 
 ## 环境准备
   * Python   
@@ -284,7 +286,8 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
   
 </details>
 
-【推荐组合】   
+<details>
+<summary> <b>【推荐组合】   </b> </summary>
 | 质量 | 效率 | 组合 |
 | --- | --- | --- |
 | 还行 | 尚可 | 全程GPT-3.5 |
@@ -293,6 +296,7 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
 | 最好 | 最慢 | 主线NewBing + 特殊GPT-4 + 主线NewBing二次润色 + 特殊GPT-4二次润色(或不做) |
    
 从上到下效率递减，质量递增。注意，以上所有的“质量”，指的是机翻质量，可以结合人工修transl_cache进一步提高质量（见transl_cache章节）。    
+</details>
 
 ## GalTransl核心功能介绍
 GalTransl_core是整个系统的中枢，负责读写待翻译的json文件、实现缓存、字典、找问题等功能。    
@@ -459,13 +463,13 @@ arinashi_dict是一个可以自定义规则的字典，配置格式为`{"aaa":"b
 
 找到问题后会存在翻译缓存里，见翻译缓存章节，使用Emeditor批量提取problem关键字就可以看到目前所有的问题了。
 
-</details>
+</details> 
+
+## 翻译引擎调用配置
 
 <details>
 
-<summary>   
-
-## 翻译引擎调用配置
+<summary>  
 本篇介绍各个翻译引擎API的调用配置。
 </summary>  
 

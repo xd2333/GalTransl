@@ -461,16 +461,26 @@ arinashi_dict是一个可以自定义规则的字典，配置格式为`{"aaa":"b
 
 </details>
 
+<details>
+
+<summary>   
+
 ## 翻译引擎调用配置
 本篇介绍各个翻译引擎API的调用配置。
+</summary>  
 
 * **NewBing**   
 需要微软账号。然后下载[EditThisCookie扩展](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)
-访问https://www.bing.com/，登录后点EditThisCookie图标，点"导出Cookies"，
-然后在示例项目的
+访问https://www.bing.com/，登录后点EditThisCookie图标，点"导出Cookies"，   
+然后在NewBing示例项目的文件夹里新建一个`newbing_cookies`文件夹，然后在里面新建一个txt，名称随意，把点击导出Cookies得到的内容粘贴进去保存即可。   
+newbing_cookies文件夹内可以有多个cookie的txt，当一个账号到达上限后，会切到下一个账号。
 
 * **ChatGPT**   
 先见上手教程和示例项目内project_setting.py吧，后面再写
+
+使用模拟网页操作模式时，登录网页版账号后访问https://chat.openai.com/api/auth/session
+
+拷贝其中"accessToken":后面双引号内的一大串内容，复制到project_setting里，然后修改api_type = "unoffapi"即可
 
 * **GPT-4**   
 其实是同ChatGPT的。
@@ -481,7 +491,9 @@ arinashi_dict是一个可以自定义规则的字典，配置格式为`{"aaa":"b
 
 
 * **彩云小译**  
-沉迷王国之泪，后面再补   
+沉迷王国之泪，后面再补！   
+
+</details>
 
 ## 结语
 * 为什么做？ 最早做这个工具的初衷是在两年前发现大部分机翻补丁的质量太影响观感，于是断断续续的结合彩云小译开始写这个工具，期间还推倒重做了一次，本来也不是python写的。在去年年底ChatGPT出现后开始研究将GPT引入gal翻译，并逐步形成了这套体系。（靠写这个工具学会了一些python、一些提示工程的运用、~~一点日语~~，也算有所收获）   

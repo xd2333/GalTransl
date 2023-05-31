@@ -42,7 +42,7 @@
   安装最新版python即可。 [下载](https://www.python.org/downloads/)   
   安装时勾选下方add python to path   
    
-  * [下载本项目]()   
+  * [下载本项目](https://ghproxy.com/github.com/XD2333/GalTransl/releases/download/release/GalTransl-main.zip)   
   解压到任意位置，项目默认设置为D:\GalTransl-main   
 
   * Python依赖包   

@@ -12,7 +12,7 @@
   6. 实时保存缓存、自动断点续翻   
   7. 结合其他项目支持多引擎脚本一键解包与注入，提供完整教程降低上手难度  
 
-  * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群，有时间会回复）   
+  * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群，有时间会回复）（群里有猫娘）   
 
   **Readme还有好多图没贴，这两天陆续补上**
 
@@ -476,13 +476,13 @@ arinashi_dict是一个可以自定义规则的字典，配置格式为`{"aaa":"b
 </summary>  
 
 * **NewBing**   
-需要微软账号。然后下载[EditThisCookie扩展](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)
+需要微软账号。然后下载[EditThisCookie扩展](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)   
 访问https://www.bing.com/，登录后点EditThisCookie图标，点"导出Cookies"，   
 然后在NewBing示例项目的文件夹里新建一个`newbing_cookies`文件夹，然后在里面新建一个txt，名称随意，把点击导出Cookies得到的内容粘贴进去保存即可。   
-newbing_cookies文件夹内可以有多个cookie的txt，当一个账号到达上限后，会切到下一个账号。
+newbing_cookies文件夹内可以有多个cookie的txt，当一个账号到达上限后，会切到下一个账号。   
 
 * **ChatGPT**   
-先见上手教程和示例项目内project_setting.py吧，后面再写
+先见上手教程和示例项目内project_setting.py吧，后面再写   
 
 使用模拟网页操作模式时，登录网页版账号后访问https://chat.openai.com/api/auth/session
 

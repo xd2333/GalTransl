@@ -477,7 +477,7 @@ arinashi_dict是一个可以自定义规则的字典，配置格式为`{"aaa":"b
 
 * **NewBing**   
 需要微软账号。然后下载[EditThisCookie扩展](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)   
-访问https://www.bing.com/，登录后点EditThisCookie图标，点"导出Cookies"，   
+访问https://www.bing.com/ ，登录后点EditThisCookie图标，点"导出Cookies"，   
 然后在NewBing示例项目的文件夹里新建一个`newbing_cookies`文件夹，然后在里面新建一个txt，名称随意，把点击导出Cookies得到的内容粘贴进去保存即可。   
 newbing_cookies文件夹内可以有多个cookie的txt，当一个账号到达上限后，会切到下一个账号。   
 

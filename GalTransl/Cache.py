@@ -1,12 +1,13 @@
+"""
+缓存机制
+"""
 from GalTransl.CTranslate import CSentense, CTransList
 from typing import List
 from json import dump, load
 import os
 
 
-def save_transCache_to_json(
-    trans_list: List[CSentense], cache_file_path, proofread=False
-):
+def save_transCache_to_json(trans_list: CTransList, cache_file_path, proofread=False):
     cache_json = []
 
     for tran in trans_list:
@@ -42,7 +43,7 @@ def save_transCache_to_json(
 
 
 def get_transCache_from_json(
-    trans_list: List[CSentense], cache_file_path, retry_failed=False, proofread=False
+    trans_list: CTransList, cache_file_path, retry_failed=False, proofread=False
 ):
     if not os.path.exists(cache_file_path):
         return [], trans_list

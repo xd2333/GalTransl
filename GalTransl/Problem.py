@@ -1,11 +1,32 @@
+"""
+分析问题
+"""
 from GalTransl.CTranslate import CSentense, CTransList
 from GalTransl.StringUtils import get_most_common_char, contains_japanese
 from typing import List
 from os.path import exists as isPathExists
 from os import remove as rm
+from enum import Enum
 
 
-def find_problems(trans_list: List[CSentense], find_type=[], arinashi_dict={}) -> None:
+class CTranslateProblem(Enum):
+    """
+    问题类型
+    """
+
+    词频过高 = 1
+    有无括号 = 2
+    本无引号 = 3
+    残留日文 = 4
+    丢失换行 = 5
+    多加换行 = 6
+    比日文长 = 7
+    彩云不识 = 8
+
+
+def find_problems(
+    trans_list: CTransList, find_type: list[CTranslateProblem] = [], arinashi_dict={}
+) -> None:
     """
     此函数接受一个翻译列表，查找其中的问题并将其记录在每个翻译对象的 `problem` 属性中。
 
@@ -20,34 +41,34 @@ def find_problems(trans_list: List[CSentense], find_type=[], arinashi_dict={}) -
     for tran in trans_list:
         find_from_str = tran.post_zh
         problem_list = []
-        if "词频过高" in find_type:
+        if CTranslateProblem.词频过高 in find_type:
             most_word, word_count = get_most_common_char(find_from_str)
             if word_count > 20 and most_word != ".":
                 problem_list.append(f"词频过高-'{most_word}'{str(word_count)}次")
-        if "本无括号" in find_type:
+        if CTranslateProblem.本无括号 in find_type:
             if "（" not in tran.pre_jp and (
                 "（" in find_from_str or ")" in find_from_str
             ):
                 problem_list.append("本无括号")
-        if "本无引号" in find_type:
+        if CTranslateProblem.本无引号 in find_type:
             if "『" not in tran.post_jp and "「" not in tran.post_jp:
                 if "‘" in find_from_str or "“" in find_from_str:
                     problem_list.append("本无引号")
-        if "残留日文" in find_type:
+        if CTranslateProblem.残留日文 in find_type:
             if contains_japanese(find_from_str):
                 problem_list.append("残留日文")
-        if "丢失换行" in find_type:
+        if CTranslateProblem.丢失换行 in find_type:
             if tran.pre_jp.count("\r\n") > find_from_str.count("\r\n"):
                 problem_list.append("丢失换行")
-        if "多加换行" in find_type:
+        if CTranslateProblem.多加换行 in find_type:
             if tran.pre_jp.count("\r\n") < find_from_str.count("\r\n"):
                 problem_list.append("多加换行")
-        if "比日文长" in find_type:
+        if CTranslateProblem.比日文长 in find_type:
             if len(find_from_str) > len(tran.pre_jp) * 1.2:
                 problem_list.append(
                     f"比日文长{round(len(find_from_str)/len(tran.pre_jp),1)}倍"
                 )
-        if "彩云不识" in find_type:
+        if CTranslateProblem.彩云不识 in find_type:
             if "some" in tran.pre_zh or "SOME" in tran.pre_zh:
                 problem_list.append("彩云不识")
         if arinashi_dict != {}:
@@ -64,7 +85,7 @@ def find_problems(trans_list: List[CSentense], find_type=[], arinashi_dict={}) -
 
 
 def find_problem_save_log(
-    trans_list: List[CSentense],
+    trans_list: CTransList,
     file_name: str,
     save_path: str,
     mono_flag_list=[],

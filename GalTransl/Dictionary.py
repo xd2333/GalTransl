@@ -1,6 +1,6 @@
 from typing import List
 from os import path
-from GalTransl.CTranslate import CSentense
+from GalTransl.CTranslate import CSentense, CTransList
 from GalTransl import LOGGER
 
 
@@ -302,7 +302,7 @@ class CGptDict:
             normalDic_count += 1
         print(f"载入 GPT字典: {path.basename(dic_path)} {normalDic_count}个词条")
 
-    def gen_prompt(self, trans_list: List[CSentense]):
+    def gen_prompt(self, trans_list: CTransList):
         promt = ""
         for dic in self._dic_list:
             if dic.startswith_flag or dic.search_word in "\n".join(

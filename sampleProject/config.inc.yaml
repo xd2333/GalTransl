@@ -1,0 +1,57 @@
+---
+# 通用（杂项）设置
+common:
+  # 日志等级，可选 ["debug", "info", "warning", "error"]
+  loggingLevel: debug
+  # 是否启用代理
+  enableProxy: false
+  retryFail: True # True/False,每次启动时重翻所有翻译失败的句子（目前仅NewBing会翻译失败）
+  # 是否将 GPT4 的令牌用于 GPT3.5 的请求
+  gpt.degradeBackend: false
+  # API类型，offapi为官方API,unoffapi为模拟网页操作
+  gpt.apiType: offical
+  gpt.lineBreaksImprovementMode: false # true/false,换行符改善模式，减少丢换行符情况，但可能导致循环重试
+  gpt.restoreContextMode: true # true/false,重启自动恢复上下文
+  gpt.numPerRequest: 9 # 单次翻译句子数量，不建议太大
+  gpt.enableProofRead: false
+# 代理设置
+proxies:
+  # 代理地址
+  - address: socks5://127.0.0.1:10818
+    # 用户名（可选）
+    # username: foo
+    # 密码（可选）
+    # password: bar
+# 字典
+dictionary:
+  # 通用预处理字典
+  preDict:
+    - foo
+    - bar
+  # 通用后处理字典
+  postDict:
+    - foo
+    - bar
+  # GPT 字典
+  gpt.dict:
+    - foo
+    - bar
+# 与翻译后端所特定的设置
+backendSpecific:
+  GPT35: # GPT3.5 官方 API
+    token: # 令牌
+      - token: sk-xxxxxxxx # 你的令牌
+        # endpoint: ''  # 令牌所对应的 API 端点，一般不需要设置
+      - token: sk-yyyyyyyy
+        endpoint: ""
+    defaultEndpoint: https://api.openai.com # 默认 API 端点，不知道别修改
+  GPT4: # GPT4 官方 API
+    token:
+      - token: sk-xxxxxxxx
+        endpoint: ""
+      - token: sk-yyyyyyyy
+        endpoint: ""
+    defaultEndpoint: https://api.openai.com
+  ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API
+    ak: xxxxxxxx
+  # newBing:

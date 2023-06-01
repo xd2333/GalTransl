@@ -1,75 +1,115 @@
-from GalTransl import LOGGER
+"""
+读取 / 处理配置
+"""
+from GalTransl import (
+    LOGGER,
+    CONFIG_FILENAME,
+    INPUT_FOLDERNAME,
+    OUTPUT_FOLDERNAME,
+    CACHE_FOLDERNAME,
+)
+from GalTransl.COpenAI import COpenAIToken
 from typing import Optional
 from random import randint
 from yaml import safe_load
 from os import path
 
-# from jsonschema import validate
-# from jsonschema.exceptions import ValidationError
 
-SystemConfig: dict = {}
+class CProjectConfig:
+    def __init__(self, projectPath: str) -> None:
+        self.projectConfig = loadConfigFile(path.join(projectPath, CONFIG_FILENAME))
+        self.projectDir: str = ""
+        self.inputPath: str = str(
+            path.abspath(path.join(projectPath, INPUT_FOLDERNAME))
+        )
+        self.outputPath: str = str(
+            path.abspath(path.join(projectPath, OUTPUT_FOLDERNAME))
+        )
+        self.cachePath: str = str(
+            path.abspath(path.join(projectPath, CACHE_FOLDERNAME))
+        )
+        self.keyValues = dict()
+        for k, v in enumerate(self.projectConfig["common"]):
+            self.keyValues[k] = v
+        pass
+
+    def getProjectConfig(self) -> dict:
+        """
+        获取解析的 YAML 配置文件
+        """
+        return self.projectConfig
+
+    def setProjectDir(self, dir: str) -> None:
+        self.projectDir = dir
+
+    def getProjectDir(self) -> str:
+        return self.projectDir
+
+    def getInputPath(self) -> str:
+        return self.inputPath
+
+    def getOutputPath(self) -> str:
+        return self.outputPath
+
+    def getCachePath(self) -> str:
+        return self.cachePath
+
+    def getCommonConfigSection(self) -> dict:
+        return self.projectConfig["common"]
+
+    def getProxyConfigSection(self) -> dict:
+        return self.projectConfig["proxies"]
+
+    def getBackendConfigSection(self, backendName: str) -> dict:
+        """
+        backendName: GPT35 / GPT4 / ChatGPT / newBing
+        """
+        return self.projectConfig["backendSpecific"][backendName]
+
+    def getDictCfgSection(self) -> dict:
+        return self.projectConfig["common"]["dictionary"]
+
+    def getKey(self, key: str) -> str | bool | None:
+        return self.keyValues.get(key)
+
+    pass
 
 
-def initGPTToken(config: dict) -> Optional[list[dict]]:
+def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
     """
     处理 GPT Token 设置项
     """
     result: list[dict] = []
     degradeBackend: bool = False
-    endpointURL: str = "https://api.openai.com"
-    if "common" not in config:
-        LOGGER.error("")
-        return
-    else:
-        if "gpt.degradeBackend" not in config:
-            pass  # use default
-        else:
-            degradeBackend = config["common"]["gpt.degradeBackend"]
-    if "backendSpecific" not in config:
-        LOGGER.error("")
-        return
-    else:
-        if "GPT35" not in config["backendSpecific"]:
-            LOGGER.error("")
-            return
-        else:
-            if "defaultEndpoint" in config["backendSpecific"]["GPT35"]:
-                endpointURL = config["backendSpecific"]["GPT35"]["defaultEndpoint"]
-            if "token" in config["backendSpecific"]["GPT35"]:
-                for tok in config["backendSpecific"]["GPT35"]["token"]:
-                    if "token" not in tok:
-                        LOGGER.error("token 解析错误")
-                        return
-                    result.append(
-                        {
-                            "token": tok["token"],
-                            "endpoint": tok["endpoint"]
-                            if "endpoint" in tok
-                            else endpointURL,
-                        }
-                    )
-                    pass
-            else:
-                LOGGER.error("必须在配置文件中指定GPT3.5密钥！")
-                return
-        if degradeBackend:
-            if "token" in config["backendSpecific"]["GPT4"]:
-                for tok in config["backendSpecific"]["GPT4"]["token"]:
-                    if "token" not in tok:
-                        LOGGER.error("token 解析错误")
-                        return
-                    result.append(
-                        {
-                            "token": tok["token"],
-                            "endpoint": tok["endpoint"]
-                            if "endpoint" in tok
-                            else endpointURL,
-                        }
-                    )
-                    pass
-            else:
-                LOGGER.error("")
-                return
+    endpointDomain: str = "https://api.openai.com"
+
+    if val := config.getKey("gpt.degradeBackend"):
+        degradeBackend = val
+
+    for tokenEntry in config.getBackendConfigSection("GPT35").get("token"):
+        result.append(
+            COpenAIToken(
+                tokenEntry["token"],
+                tokenEntry["endpoint"]
+                if tokenEntry["endpoint"]
+                else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
+                True,
+                False,
+            )
+        )
+        pass
+    for tokenEntry in config.getBackendConfigSection("GPT4").get("token"):
+        result.append(
+            COpenAIToken(
+                tokenEntry["token"],
+                tokenEntry["endpoint"]
+                if tokenEntry["endpoint"]
+                else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
+                True if degradeBackend else False,
+                True,
+            )
+        )
+        pass
 
     return result
 
@@ -82,20 +122,12 @@ def randSelectInList(lst: list[dict]) -> dict:
     return lst[idx]
 
 
-def initProxyList(config: dict) -> Optional[list[dict]]:
+def initProxyList(config: CProjectConfig) -> Optional[list[dict]]:
     """
     处理代理设置项
     """
     result: list = []
-    common = config.get("common")
-    if not common:
-        LOGGER.error("canont get 'common' section")
-        return
-    proxiesList = common.get("proxies")
-    if not proxiesList:
-        LOGGER.error("canont get 'proxies' section")
-        return
-    for i in proxiesList:
+    for i in config.getProxyConfigSection():
         result.append(
             {
                 "addr": i["address"],
@@ -117,7 +149,7 @@ def initDictList(config: dict, projectDir: str) -> Optional[list[str]]:
     return result
 
 
-def loadConfig(path: str) -> dict:
+def loadConfigFile(path: str) -> dict:
     """
     加载项目配置文件（YAML）
     """

@@ -1,3 +1,4 @@
 from GalTransl.CSentense import CSentense
+from typing import List
 
-CTransList = list[CSentense]
+CTransList = List[CSentense]

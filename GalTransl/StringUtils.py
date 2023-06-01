@@ -1,5 +1,9 @@
+"""
+统计字符串的工具函数
+"""
 from typing import Tuple, List
 from collections import Counter
+from re import compile
 
 
 def get_most_common_char(input_text: str) -> Tuple[str, int]:
@@ -56,3 +60,18 @@ def contains_japanese(text: str) -> bool:
         ):
             return True
     return False
+
+
+def extract_code_blocks(content):
+    # 匹配带语言标签的代码块
+    pattern_with_lang = compile(r"```([\w]*)\n([\s\S]*?)\n```")
+    matches_with_lang = pattern_with_lang.findall(content)
+
+    # 提取所有匹配到的带语言标签的代码块
+    lang_list = []
+    code_list = []
+    for match in matches_with_lang:
+        lang_list.append(match[0])
+        code_list.append(match[1])
+
+    return lang_list, code_list

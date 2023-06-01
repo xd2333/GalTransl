@@ -5,9 +5,13 @@ import traceback
 import zhconv
 
 from typing import List
-from GalTransl.ITranslater import ITranslator
 from GalTransl.CTranslate import *
-from GalTransl.ConfigHelper import initGPTToken, randSelectInList, initProxyList
+from GalTransl.ConfigHelper import (
+    initGPTToken,
+    randSelectInList,
+    initProxyList,
+    CProjectConfig,
+)
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl import LOGGER
@@ -43,18 +47,31 @@ Input:
 SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-3.5 architecture.\nKnowledge cutoff: 2021-09\nCurrent date: 2023-06-18"
 
 
-class CChatGPTTranslate(ITranslator):
-    def __init__(self, config: dict, type="offapi"):
+class CGPT35Translate:
+    def __init__(self, config: CProjectConfig, type="offapi"):
         LOGGER.info("ChatGPT transl-api version: 1.0.3 [2023.05.30]")
         self.type = type
         self.last_file_name = ""
-        self.line_breaks_improvement_mode = False  # 换行符改善模式
-        self.restore_context_mode = False  # 恢复上下文模式
-        self.tokens = initGPTToken(config)
-        if not self.tokens:
-            LOGGER.error("error init GPT token")
-        self.proxies = initProxyList(config)
-        if not self.proxies:
+        if val := config.getKey("gpt.lineBreaksImprovementMode"):
+            self.line_breaks_improvement_mode = val
+        else:
+            self.line_breaks_improvement_mode = False  # 换行符改善模式
+        if val := config.getKey("gpt.restoreContextMode"):
+            self.restore_context_mode = val
+        else:
+            self.restore_context_mode = False  # 恢复上下文模式
+        if val := initGPTToken(config):
+            self.tokens = []
+            for i in val:
+                if not i.isGPT35Available:
+                    continue
+            self.tokens.append(i)
+
+        else:
+            raise RuntimeError("无法获取 OpenAI API Token！")
+        if config.getKey("enableProxy") == True:
+            self.proxies = initProxyList(config)
+        else:
             LOGGER.warning("不使用代理")
 
         if type == "offapi":
@@ -86,13 +103,6 @@ class CChatGPTTranslate(ITranslator):
         """
         call it before jobs
         """
-        pass
-
-    def translate(self, content: CTransList) -> CTransList:
-        """
-        translate
-        """
-        return self.asyncTranslate(content)
         pass
 
     async def asyncTranslate(self, content: CTransList, dict="") -> CTransList:
@@ -297,12 +307,12 @@ class CChatGPTTranslate(ITranslator):
         self,
         filename,
         cache_file_path,
-        trans_list: List[CSentense],
+        trans_list: CTransList,
         num_pre_request: int,
         retry_failed: bool = False,
         chatgpt_dict: CGptDict = None,
         proofread: bool = False,
-    ) -> List[CSentense]:
+    ) -> CTransList:
         # 新文件重置chatbot
         if self.last_file_name != filename:
             self.reset_conversation()

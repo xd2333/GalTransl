@@ -19,7 +19,7 @@ def main() -> int:
     args = parser.parse_args()
 
     print(PROGRAM_SPLASH)
-    print("GalTransl Core version: 1.0.0 [2023.05.21]")
+    print("GalTransl Core version: 1.0.1 [2023.05.23]")
     print("Author: cx2333")
 
     cfg = CProjectConfig(args.project_dir)

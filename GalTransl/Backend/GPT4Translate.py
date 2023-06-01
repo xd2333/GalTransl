@@ -84,7 +84,7 @@ class CGPT4Translate:
         Returns:
             None
         """
-        LOGGER.info("GPT4 transl-api version: 0.7 [2023.05.27]")
+        LOGGER.info("GPT4 transl-api version: 0.7.1 [2023.06.01]")
         self.type = type
         self.record_confidence = False
         self.last_file_name = ""
@@ -109,7 +109,7 @@ class CGPT4Translate:
                 api_key=randSelectInList(self.tokens).token,
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=8192,
-                temperature=0.7,
+                temperature=0.328,
                 frequency_penalty=0.2,
                 system_prompt="You are a helpful assistant.",
                 engine="gpt-4",
@@ -323,7 +323,11 @@ class CGPT4Translate:
             LOGGER.info(f"-> 开始翻译文件：{filename}")
         i = 0
 
-        if self.restore_context_mode and len(self.chatbot.conversation["default"]) == 1:
+        if (
+            self.type == "offapi"
+            and self.restore_context_mode
+            and len(self.chatbot.conversation["default"]) == 1
+        ):
             if not proofread:
                 self.restore_context(trans_list_unhit, num_pre_request)
 

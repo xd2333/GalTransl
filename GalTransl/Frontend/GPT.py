@@ -5,9 +5,9 @@ from os.path import join as joinpath
 from os.path import exists as isPathExists
 from os import makedirs as mkdir
 from os import listdir
-from GalTransl.GPT3Translate import CGPT35Translate
-from GalTransl.GPT4Translate import CGPT4Translate
-from GalTransl.BingGPT4Translate import CBingGPT4Translate
+from GalTransl.Backend.GPT3Translate import CGPT35Translate
+from GalTransl.Backend.GPT4Translate import CGPT4Translate
+from GalTransl.Backend.BingGPT4Translate import CBingGPT4Translate
 from GalTransl.ConfigHelper import initDictList
 from GalTransl.Loader import load_transList_from_json_jp
 from GalTransl.Dictionary import CGptDict, CNormalDic
@@ -22,7 +22,7 @@ from os import listdir
 
 GPT3_PROBLEMS = [
     CTranslateProblem.词频过高,
-    CTranslateProblem.有无括号,
+    CTranslateProblem.本无括号,
     CTranslateProblem.本无引号,
     CTranslateProblem.残留日文,
     CTranslateProblem.丢失换行,
@@ -32,7 +32,7 @@ GPT3_PROBLEMS = [
 
 GPT4_PROBLEMS = [
     CTranslateProblem.词频过高,
-    CTranslateProblem.有无括号,
+    CTranslateProblem.本无括号,
     CTranslateProblem.本无引号,
     CTranslateProblem.残留日文,
     CTranslateProblem.丢失换行,
@@ -41,7 +41,7 @@ GPT4_PROBLEMS = [
 
 BINGGPT4_PROBLEMS = [
     CTranslateProblem.词频过高,
-    CTranslateProblem.有无括号,
+    CTranslateProblem.本无括号,
     CTranslateProblem.本无引号,
     CTranslateProblem.残留日文,
     CTranslateProblem.丢失换行,
@@ -155,10 +155,10 @@ def doGPT4Translate(projectConfig: CProjectConfig) -> bool:
     ]:
         if not isPathExists(dir_path):
             mkdir(dir_path)
-    for file_name in listdir(projectConfig.getOutputPath()):
+    for file_name in listdir(projectConfig.getInputPath()):
         # 1、初始化trans_list
         trans_list = load_transList_from_json_jp(
-            joinpath(projectConfig.getOutputPath(), file_name)
+            joinpath(projectConfig.getInputPath(), file_name)
         )
 
         # 2、翻译前处理
@@ -233,7 +233,11 @@ def doNewBingTranslate(projectConfig: CProjectConfig) -> bool:
         )
     )
 
-    gptapi = CBingGPT4Translate(projectConfig)
+    cookieList: list[str] = []
+    for i in projectConfig.getBackendConfigSection("newBing")["cookiePath"]:
+        cookieList.append(joinpath(projectConfig.getProjectDir(), i))
+
+    gptapi = CBingGPT4Translate(projectConfig, cookieList)
 
     for dir_path in [
         projectConfig.getInputPath(),

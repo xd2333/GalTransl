@@ -106,7 +106,7 @@ class CGPT4Translate:
             from revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.chatbot = ChatbotV3(
-                api_key=randSelectInList(self.tokens)["token"],
+                api_key=randSelectInList(self.tokens).token,
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=8192,
                 temperature=0.7,
@@ -163,9 +163,9 @@ class CGPT4Translate:
 
         while True:  # 一直循环，直到得到数据
             try:
-                # print("->输入：\n" +  prompt_req+ "\n")
-                print("->输入：\n" + dict + "\n" + input_json + "\n")
-                print("->输出：\n")
+                # LOGGER.info("->输入：\n" +  prompt_req+ "\n")
+                LOGGER.info("->输入：\n" + dict + "\n" + input_json + "\n")
+                LOGGER.info("->输出：\n")
                 resp = ""
                 if self.type == "offapi":
                     self.del_old_input()
@@ -176,20 +176,20 @@ class CGPT4Translate:
                 if self.type == "unoffapi":
                     for data in self.chatbot.ask(prompt_req):
                         resp = data["message"]
-                    print(resp)
+                    LOGGER.info(resp)
 
-                print("\n")
+                LOGGER.info("\n")
             except Exception as ex:
                 if hasattr(ex, "message"):
                     if "too many" in str(ex.message):
-                        print("-> 请求次数超限，30分钟后继续尝试")
+                        LOGGER.info("-> 请求次数超限，30分钟后继续尝试")
                         time.sleep(1800)
                         continue
                     if "expired" in str(ex.message):
-                        print("-> access_token过期，请更换")
+                        LOGGER.info("-> access_token过期，请更换")
                         exit()
 
-                print("-> 报错:%s, 5秒后重试" % ex)
+                LOGGER.info("-> 报错:%s, 5秒后重试" % ex)
                 time.sleep(5)
                 continue
 
@@ -208,7 +208,7 @@ class CGPT4Translate:
             try:
                 result_json = json.loads(result_text)  # 尝试解析json
             except:
-                print("->非json：\n" + result_text + "\n")
+                LOGGER.info("->非json：\n" + result_text + "\n")
                 if self.type == "offapi":
                     self.del_last_answer()
                 elif self.type == "unoffapi":
@@ -216,7 +216,7 @@ class CGPT4Translate:
                 continue
 
             if len(result_json) != len(input_list):  # 输出行数错误
-                print("->错误的输出行数：\n" + result_text + "\n")
+                LOGGER.info("->错误的输出行数：\n" + result_text + "\n")
                 if self.type == "offapi":
                     self.del_last_answer()
                 elif self.type == "unoffapi":
@@ -230,7 +230,7 @@ class CGPT4Translate:
                 if key_name not in result or (
                     trans_list[i].post_jp != "" and result[key_name] == ""
                 ):
-                    print(f"->第{trans_list[i].index}句空白")
+                    LOGGER.info(f"->第{trans_list[i].index}句空白")
                     error_flag = True
                     break
                 # 多余符号
@@ -238,23 +238,25 @@ class CGPT4Translate:
                     "(" not in trans_list[i].post_jp
                     and "（" not in trans_list[i].post_jp
                 ):
-                    print(f"->第{trans_list[i].index}句多余括号：" + result[key_name] + "\n")
+                    LOGGER.info(
+                        f"->第{trans_list[i].index}句多余括号：" + result[key_name] + "\n"
+                    )
                     error_flag = True
                     break
                 elif "*" in result[key_name] and "*" not in trans_list[i].post_jp:
-                    print(
+                    LOGGER.info(
                         f"->第{trans_list[i].index}句多余 * 符号：" + result[key_name] + "\n"
                     )
                     error_flag = True
                     break
                 elif "：" in result[key_name] and "：" not in trans_list[i].post_jp:
-                    print(
+                    LOGGER.info(
                         f"->第{trans_list[i].index}句多余 ： 符号：" + result[key_name] + "\n"
                     )
                     error_flag = True
                     break
                 elif "/" in result[key_name] and "/" not in trans_list[i].post_jp:
-                    print(
+                    LOGGER.info(
                         f"->第{trans_list[i].index}句多余 / 符号：" + result[key_name] + "\n"
                     )
                     error_flag = True
@@ -318,7 +320,7 @@ class CGPT4Translate:
         if self.last_file_name != filename:
             self.reset_conversation()
             self.last_file_name = filename
-            print(f"-> 开始翻译文件：{filename}")
+            LOGGER.info(f"-> 开始翻译文件：{filename}")
         i = 0
 
         if self.restore_context_mode and len(self.chatbot.conversation["default"]) == 1:
@@ -350,10 +352,12 @@ class CGPT4Translate:
 
             for trans in trans_result:
                 result = trans.pre_zh if not proofread else trans.proofread_zh
-                print(result.replace("\r\n", "\\r\\n"))
+                LOGGER.info(result.replace("\r\n", "\\r\\n"))
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path, proofread=proofread)
-            print(f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}")
+            LOGGER.info(
+                f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}"
+            )
 
         return trans_result_list
 
@@ -429,7 +433,7 @@ class CGPT4Translate:
                     "content": f"Transl: \n```json\njson.dumps(tmp_context, ensure_ascii=False)\n```",
                 }
             )
-            print("-> 恢复了上下文")
+            LOGGER.info("-> 恢复了上下文")
 
         elif self.type == "unoffapi":
             pass

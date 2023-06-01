@@ -116,7 +116,7 @@ class CNormalDic:
     def load_dic(self, dic_path: str):
         """加载一个字典txt到这个对象的内存"""
         if not path.exists(dic_path):
-            print(f"{dic_path}不存在，请检查路径。")
+            LOGGER.info(f"{dic_path}不存在，请检查路径。")
             return
         with open(dic_path, encoding="utf8") as f:
             dic_lines = f.readlines()
@@ -164,7 +164,7 @@ class CNormalDic:
             else:
                 self.dic_list.append(CBasicDicElement(sp[0], sp[1]))
                 normalDic_count += 1
-        print(
+        LOGGER.info(
             "载入 "
             + path.basename(dic_path)
             + "  "
@@ -267,7 +267,7 @@ class CGptDict:
     def load_dic(self, dic_path: str):
         """加载一个字典txt到这个对象的内存"""
         if not path.exists(dic_path):
-            print(f"{dic_path}不存在，请检查路径。")
+            LOGGER.info(f"{dic_path}不存在，请检查路径。")
             return
         with open(dic_path, encoding="utf8") as f:
             dic_lines = f.readlines()
@@ -300,7 +300,7 @@ class CGptDict:
                 dic.note = ""
             self._dic_list.append(dic)
             normalDic_count += 1
-        print(f"载入 GPT字典: {path.basename(dic_path)} {normalDic_count}个词条")
+        LOGGER.info(f"载入 GPT字典: {path.basename(dic_path)} {normalDic_count}个词条")
 
     def gen_prompt(self, trans_list: CTransList):
         promt = ""

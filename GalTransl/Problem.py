@@ -15,7 +15,7 @@ class CTranslateProblem(Enum):
     """
 
     词频过高 = 1
-    有无括号 = 2
+    本无括号 = 2
     本无引号 = 3
     残留日文 = 4
     丢失换行 = 5

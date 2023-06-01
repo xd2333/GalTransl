@@ -18,7 +18,7 @@ from os import path
 class CProjectConfig:
     def __init__(self, projectPath: str) -> None:
         self.projectConfig = loadConfigFile(path.join(projectPath, CONFIG_FILENAME))
-        self.projectDir: str = ""
+        self.projectDir: str = projectPath
         self.inputPath: str = str(
             path.abspath(path.join(projectPath, INPUT_FOLDERNAME))
         )
@@ -29,18 +29,22 @@ class CProjectConfig:
             path.abspath(path.join(projectPath, CACHE_FOLDERNAME))
         )
         self.keyValues = dict()
-        for k, v in enumerate(self.projectConfig["common"]):
+        for v, k in enumerate(self.projectConfig["common"]):
             self.keyValues[k] = v
         pass
+        LOGGER.info(
+            "inputPath: %s, outputPath: %s, cachePath: %s,keyValues: %s",
+            self.inputPath,
+            self.outputPath,
+            self.cachePath,
+            self.keyValues,
+        )
 
     def getProjectConfig(self) -> dict:
         """
         获取解析的 YAML 配置文件
         """
         return self.projectConfig
-
-    def setProjectDir(self, dir: str) -> None:
-        self.projectDir = dir
 
     def getProjectDir(self) -> str:
         return self.projectDir
@@ -67,7 +71,7 @@ class CProjectConfig:
         return self.projectConfig["backendSpecific"][backendName]
 
     def getDictCfgSection(self) -> dict:
-        return self.projectConfig["common"]["dictionary"]
+        return self.projectConfig["dictionary"]
 
     def getKey(self, key: str) -> str | bool | None:
         return self.keyValues.get(key)

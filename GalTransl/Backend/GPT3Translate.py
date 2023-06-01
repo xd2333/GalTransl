@@ -12,6 +12,7 @@ from GalTransl.ConfigHelper import (
     initProxyList,
     CProjectConfig,
 )
+from GalTransl.COpenAI import COpenAIToken
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl import LOGGER
@@ -61,7 +62,7 @@ class CGPT35Translate:
         else:
             self.restore_context_mode = False  # 恢复上下文模式
         if val := initGPTToken(config):
-            self.tokens = []
+            self.tokens: list[COpenAIToken] = []
             for i in val:
                 if not i.isGPT35Available:
                     continue
@@ -75,13 +76,10 @@ class CGPT35Translate:
             LOGGER.warning("不使用代理")
 
         if type == "offapi":
-            for i in self.tokens:
-                if not i["endpoint"].endswith("/v1/chat/completions"):
-                    i["endpoint"] = i["endpoint"] + "/v1/chat/completions"
             from revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.chatbot = ChatbotV3(
-                api_key=randSelectInList(self.tokens)["token"],
+                api_key=randSelectInList(self.tokens).token,
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=4096,
                 temperature=0.328,  # 氪个328
@@ -121,8 +119,8 @@ class CGPT35Translate:
         prompt_req = prompt_req.replace("[Glossary]", dict)
         while True:  # 一直循环，直到得到数据
             try:
-                print(f"->翻译输入：\n{dict}\n{input_json}\n")
-                print("->输出：\n")
+                LOGGER.info(f"->翻译输入：\n{dict}\n{input_json}\n")
+                LOGGER.info("->输出：\n")
                 resp = ""
                 if self.type == "offapi":
                     self.del_old_input()
@@ -135,21 +133,21 @@ class CGPT35Translate:
             except Exception as ex:
                 if hasattr(ex, "message"):
                     if "Too many requests" in ex.message:
-                        print("Too many requests, sleep 5 minutes")
+                        LOGGER.info("Too many requests, sleep 5 minutes")
                         time.sleep(300)
                         continue
                 traceback.print_exc()
-                print("Error:%s, Please wait 5 seconds" % ex)
+                LOGGER.info("Error:%s, Please wait 5 seconds" % ex)
                 time.sleep(5)
                 continue
 
-            print("\n")
+            LOGGER.info("\n")
             result_text = resp[resp.find("[{") : resp.rfind("}]") + 2].strip()
 
             try:
                 result_json = json.loads(result_text)  # 尝试解析json
             except:
-                print("->非json：\n" + result_text + "\n")
+                LOGGER.info("->非json：\n" + result_text + "\n")
                 if self.type == "offapi":
                     self.del_last_answer()
                 elif self.type == "unoffapi":
@@ -157,7 +155,7 @@ class CGPT35Translate:
                 continue
 
             if len(result_json) != len(input_list):  # 输出行数错误
-                print("->错误的输出行数：\n" + result_text + "\n")
+                LOGGER.info("->错误的输出行数：\n" + result_text + "\n")
                 if self.type == "offapi":
                     self.del_last_answer()
                 elif self.type == "unoffapi":
@@ -171,27 +169,33 @@ class CGPT35Translate:
                 if key_name not in result or (
                     content[i].post_jp != "" and result[key_name] == ""
                 ):
-                    print(f"->第{content[i].index}句空白")
+                    LOGGER.info(f"->第{content[i].index}句空白")
                     error_flag = True
                     break
                 # 多余符号
                 elif ("(" in result[key_name] or "（" in result[key_name]) and (
                     "(" not in content[i].post_jp and "（" not in content[i].post_jp
                 ):
-                    print(f"->第{content[i].index}句多余括号：" + result[key_name] + "\n")
+                    LOGGER.info(
+                        f"->第{content[i].index}句多余括号：" + result[key_name] + "\n"
+                    )
                     error_flag = True
                     break
                 elif "*" in result[key_name] and "*" not in content[i].post_jp:
-                    print(f"->第{content[i].index}句多余 * 符号：" + result[key_name] + "\n")
+                    LOGGER.info(
+                        f"->第{content[i].index}句多余 * 符号：" + result[key_name] + "\n"
+                    )
                     error_flag = True
                     break
                 elif "：" in result[key_name] and "：" not in content[i].post_jp:
-                    print(f"->第{content[i].index}句多余 ： 符号：" + result[key_name] + "\n")
+                    LOGGER.info(
+                        f"->第{content[i].index}句多余 ： 符号：" + result[key_name] + "\n"
+                    )
                     error_flag = True
                     break
                 elif "/" in result[key_name]:
                     if "／" not in content[i].post_jp and "/" not in content[i].post_jp:
-                        print(
+                        LOGGER.info(
                             f"->第{content[i].index}句多余 / 符号：" + result[key_name] + "\n"
                         )
                         error_flag = True
@@ -199,7 +203,7 @@ class CGPT35Translate:
 
             if self.line_breaks_improvement_mode and len(input_list) > 3:
                 if "\\r\\n" in input_json and "\\r\\n" not in result_text:
-                    print("->触发换行符改善模式")
+                    LOGGER.info("->触发换行符改善模式")
                     error_flag = True
 
             if error_flag:
@@ -298,7 +302,7 @@ class CGPT35Translate:
                     "content": "Transl: " + json.dumps(tmp_context, ensure_ascii=False),
                 }
             )
-            print("-> 恢复了上下文")
+            LOGGER.info("-> 恢复了上下文")
 
         elif self.type == "unoffapi":
             pass
@@ -317,7 +321,7 @@ class CGPT35Translate:
         if self.last_file_name != filename:
             self.reset_conversation()
             self.last_file_name = filename
-            print(f"-> 开始翻译文件：{filename}")
+            LOGGER.info(f"-> 开始翻译文件：{filename}")
 
         _, trans_list_unhit = get_transCache_from_json(
             trans_list, cache_file_path, retry_failed=retry_failed
@@ -343,10 +347,12 @@ class CGPT35Translate:
             )
             i += num_pre_request
             for trans in trans_result:
-                print(trans.pre_zh.replace("\r\n", "\\r\\n"))
+                LOGGER.info(trans.pre_zh.replace("\r\n", "\\r\\n"))
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path)
-            print(f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}")
+            LOGGER.info(
+                f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}"
+            )
 
         return trans_result_list
 

@@ -6,9 +6,11 @@ import traceback
 import zhconv
 
 from EdgeGPT import Chatbot, ConversationStyle
-from galtransl_core import *
 from GalTransl import LOGGER
 from GalTransl.ConfigHelper import CProjectConfig, initProxyList, randSelectInList
+from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
+from GalTransl.CTranslate import CTransList, CSentense
+from GalTransl.Dictionary import CGptDict
 
 TRANS_PROMPT = """Generate content for translating the input and output as required.#no_search
 # On Input
@@ -59,7 +61,7 @@ Input:
 
 
 class CBingGPT4Translate:
-    def __init__(self, config: CProjectConfig, cookiefile_list):
+    def __init__(self, config: CProjectConfig, cookiefile_list: list[str]):
         LOGGER.info("NewBing transl-api version:0.8 [2023.05.20]")
         if config.getKey("enableProxy") == True:
             self.proxies = initProxyList(config)
@@ -69,13 +71,13 @@ class CBingGPT4Translate:
         self.cookiefile_list = cookiefile_list
         self.current_cookie_file = ""
         self.throttled_cookie_list = []
-        self.proxy = randSelectInList(self.proxies) if self.proxies else None
+        self.proxy = randSelectInList(self.proxies)["addr"] if self.proxies else None
         self.request_count = 0
         self.sleep_time = 0
         self.last_file_name = ""
         self.chatbot = Chatbot(cookies=self.get_random_cookie(), proxy=self.proxy)
 
-    async def translate(self, trans_list: TransList, dict="", proofread=False):
+    async def translate(self, trans_list: CTransList, dict="", proofread=False):
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT
         input_list = []
         for i, trans in enumerate(trans_list):
@@ -105,22 +107,22 @@ class CBingGPT4Translate:
         input_json = json.dumps(input_list, ensure_ascii=False)
         prompt_req = prompt_req.replace("[Input]", input_json)
         prompt_req = prompt_req.replace("[Glossary]", dict)
-        print(f"->{'翻译输入' if not proofread else '校对输入'}：{dict}\n{input_json}\n")
+        LOGGER.info(f"->{'翻译输入' if not proofread else '校对输入'}：{dict}\n{input_json}\n")
         while True:  # 一直循环，直到得到数据
             try:
                 self.request_count += 1
-                print("->请求次数：" + str(self.request_count) + "\n")
+                LOGGER.info("->请求次数：" + str(self.request_count) + "\n")
                 resp = await self.chatbot.ask(
                     prompt=prompt_req, conversation_style=ConversationStyle.creative
                 )
             except Exception as ex:
-                print("Error:%s, Please wait 30 seconds" % ex)
+                LOGGER.info("Error:%s, Please wait 30 seconds" % ex)
                 traceback.print_exc()
                 time.sleep(5)
                 continue
-            # print("->输出：" + str(resp) + "\n")
+            # LOGGER.info("->输出：" + str(resp) + "\n")
             if "Request is throttled." in str(resp):
-                print("->Request is throttled.")
+                LOGGER.info("->Request is throttled.")
                 self.throttled_cookie_list.append(self.current_cookie_file)
                 self.cookiefile_list.remove(self.current_cookie_file)
                 time.sleep(self.sleep_time)
@@ -131,7 +133,7 @@ class CBingGPT4Translate:
                 continue
 
             if "New topic" in str(resp):
-                print("->Need New topic")
+                LOGGER.info("->Need New topic")
                 await self.chatbot.reset()
                 continue
 
@@ -149,7 +151,7 @@ class CBingGPT4Translate:
                     else:
                         tran.proofread_zh = tran.post_zh
                         tran.proofread_by = "NewBing(Failed)"
-                print("->NewBing大小姐拒绝了本次请求🙏\n")
+                LOGGER.info("->NewBing大小姐拒绝了本次请求🙏\n")
                 # 换一个cookie
                 self.chatbot = Chatbot(
                     cookies=self.get_random_cookie(), proxy=self.proxy
@@ -157,7 +159,7 @@ class CBingGPT4Translate:
                 return trans_list
 
             result_text = resp["item"]["messages"][1]["text"]
-            print("->输出：\n" + result_text + "\n")
+            LOGGER.info("->输出：\n" + result_text + "\n")
             result_text = result_text[
                 result_text.find("[{") : result_text.rfind("}]") + 2
             ].strip()
@@ -176,14 +178,14 @@ class CBingGPT4Translate:
             try:
                 result_json = json.loads(result_text)  # 尝试解析json
             except:
-                print("->非json：\n" + result_text + "\n")
+                LOGGER.info("->非json：\n" + result_text + "\n")
                 traceback.print_exc()
                 time.sleep(2)
                 await self.chatbot.reset()
                 continue
 
             if len(result_json) != len(input_list):
-                print("->错误的输出行数：\n" + result_text + "\n")
+                LOGGER.info("->错误的输出行数：\n" + result_text + "\n")
                 time.sleep(2)
                 await self.chatbot.reset()
                 continue
@@ -191,11 +193,11 @@ class CBingGPT4Translate:
             have_error = False
             for i, result in enumerate(result_json):
                 if key_name not in result:
-                    print("->缺少输出：\n" + result_text + "\n")
+                    LOGGER.info("->缺少输出：\n" + result_text + "\n")
                     have_error = True
                     break
                 if trans_list[i].post_jp != "" and result[key_name] == "":  # 本行输出不应为空
-                    print("->空白输出：\n" + result_text + "\n")
+                    LOGGER.info("->空白输出：\n" + result_text + "\n")
                     have_error = True
                     break
                 if (
@@ -209,7 +211,7 @@ class CBingGPT4Translate:
                     )
                     or ("/" in result[key_name] and "/" not in trans_list[i].post_jp)
                 ):
-                    print("->多余符号：\n" + result_text + "\n")
+                    LOGGER.info("->多余符号：\n" + result_text + "\n")
                     result[key_name] = self.remove_extra_pronouns(result[key_name])
                     await self.chatbot.reset()
                 # 修复输出中的换行符
@@ -246,24 +248,24 @@ class CBingGPT4Translate:
         self,
         filename,
         cache_file_path,
-        trans_list: List[Translate],
+        trans_list: CTransList,
         num_pre_request: int,
-        chatgpt_dict: GptDict = None,
+        chatgpt_dict: CGptDict = None,
         retry_failed: bool = False,
         proofread: bool = False,
-    ) -> List[Translate]:
+    ) -> CTransList:
         """批量翻译
 
         Args:
             filename (str): 文件名
             cache_file_path (_type_): 缓存文件路径
-            trans_list (List[Translate]): translate列表
+            trans_list (CTransList): translate列表
             num_pre_request (int): 每次请求的数量
             chatgpt_dict (ChatgptDict, optional): _description_. Defaults to None.
             proofread (bool, optional): _description_. Defaults to False.
 
         Returns:
-            List[Translate]: _description_
+            CTransList: _description_
         """
 
         _, trans_list_unhit = get_transCache_from_json(
@@ -299,10 +301,12 @@ class CBingGPT4Translate:
 
             i += num_pre_request
             for trans in trans_result:
-                print(trans)
+                LOGGER.info(trans)
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path, proofread=proofread)
-            print(f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}")
+            LOGGER.info(
+                f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}"
+            )
 
         return trans_result_list
 
@@ -324,6 +328,6 @@ class CBingGPT4Translate:
             self.throttled_cookie_list = []
             self.sleep_time = 600
         self.current_cookie_file = random.choice(self.cookiefile_list)
-        print(f"当前使用cookie文件：{self.current_cookie_file}")
+        LOGGER.info(f"当前使用cookie文件：{self.current_cookie_file}")
         cookies = json.loads(open(self.current_cookie_file, encoding="utf-8").read())
         return cookies

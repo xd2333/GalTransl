@@ -55,8 +55,6 @@
   python -m pip install --upgrade -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
   pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
   poetry install
-  poetry shell
-  python -m GalTransl 
   ```
 
   * EmEditor   

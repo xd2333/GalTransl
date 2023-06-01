@@ -12,7 +12,7 @@ def main() -> int:
     parser.add_argument(
         "--translator",
         "-t",
-        choices=["gpt35", "gpt4", "chatgpt-gpt35", "newbing", "caiyun"],
+        choices=["gpt35", "chatgpt-gpt35", "gpt4", "chatgpt-gpt4", "newbing", "caiyun"],
         help="choose which Translator to use",
         required=True,
     )
@@ -31,6 +31,8 @@ def main() -> int:
         doGPT4Translate(cfg)
     elif args.translator == "chatgpt-gpt35":
         doGPT3Translate(cfg, type="unoffapi")
+    elif args.translator == "chatgpt-gpt4":
+        doGPT4Translate(cfg, type="unoffapi")
     elif args.translator == "newbing":
         doNewBingTranslate(cfg)
     elif args.translator == "caiyun":

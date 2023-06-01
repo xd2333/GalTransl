@@ -9,6 +9,7 @@ from GalTransl import (
     CACHE_FOLDERNAME,
 )
 from GalTransl.COpenAI import COpenAIToken
+from GalTransl.Problem import CTranslateProblem
 from typing import Optional
 from random import randint
 from yaml import safe_load
@@ -66,7 +67,7 @@ class CProjectConfig:
 
     def getBackendConfigSection(self, backendName: str) -> dict:
         """
-        backendName: GPT35 / GPT4 / ChatGPT / newBing
+        backendName: GPT35 / GPT4 / ChatGPT / bingGPT4
         """
         return self.projectConfig["backendSpecific"][backendName]
 
@@ -76,7 +77,12 @@ class CProjectConfig:
     def getKey(self, key: str) -> str | bool | int | None:
         return self.keyValues.get(key)
 
-    pass
+    def getProblemAnalyzeConfig(self, backendName: str) -> list[CTranslateProblem]:
+        result: list[CTranslateProblem] = []
+        for i in self.projectConfig["problemAnalyze"][backendName]:
+            result.append(CTranslateProblem[i])
+
+        return result
 
 
 def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:

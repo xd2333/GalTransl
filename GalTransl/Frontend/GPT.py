@@ -20,38 +20,11 @@ from GalTransl.Dictionary import CNormalDic, CGptDict
 from GalTransl.ConfigHelper import CProjectConfig, initDictList
 from os import listdir
 
-GPT3_PROBLEMS = [
-    CTranslateProblem.词频过高,
-    CTranslateProblem.本无括号,
-    CTranslateProblem.本无引号,
-    CTranslateProblem.残留日文,
-    CTranslateProblem.丢失换行,
-    CTranslateProblem.多加换行,
-    CTranslateProblem.比日文长,
-]
-
-GPT4_PROBLEMS = [
-    CTranslateProblem.词频过高,
-    CTranslateProblem.本无括号,
-    CTranslateProblem.本无引号,
-    CTranslateProblem.残留日文,
-    CTranslateProblem.丢失换行,
-    CTranslateProblem.多加换行,
-]
-
-BINGGPT4_PROBLEMS = [
-    CTranslateProblem.词频过高,
-    CTranslateProblem.本无括号,
-    CTranslateProblem.本无引号,
-    CTranslateProblem.残留日文,
-    CTranslateProblem.丢失换行,
-    CTranslateProblem.多加换行,
-]
 
 arinashi_dict = {}
 
 
-def doGPT3Translate(projectConfig: CProjectConfig) -> bool:
+def doGPT3Translate(projectConfig: CProjectConfig, type="offapi") -> bool:
     # 加载字典
     pre_dic = CNormalDic(
         initDictList(
@@ -72,7 +45,7 @@ def doGPT3Translate(projectConfig: CProjectConfig) -> bool:
         )
     )
 
-    gptapi = CGPT35Translate(projectConfig)
+    gptapi = CGPT35Translate(projectConfig, type)
 
     for dir_path in [
         projectConfig.getInputPath(),
@@ -110,7 +83,11 @@ def doGPT3Translate(projectConfig: CProjectConfig) -> bool:
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
 
         # 用于保存problems
-        find_problems(trans_list, find_type=GPT3_PROBLEMS, arinashi_dict=arinashi_dict)
+        find_problems(
+            trans_list,
+            find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
+            arinashi_dict=arinashi_dict,
+        )
         save_transCache_to_json(trans_list, cache_file_path)
         # 5、整理输出
         if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
@@ -125,7 +102,7 @@ def doGPT3Translate(projectConfig: CProjectConfig) -> bool:
     pass
 
 
-def doGPT4Translate(projectConfig: CProjectConfig) -> bool:
+def doGPT4Translate(projectConfig: CProjectConfig, type="offapi") -> bool:
     # 加载字典
     pre_dic = CNormalDic(
         initDictList(
@@ -146,7 +123,7 @@ def doGPT4Translate(projectConfig: CProjectConfig) -> bool:
         )
     )
 
-    gptapi = CGPT4Translate(projectConfig)
+    gptapi = CGPT4Translate(projectConfig, type)
 
     for dir_path in [
         projectConfig.getInputPath(),
@@ -195,7 +172,11 @@ def doGPT4Translate(projectConfig: CProjectConfig) -> bool:
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
 
         # 用于保存problems
-        find_problems(trans_list, find_type=GPT4_PROBLEMS, arinashi_dict=arinashi_dict)
+        find_problems(
+            trans_list,
+            find_type=projectConfig.getProblemAnalyzeConfig("GPT4"),
+            arinashi_dict=arinashi_dict,
+        )
         save_transCache_to_json(trans_list, cache_file_path)
 
         # 5、整理输出
@@ -234,7 +215,7 @@ def doNewBingTranslate(projectConfig: CProjectConfig) -> bool:
     )
 
     cookieList: list[str] = []
-    for i in projectConfig.getBackendConfigSection("newBing")["cookiePath"]:
+    for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
         cookieList.append(joinpath(projectConfig.getProjectDir(), i))
 
     gptapi = CBingGPT4Translate(projectConfig, cookieList)
@@ -293,7 +274,9 @@ def doNewBingTranslate(projectConfig: CProjectConfig) -> bool:
 
         # 用于保存problems
         find_problems(
-            trans_list, find_type=BINGGPT4_PROBLEMS, arinashi_dict=arinashi_dict
+            trans_list,
+            find_type=projectConfig.getProblemAnalyzeConfig("bingGPT4"),
+            arinashi_dict=arinashi_dict,
         )
         save_transCache_to_json(trans_list, cache_file_path)
 

@@ -55,6 +55,30 @@ backendSpecific:
     defaultEndpoint: https://api.openai.com
   ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API
     ak: xxxxxxxx
-  newBing:
+  bingGPT4:
     cookiePath:
       - foobar/cookies.json # 你的 cookies 文件
+# 问题分析机制配置
+problemAnalyze:
+  GPT35: # GPT35 / ChatGPT
+    - 词频过高
+    - 本无括号
+    - 本无引号
+    - 残留日文
+    - 丢失换行
+    - 多加换行
+    - 比日文长
+  GPT4: # GPT4 / ChatGPT
+    - 词频过高
+    - 本无括号
+    - 本无引号
+    - 残留日文
+    - 丢失换行
+    - 多加换行
+  bingGPT4:
+    - 词频过高
+    - 本无括号
+    - 本无引号
+    - 残留日文
+    - 丢失换行
+    - 多加换行

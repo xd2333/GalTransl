@@ -49,7 +49,7 @@ SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, base
 
 
 class CGPT35Translate:
-    def __init__(self, config: CProjectConfig, type="offapi"):
+    def __init__(self, config: CProjectConfig, type):
         LOGGER.info("ChatGPT transl-api version: 1.0.3 [2023.05.30]")
         self.type = type
         self.last_file_name = ""
@@ -89,7 +89,7 @@ class CGPT35Translate:
             from revChatGPT.V1 import Chatbot as ChatbotV1
 
             gpt_config = {
-                "access_token": config["backendSpecific"]["ChatGPT"]["ak"],
+                "access_token": config.getBackendConfigSection("ChatGPT")["ak"],
                 "proxy": randSelectInList(self.proxies)["addr"]
                 if self.proxies
                 else None,

@@ -30,7 +30,7 @@ def main() -> int:
     elif args.translator == "gpt4":
         doGPT4Translate(cfg)
     elif args.translator == "chatgpt-gpt35":
-        raise RuntimeError("Work in progress!")
+        doGPT3Translate(cfg, type="unoffapi")
     elif args.translator == "newbing":
         doNewBingTranslate(cfg)
     elif args.translator == "caiyun":

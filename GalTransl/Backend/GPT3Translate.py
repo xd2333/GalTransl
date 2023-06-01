@@ -90,7 +90,9 @@ class CGPT35Translate:
 
             gpt_config = {
                 "access_token": config["backendSpecific"]["ChatGPT"]["ak"],
-                "proxy": randSelectInList(self.proxies) if self.proxies else None,
+                "proxy": randSelectInList(self.proxies)["addr"]
+                if self.proxies
+                else None,
             }
             self.chatbot = ChatbotV1(config=gpt_config)
             self.chatbot.clear_conversations()

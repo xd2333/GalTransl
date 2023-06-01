@@ -12,8 +12,9 @@ common:
   gpt.apiType: offical
   gpt.lineBreaksImprovementMode: false # true/false,换行符改善模式，减少丢换行符情况，但可能导致循环重试
   gpt.restoreContextMode: true # true/false,重启自动恢复上下文
-  gpt.numPerRequest: 9 # 单次翻译句子数量，不建议太大
-  gpt.enableProofRead: false
+  gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
+  gpt.numPerRequestProofRead: 7 # 不建议修改
+  gpt.enableProofRead: false # 是否开启译后校润(True/False)
 # 代理设置
 proxies:
   # 代理地址

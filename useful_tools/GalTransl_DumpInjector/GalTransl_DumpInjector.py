@@ -413,12 +413,16 @@ class VNTextPatchGUI:
             self.master.update_idletasks()
             message_list = []
             # Open the file and extract matches
-            with open(
-                os.path.join(script_jp_folder, filename),
-                "r",
-                encoding=self.japanese_encoding_var.get(),
-            ) as f:
-                text = f.read()
+            try:
+                with open(
+                    os.path.join(script_jp_folder, filename),
+                    "r",
+                    encoding=self.japanese_encoding_var.get(),
+                ) as f:
+                    text = f.read()
+            except UnicodeDecodeError:
+                messagebox.showerror("Error", "日文脚本编码解码错误")
+                return False
 
             search_result = message_pattern.search(text)
             last_start = 0

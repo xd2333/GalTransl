@@ -33,6 +33,9 @@ retry_fail = True
 auto_restore_context_mode = True
 # True/False,记录置信度、存疑句、未知专有名词，使用官方API时关闭可以节省Token
 record_confidence = False
+# 是否开启译后校润(True/False)
+enable_proofread = False
+num_pre_request_proofread = 7  # 不建议修改
 
 # ↓↓↓↓↓↓自动找问题配置↓↓↓↓↓↓
 find_type = ["词频过高", "有无括号", "本无引号", "残留日文", "丢失换行", "多加换行"]

@@ -3,6 +3,7 @@
 
 import json
 import os
+import re
 from collections import Counter
 from typing import List, Dict, Optional, Tuple
 import zhconv
@@ -14,7 +15,7 @@ title="""
  | |_| | (_| | | | || | | (_| | | | \__ \ |
   \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|
                                            
-  Core version: 1.0.0 [2023.05.21]
+  Core version: 1.0.1 [2023.05.23]
   Author: cx2333
 """
 
@@ -1147,6 +1148,19 @@ def load_name_table(name_table_path: str) -> Dict[str, str]:
             name_table[row[0]] = row[1]
     return name_table
 
+def extract_code_blocks(content):
+    # 匹配带语言标签的代码块
+    pattern_with_lang = re.compile(r'```([\w]*)\n([\s\S]*?)\n```')
+    matches_with_lang = pattern_with_lang.findall(content)
+
+    # 提取所有匹配到的带语言标签的代码块
+    lang_list = []
+    code_list = []
+    for match in matches_with_lang:
+        lang_list.append(match[0])
+        code_list.append(match[1])
+
+    return lang_list, code_list
 
 if __name__ == "__main__":
     pass

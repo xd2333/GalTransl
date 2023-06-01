@@ -3,10 +3,23 @@
 
 import json
 import os
+import re
 from collections import Counter
 from typing import List, Dict, Optional, Tuple
 import zhconv
 
+title="""
+   ____       _ _____                    _ 
+  / ___| __ _| |_   _| __ __ _ _ __  ___| |
+ | |  _ / _` | | | || '__/ _` | '_ \/ __| |
+ | |_| | (_| | | | || | | (_| | | | \__ \ |
+  \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|
+                                           
+  Core version: 1.0.1 [2023.05.23]
+  Author: cx2333
+"""
+
+print(title)
 
 class Translate:
     """
@@ -24,7 +37,7 @@ class Translate:
         self.index = index
 
         self.pre_jp = pre_jp  # 前原
-        self.post_jp = pre_jp.strip()  # 前润，初始为原句strip
+        self.post_jp = pre_jp  # 前润，初始为原句
         self.pre_zh = ""  # 后原
         self.proofread_zh = ""  # 校对, For GPT4
         self.post_zh = ""  # 后润，最终zh
@@ -42,6 +55,7 @@ class Translate:
         self.trans_by = ""  # 翻译记录
         self.proofread_by = ""  # 校对记录
 
+        self.problem = ""  # 问题记录
         self.trans_conf = 0.0  # 翻译可信度 For GPT4
         self.doub_content = ""  # 用于记录疑问句的内容 For GPT4
         self.unknown_proper_noun = ""  # 用于记录未知的专有名词 For GPT4
@@ -50,7 +64,11 @@ class Translate:
         self.next_tran: Translate = None  # 指向下一个tran
 
     def __repr__(self) -> str:
-        return f"Translate({self.index}, {self.pre_jp}, {self.speaker})"
+        tmp_post_jp = self.post_jp.replace("\r\n", "\\r\\n")
+        tmp_post_zh = self.post_zh.replace("\r\n", "\\r\\n")
+        tmp_proofread_zh = self.proofread_zh.replace("\r\n", "\\r\\n")
+        char_t = "\t"
+        return f"{self.index}: {tmp_post_jp}{char_t}{tmp_post_zh if self.proofread_zh == '' else tmp_proofread_zh}"
 
     def analyse_dialogue(self, dia_format: str = "#句子", mono_format: str = "#句子"):
         """对话分析，根据对话框判断是否为对话，暂时隐藏对话框，分别格式化diag与mono到不同的format
@@ -64,6 +82,7 @@ class Translate:
             return
         self.dia_format, self.mono_format = dia_format, mono_format
         first_symbol, last_symbol = self.post_jp[:1], self.post_jp[-1:]
+
         while (
             first_symbol in "「『"
             and last_symbol in "」』"
@@ -75,21 +94,57 @@ class Translate:
             self.right_symbol = last_symbol + self.right_symbol
             self.post_jp = self.post_jp[1:-1]  # 去首尾
             first_symbol, last_symbol = self.post_jp[:1], self.post_jp[-1:]
-        
+
         # 情况2，一句话拆成2个的情况
-        if self.next_tran!=None:
+        if self.next_tran != None:
             first_symbol_next = self.next_tran.post_jp[:1]
             last_symbol_next = self.next_tran.post_jp[-1:]
             if first_symbol == "「" and last_symbol != "」":
                 if first_symbol_next != "「" and last_symbol_next == "」":
-                    self.is_dialogue = True
-                    self.next_tran.is_dialogue = True
-                    self.has_diag_symbol = True
-                    self.next_tran.has_diag_symbol = True
+                    self.is_dialogue, self.next_tran.is_dialogue = True, True
+                    self.has_diag_symbol, self.next_tran.has_diag_symbol = True, True
+                    self.next_tran.speaker = self.speaker
                     self.left_symbol = self.left_symbol + first_symbol
-                    self.next_tran.right_symbol = last_symbol + self.next_tran.right_symbol
-                    self.post_jp = self.post_jp[1:]
-                    self.next_tran.post_jp = self.next_tran.post_jp[:-1]
+                    self.next_tran.right_symbol = (
+                        last_symbol_next + self.next_tran.right_symbol
+                    )
+                    self.post_jp, self.next_tran.post_jp = (
+                        self.post_jp[1:],
+                        self.next_tran.post_jp[:-1],
+                    )
+
+        # 情况3，一句话拆成3个的情况，一般不会再多了……
+        if self.next_tran != None and self.next_tran.next_tran != None:
+            first_symbol_next = self.next_tran.post_jp[:1]
+            last_symbol_next = self.next_tran.post_jp[-1:]
+            first_symbol_next_next = self.next_tran.next_tran.post_jp[:1]
+            last_symbol_next_next = self.next_tran.next_tran.post_jp[-1:]
+            if first_symbol == "「" and last_symbol != "」":
+                if first_symbol_next != "「" and last_symbol_next != "」":
+                    if first_symbol_next_next != "「" and last_symbol_next_next == "」":
+                        (
+                            self.is_dialogue,
+                            self.next_tran.is_dialogue,
+                            self.next_tran.next_tran.is_dialogue,
+                        ) = (True, True, True)
+                        (
+                            self.has_diag_symbol,
+                            self.next_tran.has_diag_symbol,
+                            self.next_tran.next_tran.has_diag_symbol,
+                        ) = (True, False, True)
+                        self.next_tran.speaker, self.next_tran.next_tran.speaker = (
+                            self.speaker,
+                            self.speaker,
+                        )
+                        self.left_symbol = self.left_symbol + first_symbol
+                        self.next_tran.next_tran.right_symbol = (
+                            last_symbol_next_next
+                            + self.next_tran.next_tran.right_symbol
+                        )
+                        self.post_jp, self.next_tran.next_tran.post_jp = (
+                            self.post_jp[1:],
+                            self.next_tran.next_tran.post_jp[:-1],
+                        )
 
         self.post_jp = (dia_format if self.is_dialogue else mono_format).replace(
             "#句子", self.post_jp
@@ -127,20 +182,28 @@ class Translate:
             self.post_zh = self.post_zh[1:]
         if self.post_zh[:2] in [line_break_symbol]:
             self.post_zh = self.post_zh[2:]
-        if self.post_zh[-2:] in [line_break_symbol]:
-            self.post_zh = self.post_zh[:-2]
 
-    def fix_last_symbol(self, line_break_symbol="\\n"):
+    def fix_last_symbol(self):
         """
         针对一些最后一个符号丢失的问题进行补回
         """
+        if not self.pre_jp.endswith("\r\n") and self.post_zh.endswith("\r\n"):
+            self.post_zh = self.post_zh[:-2]
         if self.post_jp[-1:] == "♪" and self.post_zh[-1:] != "♪":
             self.post_zh += "♪"
         if self.post_jp[-1:] != "、" and self.post_zh[-1:] == "，":
             self.post_zh = self.post_zh[:-1]
-        # 去除句尾的换行符
-        if self.post_zh[0 - len(line_break_symbol) :] == line_break_symbol:
-            self.post_zh = self.post_zh[: 0 - len(line_break_symbol)]
+        if self.post_jp[-2:] == "！？" and self.post_zh[-1:] == "！":
+            self.post_zh = self.post_zh + "？"
+        if self.proofread_zh != "":
+            if not self.pre_jp.endswith("\r\n") and self.proofread_zh.endswith("\r\n"):
+                self.proofread_zh = self.proofread_zh[:-2]
+            if self.post_jp[-1:] == "♪" and self.proofread_zh[-1:] != "♪":
+                self.proofread_zh += "♪"
+            if self.post_jp[-1:] != "、" and self.proofread_zh[-1:] == "，":
+                self.proofread_zh = self.proofread_zh[:-1]
+            if self.post_jp[-2:] == "！？" and self.post_zh[-1:] == "！":
+                self.proofread_zh = self.proofread_zh + "？"
 
     def __replace_he2she(self):
         self.post_zh = self.post_zh.replace("他", "她").replace("其她", "其他")
@@ -532,9 +595,11 @@ class GptDict:
             dic = BasicDicElement(sp[0], sp[1])
             if len_sp > 2 and sp[2] != None:
                 dic.note = sp[2]
+            else:
+                dic.note = ""
             self._dic_list.append(dic)
             normalDic_count += 1
-        print(f"字典{dic_path}加载完毕，共{normalDic_count}个词条")
+        print(f"载入 GPT字典: {os.path.basename(dic_path)} {normalDic_count}个词条")
 
     def gen_prompt(self, trans_list: List[Translate]):
         promt = ""
@@ -549,7 +614,7 @@ class GptDict:
 
         if promt != "":
             promt = (
-                "\n# Glossary\n| src | dst1 (/dst2/..) | note |\n| --- | --- | --- |\n"
+                "# Glossary\n| Src | Dst(/Dst2/..) | Note |\n| --- | --- | --- |\n"
                 + promt
             )
         return promt
@@ -592,11 +657,22 @@ def load_transList_from_json_jp(json_str_or_list):
     return trans_list
 
 
-def save_transList_to_json_cn(trans_list: TransList, save_path: str, use_cn_name=False):
+def save_transList_to_json_cn(trans_list: TransList, save_path: str, name_dict={}):
     result_list = []
     for tran in trans_list:
         if tran._speaker != "":
-            result_list.append({"name": tran._speaker, "message": tran.post_zh})
+            if type(tran._speaker) == list:
+                result_name = []
+                for name in tran._speaker:
+                    result_name.append(name_dict[name] if name in name_dict else name)
+                result_list.append({"names": result_name, "message": tran.post_zh})
+            else:
+                result_name = (
+                    name_dict[tran._speaker]
+                    if tran._speaker in name_dict
+                    else tran._speaker
+                )
+                result_list.append({"name": result_name, "message": tran.post_zh})
         else:
             result_list.append({"message": tran.post_zh})
     with open(save_path, "w", encoding="utf8") as f:
@@ -604,7 +680,7 @@ def save_transList_to_json_cn(trans_list: TransList, save_path: str, use_cn_name
 
 
 def load_trans_from_file(jp_txt_path: str, encode="utf8"):
-    """从标准txt_jp文件载入translist，标准行定义:★✰index_key【speaker】✰★pre_jp
+    """(废弃)从标准txt_jp文件载入translist，标准行定义:★✰index_key【speaker】✰★pre_jp
 
     Args:
         jp_txt_path (str): 日文txt文件路径
@@ -654,7 +730,7 @@ def save_trans_list_to_file(
     split_symbol: str = "\t",
     with_speaker: bool = False,
 ):
-    """保存translist到文件
+    """（废弃）保存translist到文件
 
     Args:
         trans_list (TransList): translist
@@ -678,7 +754,7 @@ def get_trans_cache_from_file(
     trans_list: List[Translate], cache_file_path, unhit_flag="", proofread=False
 ):
     """
-    通过一个cache文件，避免无意义的重新翻译，大幅提高速度
+    （废弃）通过一个cache文件，避免无意义的重新翻译，大幅提高速度
     cacheFile定义：前原➤➤前润➤➤后原
     主要检查新前润是否有变化，返回trans_list_hit、trans_list_unhit
     """
@@ -756,7 +832,10 @@ def get_transCache_from_json(
         if tran.post_jp != cache_dict[tran.index]["post_jp"]:  # 前润被改变
             trans_list_unhit.append(tran)
             continue
-        if cache_dict[tran.index]["pre_zh"] == "":  # 后原为空
+        if (
+            "pre_zh" not in cache_dict[tran.index]
+            or cache_dict[tran.index]["pre_zh"] == ""
+        ):  # 后原为空
             trans_list_unhit.append(tran)
             continue
         # 重试失败的
@@ -767,7 +846,8 @@ def get_transCache_from_json(
 
         # 剩下的都是击中缓存的,post_zh初始值赋pre_zh
         tran.pre_zh = cache_dict[tran.index]["pre_zh"]
-        tran.trans_by = cache_dict[tran.index]["trans_by"]
+        if "trans_by" in cache_dict[tran.index]:
+            tran.trans_by = cache_dict[tran.index]["trans_by"]
         if "proofread_zh" in cache_dict[tran.index]:
             tran.proofread_zh = cache_dict[tran.index]["proofread_zh"]
         if "proofread_by" in cache_dict[tran.index]:
@@ -778,6 +858,8 @@ def get_transCache_from_json(
             tran.doub_content = cache_dict[tran.index]["doub_content"]
         if "unknown_proper_noun" in cache_dict[tran.index]:
             tran.unknown_proper_noun = cache_dict[tran.index]["unknown_proper_noun"]
+        if "problem" in cache_dict[tran.index]:
+            tran.problem = cache_dict[tran.index]["problem"]
 
         if tran.proofread_zh != "":
             tran.post_zh = tran.proofread_zh
@@ -808,8 +890,15 @@ def save_transCache_to_json(
             "pre_jp": tran.pre_jp,
             "post_jp": tran.post_jp,
             "pre_zh": tran.pre_zh,
-            "trans_by": tran.trans_by,
         }
+
+        cache_obj["proofread_zh"] = tran.proofread_zh
+
+        if tran.problem != "":
+            cache_obj["problem"] = tran.problem
+
+        cache_obj["trans_by"] = tran.trans_by
+        cache_obj["proofread_by"] = tran.proofread_by
 
         if tran.trans_conf != 0:
             cache_obj["trans_conf"] = tran.trans_conf
@@ -817,10 +906,6 @@ def save_transCache_to_json(
             cache_obj["doub_content"] = tran.doub_content
         if tran.unknown_proper_noun != "":
             cache_obj["unknown_proper_noun"] = tran.unknown_proper_noun
-
-        cache_obj["proofread_zh"] = tran.proofread_zh
-        cache_obj["proofread_by"] = tran.proofread_by
-
         cache_json.append(cache_obj)
 
     with open(cache_file_path, mode="w", encoding="utf8") as f:
@@ -830,7 +915,7 @@ def save_transCache_to_json(
 def save_trans_cache_to_file(
     trans_list: List[Translate], cache_file_path, proofread=False
 ):
-    """保存trans_list到cache文件，新定义为★✰mono/diag✰★pre_jp➤➤post_jp➤➤pre_zh
+    """(废弃)保存trans_list到cache文件，新定义为★✰mono/diag✰★pre_jp➤➤post_jp➤➤pre_zh
 
     Args:
         trans_list (List[Translate]): translist
@@ -851,14 +936,14 @@ def save_trans_cache_to_file(
 
 def get_most_common_char(input_text: str) -> Tuple[str, int]:
     """
-    This function takes in a string as input and returns the most common character in the string
-    along with its count. It ignores characters in the black_list which includes "." and "，".
+    此函数接受一个字符串作为输入，并返回该字符串中最常见的字符及其出现次数。
+    它会忽略黑名单中的字符，包括 "." 和 "，"。
 
-    Args:
-    - input_text: A string of text
+    参数:
+    - input_text: 一段文本字符串。
 
-    Returns:
-    - A tuple containing the most common character and its count.
+    返回值:
+    - 包含最常见字符及其出现次数的元组。
     """
     black_list: List[str] = [".", "，"]
     counter: Counter = Counter(input_text)
@@ -875,15 +960,15 @@ def get_most_common_char(input_text: str) -> Tuple[str, int]:
 
 def get_mid_string(text: str, start_str: str, end_str: str) -> Optional[str]:
     """
-    This function extracts a substring from `text` that appears between `start_str` and `end_str`.
+    此函数从 `text` 中提取出出现在 `start_str` 和 `end_str` 之间的子字符串。
 
-    Args:
-    - text: The string to search for the substring.
-    - start_str: The starting string of the substring.
-    - end_str: The ending string of the substring.
+    参数:
+    - text: 要搜索子字符串的字符串。
+    - start_str: 子字符串的起始字符串。
+    - end_str: 子字符串的结束字符串。
 
-    Returns:
-    - A string containing the substring if it exists in the `text`, otherwise None.
+    返回值:
+    - 如果 `text` 中存在子字符串，则返回包含子字符串的字符串，否则返回 None。
     """
     start: int = text.find(start_str)
     if start >= 0:
@@ -894,6 +979,64 @@ def get_mid_string(text: str, start_str: str, end_str: str) -> Optional[str]:
     return None
 
 
+def find_problems(trans_list: List[Translate], find_type=[], arinashi_dict={}) -> None:
+    """
+    此函数接受一个翻译列表，查找其中的问题并将其记录在每个翻译对象的 `problem` 属性中。
+
+    参数:
+    - trans_list: 翻译对象列表。
+    - find_type: 要查找的问题类型列表。
+    - arinashi_dict: 包含本文中的日文单词和其对应中文翻译的字典。
+
+    返回值:
+    - 无返回值，但会修改每个翻译对象的 `problem` 属性。
+    """
+    for tran in trans_list:
+        find_from_str = tran.post_zh
+        problem_list = []
+        if "词频过高" in find_type:
+            most_word, word_count = get_most_common_char(find_from_str)
+            if word_count > 20 and most_word != ".":
+                problem_list.append(f"词频过高-'{most_word}'{str(word_count)}次")
+        if "本无括号" in find_type:
+            if "（" not in tran.pre_jp and (
+                "（" in find_from_str or ")" in find_from_str
+            ):
+                problem_list.append("本无括号")
+        if "本无引号" in find_type:
+            if "『" not in tran.post_jp and "「" not in tran.post_jp:
+                if "‘" in find_from_str or "“" in find_from_str:
+                    problem_list.append("本无引号")
+        if "残留日文" in find_type:
+            if contains_japanese(find_from_str):
+                problem_list.append("残留日文")
+        if "丢失换行" in find_type:
+            if tran.pre_jp.count("\r\n") > find_from_str.count("\r\n"):
+                problem_list.append("丢失换行")
+        if "多加换行" in find_type:
+            if tran.pre_jp.count("\r\n") < find_from_str.count("\r\n"):
+                problem_list.append("多加换行")
+        if "比日文长" in find_type:
+            if len(find_from_str) > len(tran.pre_jp) * 1.2:
+                problem_list.append(
+                    f"比日文长{round(len(find_from_str)/len(tran.pre_jp),1)}倍"
+                )
+        if "彩云不识" in find_type:
+            if "some" in tran.pre_zh or "SOME" in tran.pre_zh:
+                problem_list.append("彩云不识")
+        if arinashi_dict != {}:
+            for key, value in arinashi_dict.items():
+                if key not in tran.pre_jp and value in find_from_str:
+                    problem_list.append(f"本无 {key} 译有 {value}")
+                if key in tran.pre_jp and value not in find_from_str:
+                    problem_list.append(f"本有 {key} 译无 {value}")
+
+        if problem_list:
+            tran.problem = ",".join(problem_list)
+        else:
+            tran.problem = ""
+
+
 def find_problem_save_log(
     trans_list: List[Translate],
     file_name: str,
@@ -902,7 +1045,7 @@ def find_problem_save_log(
     diag_flag_list=[],
 ):
     """
-    从trans_list里发现问题并记录日志到save_path文件
+    (废弃)从trans_list里发现问题并记录日志到save_path文件
     """
     problem_log_list = []  # 搜集问题句
     for tran in trans_list:
@@ -952,7 +1095,16 @@ def find_problem_save_log(
             os.remove(save_path)
 
 
-def contains_japanese(text):
+def contains_japanese(text: str) -> bool:
+    """
+    此函数接受一个字符串作为输入，检查其中是否包含日文字符。
+
+    参数:
+    - text: 要检查的字符串。
+
+    返回值:
+    - 如果字符串中包含日文字符，则返回 True，否则返回 False。
+    """
     # 日文字符范围
     hiragana_range = (0x3040, 0x309F)
     katakana_range = (0x30A0, 0x30FF)
@@ -975,26 +1127,40 @@ def contains_japanese(text):
     return False
 
 
+def load_name_table(name_table_path: str) -> Dict[str, str]:
+    """
+    This function loads the name table from the given path.
+
+    Args:
+    - name_table_path: The path to the name table.
+
+    Returns:
+    - A dictionary containing the name table.
+    """
+    import csv
+
+    name_table: Dict[str, str] = {}
+    with open(name_table_path, mode="r", encoding="utf8") as f:
+        reader = csv.reader(f)
+        # Skip the header
+        next(reader)
+        for row in reader:
+            name_table[row[0]] = row[1]
+    return name_table
+
+def extract_code_blocks(content):
+    # 匹配带语言标签的代码块
+    pattern_with_lang = re.compile(r'```([\w]*)\n([\s\S]*?)\n```')
+    matches_with_lang = pattern_with_lang.findall(content)
+
+    # 提取所有匹配到的带语言标签的代码块
+    lang_list = []
+    code_list = []
+    for match in matches_with_lang:
+        lang_list.append(match[0])
+        code_list.append(match[1])
+
+    return lang_list, code_list
+
 if __name__ == "__main__":
-    # 测试
-    base_dir = "D:\\Oculus\\hooksoft\\ZZ_Translate"
-    dic_base_dir = base_dir + "\\字典"
-    post_dic_list = [
-        # "00通用字典_符号_译后.txt",
-        "00通用字典_译后.txt",
-    ]
-    pre_dic_h_list = [
-        "01H字典_矫正_译前.txt",
-        "01H字典_译前.txt",
-    ]
-    test_dic_post = NormalDic(post_dic_list, dic_base_dir)
-    test_dic_pre = NormalDic(pre_dic_h_list, dic_base_dir)
-
-    test_tran = Translate("「言われてみれば、確かに」")
-    test_tran.post_jp = "v>>言われてみれば、確かに"
-    test_tran.pre_zh = "V>>说起来，的确"
-    test_tran.post_zh = "V>>说起来，我的确"
-    test_tran.post_zh = test_dic_post.do_replace(test_tran.post_zh, test_tran)
-    print(test_tran.post_zh)
-
     pass

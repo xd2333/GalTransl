@@ -5,7 +5,7 @@ import zhconv
 
 from galtransl_core import *
 
-print("  GPT4 transl-api version: 0.7 [2023.05.27]\n")
+print("  GPT4 transl-api version: 0.7.1 [2023.06.01]\n")
 
 trans_prompt = """Acting as translatorGPT with Gal Mode enabled.
 # Setttings
@@ -92,7 +92,7 @@ class ChatgptTrans:
                 api_key=apikey,
                 proxy=proxy,
                 max_tokens=8192,
-                temperature=0.7,
+                temperature=0.328,
                 frequency_penalty=0.2,
                 system_prompt="You are a helpful assistant.",
                 engine="gpt-4",
@@ -306,7 +306,7 @@ class ChatgptTrans:
             print(f"-> 开始翻译文件：{filename}")
         i = 0
 
-        if self.restore_context_mode and len(self.chatbot.conversation["default"]) == 1:
+        if self.type=="offapi" and self.restore_context_mode and len(self.chatbot.conversation["default"]) == 1:
             if not proofread:
                 self.restore_context(trans_list_unhit, num_pre_request)
 

@@ -217,7 +217,7 @@ class ChatgptTrans:
         _, trans_list_unhit = get_transCache_from_json(
             trans_list, cache_file_path, retry_failed=retry_failed
         )
-        if self.restore_context_mode and len(self.chatbot.conversation["default"]) == 1:
+        if self.type=="offapi" and  self.restore_context_mode and len(self.chatbot.conversation["default"]) == 1:
             self.restore_context(trans_list_unhit, num_pre_request)
 
         i = 0

@@ -1,5 +1,7 @@
-from typing import Tuple,List
+from typing import Tuple, List
 from collections import Counter
+
+
 def get_most_common_char(input_text: str) -> Tuple[str, int]:
     """
     此函数接受一个字符串作为输入，并返回该字符串中最常见的字符及其出现次数。
@@ -22,6 +24,7 @@ def get_most_common_char(input_text: str) -> Tuple[str, int]:
             most_char_count = char[1]
             break
     return most_char, most_char_count
+
 
 def contains_japanese(text: str) -> bool:
     """
@@ -53,4 +56,3 @@ def contains_japanese(text: str) -> bool:
         ):
             return True
     return False
-

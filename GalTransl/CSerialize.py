@@ -1,5 +1,7 @@
 from GalTransl.CTranslate import CTransList
 from json import dump
+
+
 def save_transList_to_json_cn(trans_list: CTransList, save_path: str, name_dict={}):
     result_list = []
     for tran in trans_list:

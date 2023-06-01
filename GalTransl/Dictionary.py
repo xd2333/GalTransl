@@ -3,6 +3,7 @@ from os import path
 from GalTransl.CTranslate import CSentense
 from GalTransl import LOGGER
 
+
 class ifWord:
     __slots__ = ["without_flag", "startswith_flag", "endswith_flag", "word"]
 

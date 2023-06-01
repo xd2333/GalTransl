@@ -30,6 +30,7 @@ line_breaks_improvement_mode = False
 restore_context_mode = True
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
 def main():
     parser = argparse.ArgumentParser("GalTransl")
     parser.add_argument("--project_dir", "-p", help="project folder", required=True)
@@ -41,9 +42,15 @@ def main():
     cfg = loadConfig(joinpath(args.project_dir, args.config))
 
     # 加载字典
-    pre_dic = CNormalDic(initDictList(cfg["common"]["dictionary"]["preDict"],args.project_dir))
-    post_dic = CNormalDic(initDictList(cfg["common"]["dictionary"]["postDict"],args.project_dir))
-    gpt_dic = CGptDict(initDictList(cfg["common"]["dictionary"]["gpt.dict"],args.project_dir))
+    pre_dic = CNormalDic(
+        initDictList(cfg["common"]["dictionary"]["preDict"], args.project_dir)
+    )
+    post_dic = CNormalDic(
+        initDictList(cfg["common"]["dictionary"]["postDict"], args.project_dir)
+    )
+    gpt_dic = CGptDict(
+        initDictList(cfg["common"]["dictionary"]["gpt.dict"], args.project_dir)
+    )
 
     json_jp_dir = joinpath(args.project_dir, "json_jp")
     json_cn_dir = joinpath(args.project_dir, "json_cn")
@@ -100,6 +107,7 @@ def main():
     print(f"spend time:{str(end_time-start_time)}s")
 
     pass
+
 
 if __name__ == "__main__":
     try:

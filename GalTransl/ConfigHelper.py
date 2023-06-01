@@ -89,11 +89,11 @@ def initProxyList(config: dict) -> Optional[list[dict]]:
     result: list = []
     common = config.get("common")
     if not common:
-        LOGGER.error("canont get \'common\' section")
+        LOGGER.error("canont get 'common' section")
         return
     proxiesList = common.get("proxies")
     if not proxiesList:
-        LOGGER.error("canont get \'proxies\' section")
+        LOGGER.error("canont get 'proxies' section")
         return
     for i in proxiesList:
         result.append(
@@ -107,7 +107,7 @@ def initProxyList(config: dict) -> Optional[list[dict]]:
     return result
 
 
-def initDictList(config: dict, projectDir : str) -> Optional[list[str]]:
+def initDictList(config: dict, projectDir: str) -> Optional[list[str]]:
     """
     处理字典设置项
     """

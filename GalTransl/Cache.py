@@ -1,6 +1,6 @@
 from GalTransl.CTranslate import CSentense, CTransList
 from typing import List
-from json import dump,load
+from json import dump, load
 import os
 
 

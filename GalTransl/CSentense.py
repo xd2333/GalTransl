@@ -1,5 +1,6 @@
 from typing import List
 
+
 class CSentense:
     """
     每个Translate储存一句待翻译文本
@@ -260,4 +261,3 @@ class CSentense:
             if next_tran.is_dialogue and next_tran.speaker in jp_name_list:
                 self.__replace_he2she()
                 return
-

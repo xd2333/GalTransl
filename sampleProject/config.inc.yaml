@@ -54,7 +54,14 @@ backendSpecific:
         endpoint: ""
     defaultEndpoint: https://api.openai.com
   ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API
-    ak: xxxxxxxx
+    ak:
+      - foo
+      - bar
+    account:
+      - username: foo
+        password: bar
+      - username: bar
+        password: foo
   bingGPT4:
     cookiePath:
       - foobar/cookies.json # 你的 cookies 文件

@@ -1,4 +1,4 @@
-from GalTransl.CTranslate import CTransList
+from GalTransl.CSentense import CTransList
 from json import dump
 
 

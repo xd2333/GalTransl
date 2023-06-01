@@ -1,7 +1,7 @@
 """
 缓存机制
 """
-from GalTransl.CTranslate import CSentense, CTransList
+from GalTransl.CSentense import CTransList
 from typing import List
 from json import dump, load
 import os

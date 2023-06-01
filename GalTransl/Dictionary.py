@@ -1,6 +1,6 @@
 from typing import List
 from os import path
-from GalTransl.CTranslate import CSentense, CTransList
+from GalTransl.CSentense import CSentense, CTransList
 from GalTransl import LOGGER
 
 

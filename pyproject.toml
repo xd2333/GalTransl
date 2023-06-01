@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "galtransl"
-version = "0.1.0"
+version = "1.0.1"
 description = "GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具包，用于制作内嵌式翻译补丁。"
-authors = ["Your Name <you@example.com>"]
+authors = ["cx2333"]
 license = "GNU GPLv3"
 readme = "README.md"
 
@@ -13,7 +13,6 @@ requests = "^2.31.0"
 revchatgpt = "^6.0.0"
 ttkbootstrap = "^1.10.1"
 zhconv = "^1.4.3"
-jsonschema = "^4.17.3"
 pyyaml = "^6.0"
 
 

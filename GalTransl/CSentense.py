@@ -3,11 +3,11 @@ from typing import List
 
 class CSentense:
     """
-    每个Translate储存一句待翻译文本
+    每个CSentense储存一句待翻译文本
     """
 
     def __init__(self, pre_jp: str, speaker: str = "", index=0) -> None:
-        """每个Translate储存一句待翻译文本
+        """每个CSentense储存一句待翻译文本
 
         Args:
             pre_jp (str): 润色前日文
@@ -40,8 +40,8 @@ class CSentense:
         self.doub_content = ""  # 用于记录疑问句的内容 For GPT4
         self.unknown_proper_noun = ""  # 用于记录未知的专有名词 For GPT4
 
-        self.prev_tran: Translate = None  # 指向上一个tran
-        self.next_tran: Translate = None  # 指向下一个tran
+        self.prev_tran: CSentense = None  # 指向上一个tran
+        self.next_tran: CSentense = None  # 指向下一个tran
 
     def __repr__(self) -> str:
         tmp_post_jp = self.post_jp.replace("\r\n", "\\r\\n")
@@ -261,3 +261,6 @@ class CSentense:
             if next_tran.is_dialogue and next_tran.speaker in jp_name_list:
                 self.__replace_he2she()
                 return
+
+
+CTransList = list[CSentense]

@@ -6,7 +6,7 @@ import time
 import requests
 
 from GalTransl import LOGGER
-from GalTransl.CTranslate import CTransList
+from GalTransl.CSentense import CTransList
 
 
 class CaiyunTransl:

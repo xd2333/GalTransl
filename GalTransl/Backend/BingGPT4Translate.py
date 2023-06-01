@@ -9,7 +9,7 @@ from EdgeGPT import Chatbot, ConversationStyle
 from GalTransl import LOGGER
 from GalTransl.ConfigHelper import CProjectConfig, initProxyList, randSelectInList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
-from GalTransl.CTranslate import CTransList, CSentense
+from GalTransl.CSentense import CTransList, CSentense
 from GalTransl.Dictionary import CGptDict
 
 TRANS_PROMPT = """Generate content for translating the input and output as required.#no_search

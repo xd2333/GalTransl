@@ -1,7 +1,7 @@
 """
 分析问题
 """
-from GalTransl.CTranslate import CSentense, CTransList
+from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.StringUtils import get_most_common_char, contains_japanese
 from typing import List
 from os.path import exists as isPathExists

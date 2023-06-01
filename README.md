@@ -41,17 +41,22 @@
 
 ## 环境准备
   * Python   
-  安装最新版python即可。 [下载](https://www.python.org/downloads/)   
-  安装时勾选下方add python to path   
+  安装最新版 Python 即可。 [下载](https://www.python.org/downloads/)   
+  安装时勾选下方 add Python to path   
    
   * [下载本项目](https://ghproxy.com/github.com/XD2333/GalTransl/releases/download/release/GalTransl-main.zip)   
-  解压到任意位置，项目默认设置为D:\GalTransl-main   
+  解压到任意位置，项目默认设置为 `D:\GalTransl-main`
 
   * Python依赖包   
-  安装python后，打开cmd，通过以下命令使用pip安装python依赖库，或直接双击`upgrade_requirements.bat`
+  安装 Python 后，打开命令提示符，通过以下命令使用安装依赖
 
-  ```cmd
-  python -m pip install --upgrade -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
+  ```
+  cmd
+  python -m pip install --upgrade -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+  pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+  poetry install
+  poetry shell
+  python -m GalTransl 
   ```
 
   * EmEditor   

@@ -1,5 +1,5 @@
 from GalTransl import LOGGER
-from GalTransl.CTranslate import *
+from GalTransl.CSentense import *
 from os import path
 from json import loads
 

@@ -5,7 +5,7 @@ import traceback
 import zhconv
 
 from typing import List
-from GalTransl.CTranslate import *
+from GalTransl.CSentense import *
 from GalTransl.ConfigHelper import (
     initGPTToken,
     randSelectInList,

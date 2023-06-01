@@ -260,24 +260,30 @@ def doNewBingTranslate(projectConfig: CProjectConfig) -> bool:
 
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
-        gptapi.batch_translate(
-            file_name,
-            cache_file_path,
-            trans_list,
-            projectConfig.getKey("gpt.numPerRequestTranslate"),
-            retry_failed=projectConfig.getKey("retryFail"),
-            chatgpt_dict=gpt_dic,
-        )
-        if projectConfig.getKey("gpt.enableProofRead"):
-            gptapi.batch_translate(
-                file_name,
-                cache_file_path,
-                trans_list,
-                projectConfig.getKey("gpt.numPerRequestProofRead"),
-                retry_failed=projectConfig.getKey("retryFail"),
-                chatgpt_dict=gpt_dic,
-                proofread=True,
-            )
+        while True:
+            try:
+                gptapi.batch_translate(
+                    file_name,
+                    cache_file_path,
+                    trans_list,
+                    projectConfig.getKey("gpt.numPerRequestTranslate"),
+                    retry_failed=projectConfig.getKey("retryFail"),
+                    chatgpt_dict=gpt_dic,
+                )
+                if projectConfig.getKey("gpt.enableProofRead"):
+                    gptapi.batch_translate(
+                        file_name,
+                        cache_file_path,
+                        trans_list,
+                        projectConfig.getKey("gpt.numPerRequestProofRead"),
+                        retry_failed=projectConfig.getKey("retryFail"),
+                        chatgpt_dict=gpt_dic,
+                        proofread=True,
+                    )
+            except TypeError:  # https://github.com/acheong08/EdgeGPT/issues/376
+                pass
+            finally:
+                break
 
         # 4、翻译后处理
         for i, tran in enumerate(trans_list):

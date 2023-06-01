@@ -73,7 +73,7 @@ class CProjectConfig:
     def getDictCfgSection(self) -> dict:
         return self.projectConfig["dictionary"]
 
-    def getKey(self, key: str) -> str | bool | None:
+    def getKey(self, key: str) -> str | bool | int | None:
         return self.keyValues.get(key)
 
     pass

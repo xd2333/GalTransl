@@ -1,4 +1,5 @@
 import json, time, asyncio, zhconv
+from revChatGPT.V3 import Chatbot as ChatbotV3
 from GalTransl import LOGGER
 from GalTransl.ConfigHelper import (
     CProjectConfig,
@@ -76,7 +77,6 @@ class CGPT4Translate:
         根据提供的类型、配置、API 密钥和代理设置初始化 Chatbot 对象。
 
         Args:
-            type (str): 要初始化的类型（"offapi":官方API 或 "unoffapi":网页版逆向API）。
             config (dict, 可选): 使用 非官方API 时提供 的配置字典。默认为空字典。
             apikey (str, 可选): 使用 官方API 时的 API 密钥。默认为空字符串。
             proxy (str, 可选): 使用 官方API 时的代理 URL，非官方API的代理写在config里。默认为空字符串。
@@ -85,7 +85,6 @@ class CGPT4Translate:
             None
         """
         LOGGER.info("GPT4 transl-api version: 0.7.1 [2023.06.01]")
-        self.type = type
         self.record_confidence = False
         self.last_file_name = ""
         self.restore_context_mode = False  # 恢复上下文模式
@@ -102,30 +101,16 @@ class CGPT4Translate:
         else:
             LOGGER.warning("不使用代理")
 
-        if type == "offapi":
-            from revChatGPT.V3 import Chatbot as ChatbotV3
-
-            self.chatbot = ChatbotV3(
-                api_key=randSelectInList(self.tokens).token,
-                proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
-                max_tokens=8192,
-                temperature=0.328,
-                frequency_penalty=0.2,
-                system_prompt="You are a helpful assistant.",
-                engine="gpt-4",
-            )
-        elif type == "unoffapi":
-            from revChatGPT.V1 import Chatbot as ChatbotV1
-
-            gpt_config = {
-                "model": "gpt-4",
-                "paid": True,
-                "access_token": config["backendSpecific"]["ChatGPT"]["ak"],
-                "proxy": randSelectInList(self.proxies) if self.proxies else None,
-            }
-
-            self.chatbot = ChatbotV1(config=gpt_config)
-            self.chatbot.clear_conversations()
+        self.chatbot = ChatbotV3(
+            api_key=randSelectInList(self.tokens).token,
+            proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
+            max_tokens=8192,
+            temperature=0.328,
+            frequency_penalty=0.2,
+            system_prompt="You are a helpful assistant.",
+            engine="gpt-4",
+        )
+        self.chatbot.clear_conversations()
 
     async def translate(self, trans_list: CTransList, dict="", proofread=False):
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT

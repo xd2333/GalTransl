@@ -16,7 +16,7 @@ from time import time
 from typing import Optional
 from random import randint
 from yaml import safe_load
-from os import path
+from os import path, sep
 
 
 class CProxy:
@@ -46,7 +46,7 @@ class CProjectConfig:
             path.abspath(path.join(projectPath, CACHE_FOLDERNAME))
         )
         self.keyValues = dict()
-        for v, k in enumerate(self.projectConfig["common"]):
+        for k,v in self.projectConfig["common"].items():
             self.keyValues[k] = v
         pass
         LOGGER.info(
@@ -152,7 +152,7 @@ def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
     if val := config.getKey("gpt.degradeBackend"):
         degradeBackend = val
 
-    for tokenEntry in config.getBackendConfigSection("GPT35").get("token"):
+    for tokenEntry in config.getBackendConfigSection("GPT35").get("tokens"):
         result.append(
             COpenAIToken(
                 tokenEntry["token"],
@@ -164,7 +164,7 @@ def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
             )
         )
         pass
-    for tokenEntry in config.getBackendConfigSection("GPT4").get("token"):
+    for tokenEntry in config.getBackendConfigSection("GPT4").get("tokens"):
         result.append(
             COpenAIToken(
                 tokenEntry["token"],
@@ -211,7 +211,7 @@ def initDictList(config: dict, projectDir: str) -> Optional[list[str]]:
     """
     result: list[str] = []
     for entry in config:
-        result.append(str(path.abspath(projectDir) + "/" + entry))
+        result.append(str(path.abspath(projectDir) + sep + entry))
     return result
 
 

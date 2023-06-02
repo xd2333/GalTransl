@@ -1,9 +1,7 @@
 import argparse
-import time
-from os.path import join as joinpath
 from GalTransl.ConfigHelper import CProjectConfig
-from GalTransl.Frontend.GPT import doGPT3Translate, doGPT4Translate, doNewBingTranslate
-from GalTransl import LOGGER, PROGRAM_SPLASH
+from GalTransl.Runner import run_galtransl
+from GalTransl import PROGRAM_SPLASH, TRANSLATOR_SUPPORTED
 
 
 def main() -> int:
@@ -12,7 +10,7 @@ def main() -> int:
     parser.add_argument(
         "--translator",
         "-t",
-        choices=["gpt35", "chatgpt-gpt35", "gpt4", "chatgpt-gpt4", "newbing", "caiyun"],
+        choices=TRANSLATOR_SUPPORTED,
         help="choose which Translator to use",
         required=True,
     )
@@ -24,21 +22,7 @@ def main() -> int:
 
     cfg = CProjectConfig(args.project_dir)
 
-    start_time = time.time()
-    if args.translator == "gpt35":
-        doGPT3Translate(cfg)
-    elif args.translator == "gpt4":
-        doGPT4Translate(cfg)
-    elif args.translator == "chatgpt-gpt35":
-        doGPT3Translate(cfg, type="unoffapi")
-    elif args.translator == "chatgpt-gpt4":
-        doGPT4Translate(cfg, type="unoffapi")
-    elif args.translator == "newbing":
-        doNewBingTranslate(cfg)
-    elif args.translator == "caiyun":
-        raise RuntimeError("Work in progress!")
-    end_time = time.time()
-    LOGGER.info(f"spend time:{str(end_time-start_time)}s")
+    run_galtransl(cfg, args.translator)
     return 0
 
 

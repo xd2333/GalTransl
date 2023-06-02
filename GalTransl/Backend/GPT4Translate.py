@@ -183,6 +183,8 @@ class CGPT4Translate:
                     LOGGER.info(resp)
 
                 LOGGER.info("\n")
+            except asyncio.CancelledError:
+                raise
             except Exception as ex:
                 if hasattr(ex, "message"):
                     if "too many" in str(ex.message):

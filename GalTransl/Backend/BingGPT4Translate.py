@@ -116,6 +116,8 @@ class CBingGPT4Translate:
                 resp = await self.chatbot.ask(
                     prompt=prompt_req, conversation_style=ConversationStyle.creative
                 )
+            except asyncio.CancelledError:
+                raise
             except Exception as ex:
                 LOGGER.info("Error:%s, Please wait 30 seconds" % ex)
                 traceback.print_exc()

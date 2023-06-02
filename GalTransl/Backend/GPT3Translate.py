@@ -138,6 +138,8 @@ class CGPT35Translate:
                 if self.type == "unoffapi":
                     for data in self.chatbot.ask(prompt_req):
                         resp = data["message"]
+            except asyncio.CancelledError:
+                raise
             except Exception as ex:
                 if hasattr(ex, "message"):
                     if "Too many requests" in ex.message:

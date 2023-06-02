@@ -1,8 +1,8 @@
 import argparse
-from asyncio import run
+from asyncio import get_event_loop, run
 from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.Runner import run_galtransl
-from GalTransl import PROGRAM_SPLASH, TRANSLATOR_SUPPORTED
+from GalTransl import PROGRAM_SPLASH, TRANSLATOR_SUPPORTED, LOGGER
 
 
 def main() -> int:
@@ -23,12 +23,17 @@ def main() -> int:
 
     cfg = CProjectConfig(args.project_dir)
 
-    run(run_galtransl(cfg, args.translator))
-    return 0
+    loop = get_event_loop()
+    try:
+        run(run_galtransl(cfg, args.translator))
+    except KeyboardInterrupt:
+        LOGGER.info("正在等待现有请求返回...")
+        loop.stop()
+        LOGGER.info("Goodbye.")
+    finally:
+        loop.close()
+        return 0
 
 
 if __name__ == "__main__":
-    try:
-        exit(main())
-    except KeyboardInterrupt:
-        exit(1)
+    main()

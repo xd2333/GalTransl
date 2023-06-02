@@ -10,10 +10,26 @@ from GalTransl import (
 )
 from GalTransl.COpenAI import COpenAIToken
 from GalTransl.Problem import CTranslateProblem
+from asyncio import gather
+from httpx import AsyncClient
+from time import time
 from typing import Optional
 from random import randint
 from yaml import safe_load
 from os import path
+
+
+class CProxy:
+    def __init__(
+        self,
+        address: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> None:
+        self.addr = address
+        self.username = username
+        self.pw = password
+        pass
 
 
 class CProjectConfig:
@@ -83,6 +99,46 @@ class CProjectConfig:
             result.append(CTranslateProblem[i])
 
         return result
+
+
+class CProxyPool:
+    def __init__(self, config: CProjectConfig) -> None:
+        self.proxies: list[CProxy] = []
+        for i in config.getProxyConfigSection():
+            self.proxies.append(
+                CProxy(i["address"], i.get("username", i.get("password")))
+            )
+            pass
+        pass
+
+    async def _availablityChecker(
+        self, proxy: CProxy, test_address="http://www.gstatic.com/generate_204"
+    ) -> tuple[bool, CProxy]:
+        try:
+            st = time()
+            async with AsyncClient(proxies={"http://": proxy.addr}) as client:
+                response = await client.get(test_address)
+                if response.status_code != 204:
+                    return False, proxy
+                else:
+                    return True, proxy
+        except:
+            return False, proxy
+        finally:
+            et = time()
+            LOGGER.debug("tested proxy %s in %s", proxy.addr, et - st)
+            pass
+
+    async def checkAvailablity(self) -> None:
+        fs = []
+        for proxy in self.proxies:
+            fs.append(self._availablityChecker(proxy))
+        result: list[tuple[bool, CProxy]] = await gather(*fs)
+        for proxyStatus, proxy in result:
+            if proxyStatus != True:
+                LOGGER.info("removed proxy %s, because it's not available", proxy.addr)
+                self.proxies.remove(proxy)
+            pass
 
 
 def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:

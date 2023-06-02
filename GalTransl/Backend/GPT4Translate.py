@@ -1,5 +1,6 @@
 import json, time, asyncio, zhconv
 from GalTransl import LOGGER
+from sys import exit
 from GalTransl.ConfigHelper import (
     CProjectConfig,
     initGPTToken,

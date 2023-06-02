@@ -4,6 +4,7 @@ import time
 import asyncio
 import traceback
 import zhconv
+from sys import exit
 
 from EdgeGPT import Chatbot, ConversationStyle
 from GalTransl import LOGGER

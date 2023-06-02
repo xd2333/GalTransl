@@ -1,7 +1,25 @@
 """
 CloseAI related classes
 """
-import httpx
+from httpx import AsyncClient
+from asyncio import gather
+
+# from GalTransl.ConfigHelper import CProjectConfig
+
+
+class COpenAITokenPool:
+    """
+    OpenAI 令牌池
+    """
+
+    def __init__(self) -> None:
+        pass
+
+    async def checkTokenAvailablity(self) -> None:
+        """
+        检测令牌有效性
+        """
+        pass
 
 
 class COpenAIToken:
@@ -14,25 +32,4 @@ class COpenAIToken:
         self.domain: str = domain
         self.isGPT35Available: bool = gpt3
         self.isGPT4Available: bool = gpt4
-        pass
-
-
-class COpenAITokenPool:
-    """
-    OpenAI 令牌池
-    """
-
-    def __init__(self) -> None:
-        pass
-
-    async def updateFromFreeOpenAI(self) -> None:
-        """
-        https://freeopenai.xyz/
-        """
-        pass
-
-    async def removeInvaildToken(self) -> None:
-        """
-        检测令牌有效性
-        """
         pass

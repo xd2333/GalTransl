@@ -40,14 +40,14 @@ dictionary:
 # 与翻译后端所特定的设置
 backendSpecific:
   GPT35: # GPT3.5 官方 API
-    token: # 令牌
+    tokens: # 令牌列表
       - token: sk-xxxxxxxx # 你的令牌
         # endpoint: ''  # 令牌所对应的 API 端点，一般不需要设置
       - token: sk-yyyyyyyy
         endpoint: ""
     defaultEndpoint: https://api.openai.com # 默认 API 端点，不知道别修改
   GPT4: # GPT4 官方 API
-    token:
+    tokens:
       - token: sk-xxxxxxxx
         endpoint: ""
       - token: sk-yyyyyyyy

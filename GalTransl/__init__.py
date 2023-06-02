@@ -19,3 +19,11 @@ CONFIG_FILENAME = "config.yaml"
 INPUT_FOLDERNAME = "json_jp"
 OUTPUT_FOLDERNAME = "json_cn"
 CACHE_FOLDERNAME = "transl_cache"
+TRANSLATOR_SUPPORTED = [
+    "gpt35",
+    "chatgpt-gpt35",
+    "gpt4",
+    "chatgpt-gpt4",
+    "newbing",
+    "caiyun",
+]

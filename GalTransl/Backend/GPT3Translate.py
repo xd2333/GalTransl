@@ -1,3 +1,4 @@
+import os
 import json
 import time
 import asyncio
@@ -66,20 +67,24 @@ class CGPT35Translate:
             for i in val:
                 if not i.isGPT35Available:
                     continue
-            self.tokens.append(i)
+                self.tokens.append(i)
+            
 
         else:
             raise RuntimeError("无法获取 OpenAI API Token！")
         if config.getKey("enableProxy") == True:
             self.proxies = initProxyList(config)
         else:
+            self.proxies = None
             LOGGER.warning("不使用代理")
 
         if type == "offapi":
             from revChatGPT.V3 import Chatbot as ChatbotV3
+            rand_token=randSelectInList(self.tokens)
+            os.environ["API_URL"] = rand_token.domain
 
             self.chatbot = ChatbotV3(
-                api_key=randSelectInList(self.tokens).token,
+                api_key=rand_token.token,
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=4096,
                 temperature=0.328,  # 氪个328

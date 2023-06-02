@@ -1,4 +1,4 @@
-import json, time, asyncio, zhconv
+import json, time, asyncio, zhconv, os
 from GalTransl import LOGGER
 from GalTransl.ConfigHelper import (
     CProjectConfig,
@@ -99,10 +99,13 @@ class CGPT4Translate:
         if config.getKey("enableProxy") == True:
             self.proxies = initProxyList(config)
         else:
+            self.proxies = None
             LOGGER.warning("不使用代理")
 
         if type == "offapi":
             from revChatGPT.V3 import Chatbot as ChatbotV3
+            rand_token=randSelectInList(self.tokens)
+            os.environ["API_URL"] = rand_token.domain
 
             self.chatbot = ChatbotV3(
                 api_key=randSelectInList(self.tokens).token,

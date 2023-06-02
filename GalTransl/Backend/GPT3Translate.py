@@ -68,7 +68,6 @@ class CGPT35Translate:
                 if not i.isGPT35Available:
                     continue
                 self.tokens.append(i)
-            
 
         else:
             raise RuntimeError("无法获取 OpenAI API Token！")
@@ -80,8 +79,10 @@ class CGPT35Translate:
 
         if type == "offapi":
             from revChatGPT.V3 import Chatbot as ChatbotV3
-            rand_token=randSelectInList(self.tokens)
-            os.environ["API_URL"] = rand_token.domain
+
+            rand_token = randSelectInList(self.tokens)
+            # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
+            os.environ["API_URL"] = rand_token.domain + "/v1/chat/completions"
 
             self.chatbot = ChatbotV3(
                 api_key=rand_token.token,
@@ -141,11 +142,11 @@ class CGPT35Translate:
                 if hasattr(ex, "message"):
                     if "Too many requests" in ex.message:
                         LOGGER.info("Too many requests, sleep 5 minutes")
-                        time.sleep(300)
+                        await asyncio.sleep(300)
                         continue
                 traceback.print_exc()
                 LOGGER.info("Error:%s, Please wait 5 seconds" % ex)
-                time.sleep(5)
+                await asyncio.sleep(5)
                 continue
 
             LOGGER.info("\n")
@@ -248,7 +249,6 @@ class CGPT35Translate:
                     self.chatbot.conversation["default"].remove(diag)
         if self.type == "unoffapi":
             self.chatbot.reset_chat()
-            time.sleep(5)
 
     def del_old_input(self):
         if self.type == "offapi":
@@ -314,7 +314,7 @@ class CGPT35Translate:
         elif self.type == "unoffapi":
             pass
 
-    def batch_translate(
+    async def batch_translate(
         self,
         filename,
         cache_file_path,
@@ -344,7 +344,7 @@ class CGPT35Translate:
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
         while i < len_trans_list:
-            time.sleep(5)
+            await asyncio.sleep(5)
             trans_list_split = (
                 trans_list_unhit[i : i + num_pre_request]
                 if (i + num_pre_request < len_trans_list)
@@ -353,9 +353,7 @@ class CGPT35Translate:
             dic_prompt = ""
             if chatgpt_dict != None:
                 dic_prompt = chatgpt_dict.gen_prompt(trans_list_split)
-            trans_result = asyncio.run(
-                self.asyncTranslate(trans_list_split, dic_prompt)
-            )
+            trans_result = await self.asyncTranslate(trans_list_split, dic_prompt)
             i += num_pre_request
             for trans in trans_result:
                 LOGGER.info(trans.pre_zh.replace("\r\n", "\\r\\n"))

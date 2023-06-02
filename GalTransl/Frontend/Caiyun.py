@@ -4,4 +4,4 @@
 
 
 def doCaiyunTranslate() -> bool:
-    pass
+    raise RuntimeError("Work in progress!")

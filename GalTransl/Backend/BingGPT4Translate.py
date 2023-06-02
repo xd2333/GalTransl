@@ -119,14 +119,14 @@ class CBingGPT4Translate:
             except Exception as ex:
                 LOGGER.info("Error:%s, Please wait 30 seconds" % ex)
                 traceback.print_exc()
-                time.sleep(5)
+                await asyncio.sleep(5)
                 continue
             # LOGGER.info("->输出：" + str(resp) + "\n")
             if "Request is throttled." in str(resp):
                 LOGGER.info("->Request is throttled.")
                 self.throttled_cookie_list.append(self.current_cookie_file)
                 self.cookiefile_list.remove(self.current_cookie_file)
-                time.sleep(self.sleep_time)
+                await asyncio.sleep(self.sleep_time)
                 self.chatbot = Chatbot(
                     cookies=self.get_random_cookie(), proxy=self.proxy
                 )
@@ -181,13 +181,13 @@ class CBingGPT4Translate:
             except:
                 LOGGER.info("->非json：\n" + result_text + "\n")
                 traceback.print_exc()
-                time.sleep(2)
+                await asyncio.sleep(2)
                 await self.chatbot.reset()
                 continue
 
             if len(result_json) != len(input_list):
                 LOGGER.info("->错误的输出行数：\n" + result_text + "\n")
-                time.sleep(2)
+                await asyncio.sleep(2)
                 await self.chatbot.reset()
                 continue
             key_name = "dst" if not proofread else "newdst"
@@ -238,14 +238,14 @@ class CBingGPT4Translate:
                     trans_list[i].proofread_by = "NewBing"
 
             if have_error:
-                time.sleep(2)
+                await asyncio.sleep(2)
                 await self.chatbot.reset()
                 continue
 
             break
         return trans_list
 
-    def batch_translate(
+    async def batch_translate(
         self,
         filename,
         cache_file_path,
@@ -283,7 +283,7 @@ class CBingGPT4Translate:
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
         while i < len_trans_list:
-            time.sleep(1)
+            await asyncio.sleep(1)
             trans_list_split = (
                 trans_list_unhit[i : i + num_pre_request]
                 if (i + num_pre_request < len_trans_list)
@@ -312,7 +312,6 @@ class CBingGPT4Translate:
         return trans_result_list
 
     def reset_conversation(self):
-        time.sleep(2)
         self.chatbot.reset_conversation()
 
     def remove_extra_pronouns(self, text):

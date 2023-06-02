@@ -5,7 +5,7 @@ from os.path import join as joinpath
 from os.path import exists as isPathExists
 from os import makedirs as mkdir
 from os import listdir
-from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
+from asyncio import Semaphore, gather
 from GalTransl.Backend.GPT3Translate import CGPT35Translate
 from GalTransl.Backend.GPT4Translate import CGPT4Translate
 from GalTransl.Backend.BingGPT4Translate import CBingGPT4Translate
@@ -25,7 +25,8 @@ from GalTransl import LOGGER
 arinashi_dict = {}
 
 
-def doGPT3TranslateSingleFile(
+async def doGPT3TranslateSingleFile(
+    semaphore: Semaphore,
     file_name: str,
     projectConfig: CProjectConfig,
     type: str,
@@ -34,54 +35,55 @@ def doGPT3TranslateSingleFile(
     gpt_dic: CGptDict,
     gptapi: CGPT35Translate,
 ) -> bool:
-    # 1、初始化trans_list
-    trans_list = load_transList_from_json_jp(
-        joinpath(projectConfig.getInputPath(), file_name)
-    )
-
-    # 2、翻译前处理
-    for i, tran in enumerate(trans_list):
-        tran.analyse_dialogue()  # 解析是否为对话
-        tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
-
-    # 3、读出未命中的Translate然后批量翻译
-    cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
-
-    gptapi.batch_translate(
-        file_name,
-        cache_file_path,
-        trans_list,
-        projectConfig.getKey("gpt.numPerRequestTranslate"),
-        retry_failed=projectConfig.getKey("retryFail"),
-        chatgpt_dict=gpt_dic,
-    )
-
-    # 4、翻译后处理
-    for i, tran in enumerate(trans_list):
-        tran.some_normal_fix()
-        tran.recover_dialogue_symbol()  # 恢复对话框
-        tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
-
-    # 用于保存problems
-    find_problems(
-        trans_list,
-        find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
-        arinashi_dict=arinashi_dict,
-    )
-    save_transCache_to_json(trans_list, cache_file_path)
-    # 5、整理输出
-    if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
-        name_dict = load_name_table(
-            joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
+    async with semaphore:
+        # 1、初始化trans_list
+        trans_list = load_transList_from_json_jp(
+            joinpath(projectConfig.getInputPath(), file_name)
         )
-    else:
-        name_dict = {}
-    save_transList_to_json_cn(
-        trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
-    )
+
+        # 2、翻译前处理
+        for i, tran in enumerate(trans_list):
+            tran.analyse_dialogue()  # 解析是否为对话
+            tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
+
+        # 3、读出未命中的Translate然后批量翻译
+        cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
+
+        await gptapi.batch_translate(
+            file_name,
+            cache_file_path,
+            trans_list,
+            projectConfig.getKey("gpt.numPerRequestTranslate"),
+            retry_failed=projectConfig.getKey("retryFail"),
+            chatgpt_dict=gpt_dic,
+        )
+
+        # 4、翻译后处理
+        for i, tran in enumerate(trans_list):
+            tran.some_normal_fix()
+            tran.recover_dialogue_symbol()  # 恢复对话框
+            tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
+
+        # 用于保存problems
+        find_problems(
+            trans_list,
+            find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
+            arinashi_dict=arinashi_dict,
+        )
+        save_transCache_to_json(trans_list, cache_file_path)
+        # 5、整理输出
+        if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
+            name_dict = load_name_table(
+                joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
+            )
+        else:
+            name_dict = {}
+        save_transList_to_json_cn(
+            trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
+        )
 
 
-def doGPT3Translate(
+async def doGPT3Translate(
     projectConfig: CProjectConfig, type="offapi", multiThreading=False
 ) -> bool:
     # 加载字典
@@ -113,13 +115,25 @@ def doGPT3Translate(
     ]:
         if not isPathExists(dir_path):
             mkdir(dir_path)
-        for file_name in listdir(projectConfig.getInputPath()):
+
+        semaphore = Semaphore(projectConfig.getKey("coroutinePerFile"))
+        tasks = [
             doGPT3TranslateSingleFile(
-                file_name, projectConfig, type, pre_dic, post_dic, gpt_dic, gptapi
+                semaphore,
+                file_name,
+                projectConfig,
+                type,
+                pre_dic,
+                post_dic,
+                gpt_dic,
+                gptapi,
             )
+            for file_name in listdir(projectConfig.getInputPath())
+        ]
+        await gather(*tasks)  # run
 
 
-def doGPT4Translate(
+async def doGPT4Translate(
     projectConfig: CProjectConfig, type="offapi", multiThreading=False
 ) -> bool:
     # 加载字典
@@ -212,7 +226,9 @@ def doGPT4Translate(
     pass
 
 
-def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> bool:
+async def doNewBingTranslate(
+    projectConfig: CProjectConfig, multiThreading=False
+) -> bool:
     # 加载字典
     pre_dic = CNormalDic(
         initDictList(

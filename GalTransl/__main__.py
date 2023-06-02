@@ -1,4 +1,5 @@
 import argparse
+from asyncio import run
 from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.Runner import run_galtransl
 from GalTransl import PROGRAM_SPLASH, TRANSLATOR_SUPPORTED
@@ -22,7 +23,7 @@ def main() -> int:
 
     cfg = CProjectConfig(args.project_dir)
 
-    run_galtransl(cfg, args.translator)
+    run(run_galtransl(cfg, args.translator))
     return 0
 
 

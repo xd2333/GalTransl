@@ -105,7 +105,8 @@ class CGPT4Translate:
 
         if type == "offapi":
             from revChatGPT.V3 import Chatbot as ChatbotV3
-            rand_token=randSelectInList(self.tokens)
+
+            rand_token = randSelectInList(self.tokens)
             os.environ["API_URL"] = rand_token.domain
 
             self.chatbot = ChatbotV3(
@@ -186,14 +187,14 @@ class CGPT4Translate:
                 if hasattr(ex, "message"):
                     if "too many" in str(ex.message):
                         LOGGER.info("-> 请求次数超限，30分钟后继续尝试")
-                        time.sleep(1800)
+                        await asyncio.sleep(1800)
                         continue
                     if "expired" in str(ex.message):
                         LOGGER.info("-> access_token过期，请更换")
                         exit()
 
                 LOGGER.info("-> 报错:%s, 5秒后重试" % ex)
-                time.sleep(5)
+                await asyncio.sleep(5)
                 continue
 
             _, code_list = extract_code_blocks(resp)
@@ -300,7 +301,7 @@ class CGPT4Translate:
 
         return trans_list
 
-    def batch_translate(
+    async def batch_translate(
         self,
         filename,
         cache_file_path,
@@ -337,7 +338,7 @@ class CGPT4Translate:
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
         while i < len_trans_list:
-            time.sleep(5)
+            await asyncio.sleep(5)
             trans_list_split = (
                 trans_list_unhit[i : i + num_pre_request]
                 if (i + num_pre_request < len_trans_list)
@@ -369,7 +370,6 @@ class CGPT4Translate:
         return trans_result_list
 
     def reset_conversation(self):
-        time.sleep(5)
         if self.type == "offapi":
             self.clear_conversation()
         if self.type == "unoffapi":

@@ -5,7 +5,8 @@ common:
   loggingLevel: debug
   # 是否启用代理
   enableProxy: false
-  retryFail: True # True/False,每次启动时重翻所有翻译失败的句子（目前仅NewBing会翻译失败）
+  retryFail: true # True/False,每次启动时重翻所有翻译失败的句子（目前仅NewBing会翻译失败）
+  multiThread: true # 多线程
   # 是否将 GPT4 的令牌用于 GPT3.5 的请求
   gpt.degradeBackend: false
   # API类型，offapi为官方API,unoffapi为模拟网页操作

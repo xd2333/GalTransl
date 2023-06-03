@@ -1,0 +1,2 @@
+python run_GalTransl.py
+pause

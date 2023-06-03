@@ -67,6 +67,7 @@ class CBingGPT4Translate:
         if config.getKey("enableProxy") == True:
             self.proxies = initProxyList(config)
         else:
+            self.proxies = None
             LOGGER.warning("不使用代理")
 
         self.cookiefile_list = cookiefile_list

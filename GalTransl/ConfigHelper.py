@@ -48,7 +48,7 @@ class CProjectConfig:
         self.keyValues = dict()
         for k,v in self.projectConfig["common"].items():
             self.keyValues[k] = v
-        pass
+        self.keyValues["enableProxy"] = self.projectConfig["proxy"]["enableProxy"]
         LOGGER.info(
             "inputPath: %s, outputPath: %s, cachePath: %s,keyValues: %s",
             self.inputPath,
@@ -79,7 +79,7 @@ class CProjectConfig:
         return self.projectConfig["common"]
 
     def getProxyConfigSection(self) -> dict:
-        return self.projectConfig["proxies"]
+        return self.projectConfig["proxy"]["proxies"]
 
     def getBackendConfigSection(self, backendName: str) -> dict:
         """
@@ -205,13 +205,17 @@ def initProxyList(config: CProjectConfig) -> Optional[list[dict]]:
     return result
 
 
-def initDictList(config: dict, projectDir: str) -> Optional[list[str]]:
+def initDictList(config: dict, dictDir: str, projectDir: str) -> Optional[list[str]]:
     """
     处理字典设置项
     """
     result: list[str] = []
     for entry in config:
-        result.append(str(path.abspath(projectDir) + sep + entry))
+        if entry.startswith("(project_dir)"):
+            entry = entry.replace("(project_dir)", "")
+            result.append(str(path.abspath(projectDir) + sep + entry))
+        else:
+            result.append(str(path.abspath(dictDir) + sep + entry))
     return result
 
 

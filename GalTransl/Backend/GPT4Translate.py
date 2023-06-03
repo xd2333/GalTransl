@@ -113,7 +113,7 @@ class CGPT4Translate:
                 api_key=randSelectInList(self.tokens).token,
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=8192,
-                temperature=0.328,
+                temperature=0.5,
                 frequency_penalty=0.2,
                 system_prompt="You are a helpful assistant.",
                 engine="gpt-4",
@@ -124,7 +124,7 @@ class CGPT4Translate:
             gpt_config = {
                 "model": "gpt-4",
                 "paid": True,
-                "access_token": config.getBackendConfigSection("ChatGPT")["ak"],
+                "access_token": randSelectInList(config.getBackendConfigSection("ChatGPT")["access_tokens"])["access_token"],
                 "proxy": randSelectInList(self.proxies) if self.proxies else None,
             }
 

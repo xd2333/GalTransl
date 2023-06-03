@@ -14,16 +14,19 @@ PROGRAM_SPLASH = """
   \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|                                           
 """
 
-CONFIG_FILENAME = "config.yaml"
+CORE_VERSION = "2.0.0"
+AUTHOR = "cx2333"
+CONTRIBUTORS = "ryank231231"
 
+CONFIG_FILENAME = "config.yaml"
 INPUT_FOLDERNAME = "json_jp"
 OUTPUT_FOLDERNAME = "json_cn"
 CACHE_FOLDERNAME = "transl_cache"
-TRANSLATOR_SUPPORTED = [
-    "gpt35",
-    "chatgpt-gpt35",
-    "gpt4",
-    "chatgpt-gpt4",
-    "newbing",
-    "caiyun",
-]
+TRANSLATOR_SUPPORTED = {
+    "gpt35": "GPT3.5 官方API",
+    "chatgpt-gpt35": "GPT3.5 模拟网页操作模式",
+    "gpt4": "GPT4 官方API",
+    "chatgpt-gpt4": "GPT4 模拟网页操作模式",
+    "newbing": "NewBing大小姐",
+    "caiyun": "彩云 -- 暂不可用",
+}

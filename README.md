@@ -48,14 +48,10 @@
   解压到任意位置，项目默认设置为 `D:\GalTransl-main`
 
   * Python依赖包   
-  安装 Python 后，打开命令提示符，通过以下命令使用安装依赖
+  安装 Python 后，打开命令提示符，通过以下命令使用安装依赖，或直接双击upgrade_requirements.bat
 
   ```
-  cmd
   python -m pip install --upgrade -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-  pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-  pip install poetry
-  poetry install
   ```
 
   * EmEditor   

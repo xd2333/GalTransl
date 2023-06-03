@@ -88,18 +88,21 @@ def doGPT3Translate(
     pre_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["preDict"],
+            projectConfig.getDictCfgSection()["default_dictionary_folder"],
             projectConfig.getProjectDir(),
         )
     )
     post_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["postDict"],
+            projectConfig.getDictCfgSection()["default_dictionary_folder"],
             projectConfig.getProjectDir(),
         )
     )
     gpt_dic = CGptDict(
         initDictList(
             projectConfig.getDictCfgSection()["gpt.dict"],
+            projectConfig.getDictCfgSection()["default_dictionary_folder"],
             projectConfig.getProjectDir(),
         )
     )
@@ -126,18 +129,21 @@ def doGPT4Translate(
     pre_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["preDict"],
+            projectConfig.getDictCfgSection()["default_dictionary_folder"],
             projectConfig.getProjectDir(),
         )
     )
     post_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["postDict"],
+            projectConfig.getDictCfgSection()["default_dictionary_folder"],
             projectConfig.getProjectDir(),
         )
     )
     gpt_dic = CGptDict(
         initDictList(
             projectConfig.getDictCfgSection()["gpt.dict"],
+            projectConfig.getDictCfgSection()["default_dictionary_folder"],
             projectConfig.getProjectDir(),
         )
     )
@@ -217,18 +223,21 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
     pre_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["preDict"],
+            projectConfig.getDictCfgSection()["default_dictionary_folder"],
             projectConfig.getProjectDir(),
         )
     )
     post_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["postDict"],
+            projectConfig.getDictCfgSection()["default_dictionary_folder"],
             projectConfig.getProjectDir(),
         )
     )
     gpt_dic = CGptDict(
         initDictList(
             projectConfig.getDictCfgSection()["gpt.dict"],
+            projectConfig.getDictCfgSection()["default_dictionary_folder"],
             projectConfig.getProjectDir(),
         )
     )

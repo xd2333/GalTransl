@@ -1,7 +1,7 @@
 import argparse
 from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.Runner import run_galtransl
-from GalTransl import PROGRAM_SPLASH, TRANSLATOR_SUPPORTED
+from GalTransl import PROGRAM_SPLASH, TRANSLATOR_SUPPORTED, CORE_VERSION, AUTHOR, CONTRIBUTORS
 
 
 def main() -> int:
@@ -10,15 +10,16 @@ def main() -> int:
     parser.add_argument(
         "--translator",
         "-t",
-        choices=TRANSLATOR_SUPPORTED,
+        choices=TRANSLATOR_SUPPORTED.keys(),
         help="choose which Translator to use",
         required=True,
     )
     args = parser.parse_args()
 
     print(PROGRAM_SPLASH)
-    print("GalTransl Core version: 1.0.1 [2023.05.23]")
-    print("Author: cx2333")
+    print(f"GalTransl Core version: {CORE_VERSION}")
+    print(f"Author: {AUTHOR}")
+    print(f"Contributors: {CONTRIBUTORS}")
 
     cfg = CProjectConfig(args.project_dir)
 

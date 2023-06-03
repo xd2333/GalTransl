@@ -80,21 +80,21 @@ class CGPT35Translate:
 
         if type == "offapi":
             from revChatGPT.V3 import Chatbot as ChatbotV3
-            rand_token=randSelectInList(self.tokens)
+            rand_token = randSelectInList(self.tokens)
             os.environ["API_URL"] = rand_token.domain
 
             self.chatbot = ChatbotV3(
                 api_key=rand_token.token,
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=4096,
-                temperature=0.328,  # 氪个328
+                temperature=0.5,
                 system_prompt=SYSTEM_PROMPT,
             )
         elif type == "unoffapi":
             from revChatGPT.V1 import Chatbot as ChatbotV1
 
             gpt_config = {
-                "access_token": config.getBackendConfigSection("ChatGPT")["ak"],
+                "access_token": randSelectInList(config.getBackendConfigSection("ChatGPT")["access_tokens"])["access_token"],
                 "proxy": randSelectInList(self.proxies)["addr"]
                 if self.proxies
                 else None,

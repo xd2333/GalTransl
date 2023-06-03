@@ -20,21 +20,21 @@ proxy:
       # password: bar
 # 字典
 dictionary:
-  dictionary_folder: D:\\GalTransl-main\\Dict #通用字典文件夹
+  dictionary_folder: Dict #通用字典文件夹
   # 预处理字典
   preDict:
     - 00通用字典_译前.txt
     - 01H字典_矫正_译前.txt  # 用于口齿不清的矫正
-    - (project_dir)\\项目字典_译前.txt # (project_dir)\\ 代表字典在项目文件夹
+    - (project_dir)项目字典_译前.txt # (project_dir)代表字典在项目文件夹
   # GPT 字典
   gpt.dict:
     - GPT字典.txt
-    - (project_dir)\\项目GPT字典.txt
+    - (project_dir)项目GPT字典.txt
   # 后处理字典
   postDict:
     - 00通用字典_符号_译后.txt # 符号矫正
     - 00通用字典_译后.txt
-    - (project_dir)\\项目字典_译后.txt
+    - (project_dir)项目字典_译后.txt
 # 与翻译后端所特定的设置
 backendSpecific:
   GPT35: # GPT3.5 官方 API

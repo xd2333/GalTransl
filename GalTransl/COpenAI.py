@@ -32,4 +32,7 @@ class COpenAIToken:
         self.domain: str = domain
         self.isGPT35Available: bool = gpt3
         self.isGPT4Available: bool = gpt4
+
+        if not self.domain.endswith("/v1/chat/completions"):
+            self.domain = self.domain + "/v1/chat/completions"
         pass

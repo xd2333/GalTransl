@@ -5,6 +5,7 @@ from os.path import join as joinpath
 from os.path import exists as isPathExists
 from os import makedirs as mkdir
 from os import listdir
+from typing import Optional
 from asyncio import Semaphore, gather
 from GalTransl.Backend.GPT3Translate import CGPT35Translate
 from GalTransl.Backend.GPT4Translate import CGPT4Translate
@@ -18,7 +19,8 @@ from GalTransl.Name import load_name_table
 from GalTransl.CSerialize import save_transList_to_json_cn
 from GalTransl.Problem import CTranslateProblem
 from GalTransl.Dictionary import CNormalDic, CGptDict
-from GalTransl.ConfigHelper import CProjectConfig, initDictList
+from GalTransl.ConfigHelper import CProjectConfig, initDictList, CProxyPool
+from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl import LOGGER
 
 
@@ -84,7 +86,10 @@ async def doGPT3TranslateSingleFile(
 
 
 async def doGPT3Translate(
-    projectConfig: CProjectConfig, type="offapi", multiThreading=False
+    projectConfig: CProjectConfig,
+    tokenPool: COpenAITokenPool,
+    proxyPool: Optional[CProxyPool],
+    type="offapi",
 ) -> bool:
     # 加载字典
     pre_dic = CNormalDic(
@@ -108,8 +113,14 @@ async def doGPT3Translate(
             projectConfig.getProjectDir(),
         )
     )
+    # TODO: 代理池 / 令牌池
 
-    gptapi = CGPT35Translate(projectConfig, type)
+    gptapi = CGPT35Translate(
+        projectConfig,
+        type,
+        proxyPool if projectConfig.getKey("internals.enableProxy") else None,
+        tokenPool,
+    )
 
     for dir_path in [
         projectConfig.getInputPath(),
@@ -137,7 +148,10 @@ async def doGPT3Translate(
 
 
 async def doGPT4Translate(
-    projectConfig: CProjectConfig, type="offapi", multiThreading=False
+    projectConfig: CProjectConfig,
+    tokenPool: COpenAITokenPool,
+    proxyPool: Optional[CProxyPool],
+    type="offapi",
 ) -> bool:
     # 加载字典
     pre_dic = CNormalDic(
@@ -162,7 +176,12 @@ async def doGPT4Translate(
         )
     )
 
-    gptapi = CGPT4Translate(projectConfig, type)
+    gptapi = CGPT4Translate(
+        projectConfig,
+        type,
+        proxyPool if projectConfig.getKey("internals.enableProxy") else None,
+        tokenPool,
+    )
 
     for dir_path in [
         projectConfig.getInputPath(),

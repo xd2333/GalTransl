@@ -1,4 +1,4 @@
-import argparse
+import argparse, traceback
 from asyncio import get_event_loop, run
 from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.Runner import run_galtransl
@@ -9,6 +9,7 @@ from GalTransl import (
     AUTHOR,
     CONTRIBUTORS,
     LOGGER,
+    DEBUG_LEVEL,
 )
 
 
@@ -22,7 +23,16 @@ def main() -> int:
         help="choose which Translator to use",
         required=True,
     )
+    parser.add_argument(
+        "--debug-level",
+        "-l",
+        choices=DEBUG_LEVEL.keys(),
+        help="debug level",
+        default="info",
+    )
     args = parser.parse_args()
+    # logging level
+    LOGGER.setLevel(DEBUG_LEVEL[args.debug_level])
 
     print(PROGRAM_SPLASH)
     print(f"GalTransl Core version: {CORE_VERSION}")
@@ -38,6 +48,9 @@ def main() -> int:
         LOGGER.info("正在等待现有请求返回...")
         loop.stop()
         LOGGER.info("Goodbye.")
+    except BaseException as ex:
+        print(ex)
+        traceback.print_exception(type(ex), ex, ex.__traceback__)
     finally:
         loop.close()
         return 0

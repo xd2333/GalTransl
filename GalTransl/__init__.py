@@ -30,3 +30,9 @@ TRANSLATOR_SUPPORTED = {
     "newbing": "NewBing大小姐",
     "caiyun": "彩云 -- 暂不可用",
 }
+DEBUG_LEVEL = {
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+}

@@ -5,15 +5,14 @@ import asyncio
 import traceback
 import zhconv
 
-from typing import List
+from typing import List, Optional
 from GalTransl.CSentense import *
 from GalTransl.ConfigHelper import (
-    initGPTToken,
     randSelectInList,
-    initProxyList,
     CProjectConfig,
 )
-from GalTransl.COpenAI import COpenAIToken
+from GalTransl.COpenAI import COpenAIToken, COpenAITokenPool
+from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl import LOGGER
@@ -50,7 +49,13 @@ SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, base
 
 
 class CGPT35Translate:
-    def __init__(self, config: CProjectConfig, type):
+    def __init__(
+        self,
+        config: CProjectConfig,
+        type: str,
+        proxy_pool: Optional[CProxyPool],
+        token_pool: COpenAITokenPool,
+    ):
         LOGGER.info("ChatGPT transl-api version: 1.0.3 [2023.05.30]")
         self.type = type
         self.last_file_name = ""
@@ -62,55 +67,43 @@ class CGPT35Translate:
             self.restore_context_mode = val
         else:
             self.restore_context_mode = False  # 恢复上下文模式
-        if val := initGPTToken(config):
-            self.tokens: list[COpenAIToken] = []
-            for i in val:
-                if not i.isGPT35Available:
-                    continue
-                self.tokens.append(i)
-
-        else:
-            raise RuntimeError("无法获取 OpenAI API Token！")
-        if config.getKey("enableProxy") == True:
-            self.proxies = initProxyList(config)
+        self.tokenProvider = token_pool
+        if config.getKey("internals.enableProxy") == True:
+            self.proxyProvider = proxy_pool
         else:
             self.proxies = None
             LOGGER.warning("不使用代理")
 
         if type == "offapi":
-            from revChatGPT.V3 import Chatbot as ChatbotV3
+            from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
-            rand_token = randSelectInList(self.tokens)
+            token = self.tokenProvider.getToken(True, False)
             # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
-            os.environ["API_URL"] = rand_token.domain + "/v1/chat/completions"
-
             self.chatbot = ChatbotV3(
-                api_key=rand_token.token,
-                proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
+                api_key=token.token,
+                proxy=self.proxyProvider.getProxy().addr
+                if self.proxyProvider
+                else None,
                 max_tokens=4096,
                 temperature=0.5,
                 system_prompt=SYSTEM_PROMPT,
+                api_address=token.domain + "/v1/chat/completions",
             )
+
         elif type == "unoffapi":
-            from revChatGPT.V1 import Chatbot as ChatbotV1
+            from GalTransl.Backend.revChatGPT.V1 import Chatbot as ChatbotV1
 
             gpt_config = {
                 "access_token": randSelectInList(
                     config.getBackendConfigSection("ChatGPT")["access_tokens"]
                 )["access_token"],
-                "proxy": randSelectInList(self.proxies)["addr"]
-                if self.proxies
+                "proxy": self.proxyProvider.getProxy().addr
+                if self.proxyProvider
                 else None,
             }
             self.chatbot = ChatbotV1(config=gpt_config)
             self.chatbot.clear_conversations()
 
-        pass
-
-    def init(self) -> bool:
-        """
-        call it before jobs
-        """
         pass
 
     async def asyncTranslate(self, content: CTransList, dict="") -> CTransList:
@@ -134,11 +127,14 @@ class CGPT35Translate:
                 resp = ""
                 if self.type == "offapi":
                     self.del_old_input()
-                    for data in self.chatbot.ask_stream(prompt_req):
-                        print(data, end="", flush=True)
+                    async for data in self.chatbot.ask_stream_async(prompt_req):
+                        # 别打印了——因为输出会混杂
+                        # print(data, end="", flush=True)
                         resp += data
+                    # 只打印最终结果
+                    print(data, end="\n")
                 if self.type == "unoffapi":
-                    for data in self.chatbot.ask(prompt_req):
+                    async for data in self.chatbot.ask_async(prompt_req):
                         resp = data["message"]
             except asyncio.CancelledError:
                 raise
@@ -364,7 +360,7 @@ class CGPT35Translate:
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path)
             LOGGER.info(
-                f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}"
+                f"{filename}: {str(len(trans_result_list))}/{str(len_trans_list)}"
             )
 
         return trans_result_list

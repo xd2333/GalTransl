@@ -1,10 +1,11 @@
 import json, time, asyncio, zhconv, os
+from typing import Optional
+from GalTransl.COpenAI import COpenAITokenPool
+from GalTransl.ConfigHelper import CProxyPool
 from GalTransl import LOGGER
 from sys import exit
 from GalTransl.ConfigHelper import (
     CProjectConfig,
-    initGPTToken,
-    initProxyList,
     randSelectInList,
 )
 from GalTransl.CSentense import CSentense, CTransList
@@ -72,7 +73,13 @@ Input:
 
 class CGPT4Translate:
     # init
-    def __init__(self, config: CProjectConfig, type):
+    def __init__(
+        self,
+        config: CProjectConfig,
+        type: str,
+        proxy_pool: Optional[CProxyPool],
+        token_pool: COpenAITokenPool,
+    ):
         """
         根据提供的类型、配置、API 密钥和代理设置初始化 Chatbot 对象。
 
@@ -89,43 +96,37 @@ class CGPT4Translate:
         self.record_confidence = False
         self.last_file_name = ""
         self.restore_context_mode = False  # 恢复上下文模式
-        if val := initGPTToken(config):
-            self.tokens = []
-            for i in val:
-                if not i.isGPT4Available:
-                    continue
-                self.tokens.append(i)
+        self.tokenProvider = token_pool
+        if config.getKey("internals.enableProxy") == True:
+            self.proxyProvider = proxy_pool
         else:
-            raise RuntimeError("无法获取 OpenAI API Token！")
-        if config.getKey("enableProxy") == True:
-            self.proxies = initProxyList(config)
-        else:
-            self.proxies = None
+            self.proxyProvider = None
             LOGGER.warning("不使用代理")
 
         if type == "offapi":
-            from revChatGPT.V3 import Chatbot as ChatbotV3
+            from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
-            rand_token = randSelectInList(self.tokens)
-            os.environ["API_URL"] = rand_token.domain
-
+            token = self.tokenProvider.getToken()
             self.chatbot = ChatbotV3(
-                api_key=randSelectInList(self.tokens).token,
-                proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
+                api_key=token.token,
+                proxy=self.proxyProvider.getProxy().addr if self.proxies else None,
                 max_tokens=8192,
                 temperature=0.5,
                 frequency_penalty=0.2,
                 system_prompt="You are a helpful assistant.",
                 engine="gpt-4",
+                api_address=token.domain + "/v1/chat/completions",
             )
         elif type == "unoffapi":
-            from revChatGPT.V1 import Chatbot as ChatbotV1
+            from GalTransl.Backend.revChatGPT.V1 import Chatbot as ChatbotV1
 
             gpt_config = {
                 "model": "gpt-4",
                 "paid": True,
-                "access_token": randSelectInList(config.getBackendConfigSection("ChatGPT")["access_tokens"])["access_token"],
-                "proxy": randSelectInList(self.proxies) if self.proxies else None,
+                "access_token": randSelectInList(
+                    config.getBackendConfigSection("ChatGPT")["access_tokens"]
+                )["access_token"],
+                "proxy": self.proxyProvider.getProxy().addr if self.proxies else None,
             }
 
             self.chatbot = ChatbotV1(config=gpt_config)
@@ -173,12 +174,13 @@ class CGPT4Translate:
                 resp = ""
                 if self.type == "offapi":
                     self.del_old_input()
-                    for data in self.chatbot.ask_stream(prompt_req):
-                        print(data, end="", flush=True)
+                    async for data in self.chatbot.ask_stream_async(prompt_req):
+                        # print(data, end="", flush=True)
                         resp += data
+                    print(data, end="\n")
 
                 if self.type == "unoffapi":
-                    for data in self.chatbot.ask(prompt_req):
+                    async for data in self.chatbot.ask_async(prompt_req):
                         resp = data["message"]
                     LOGGER.info(resp)
 
@@ -353,8 +355,8 @@ class CGPT4Translate:
                 else ""
             )
 
-            trans_result = asyncio.run(
-                self.translate(trans_list_split, dic_prompt, proofread=proofread)
+            trans_result = await self.translate(
+                trans_list_split, dic_prompt, proofread=proofread
             )
 
             i += num_pre_request
@@ -366,7 +368,7 @@ class CGPT4Translate:
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path, proofread=proofread)
             LOGGER.info(
-                f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}"
+                f"{filename}: {str(len(trans_result_list))}/{str(len_trans_list)}"
             )
 
         return trans_result_list

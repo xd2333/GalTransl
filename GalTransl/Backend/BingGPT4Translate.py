@@ -64,7 +64,7 @@ Input:
 class CBingGPT4Translate:
     def __init__(self, config: CProjectConfig, cookiefile_list: list[str]):
         LOGGER.info("NewBing transl-api version:0.8 [2023.05.20]")
-        if config.getKey("enableProxy") == True:
+        if config.getKey("internals.enableProxy") == True:
             self.proxies = initProxyList(config)
         else:
             self.proxies = None
@@ -299,8 +299,8 @@ class CBingGPT4Translate:
             else:
                 dic_prompt = ""
 
-            trans_result = asyncio.run(
-                self.translate(trans_list_split, dic_prompt, proofread=proofread)
+            trans_result = await self.translate(
+                trans_list_split, dic_prompt, proofread=proofread
             )
 
             i += num_pre_request

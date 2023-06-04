@@ -1,19 +1,25 @@
 import time
-from GalTransl.ConfigHelper import CProjectConfig
+from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
+from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl.Frontend.GPT import doGPT3Translate, doGPT4Translate, doNewBingTranslate
 from GalTransl import LOGGER
 
 
 async def run_galtransl(cfg: CProjectConfig, translator: str):
     start_time = time.time()
+    proxyPool = CProxyPool(cfg) if cfg.getKey("internals.enableProxy") else None
+    OpenAITokenPool = COpenAITokenPool(cfg)
+    await proxyPool.checkAvailablity()
+    await OpenAITokenPool.checkTokenAvailablity(proxyPool.getProxy())
+
     if translator == "gpt35":
-        await doGPT3Translate(cfg)
+        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool)
     elif translator == "gpt4":
-        await doGPT4Translate(cfg)
+        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool)
     elif translator == "chatgpt-gpt35":
-        await doGPT3Translate(cfg, type="unoffapi")
+        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="unoffapi")
     elif translator == "chatgpt-gpt4":
-        await doGPT4Translate(cfg, type="unoffapi")
+        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, type="unoffapi")
     elif translator == "newbing":
         await doNewBingTranslate(cfg)
     elif translator == "caiyun":

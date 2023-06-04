@@ -20,11 +20,11 @@ proxy:
       # password: bar
 # 字典
 dictionary:
-  dictionary_folder: Dict #通用字典文件夹
+  default_dictionary_folder: Dict #通用字典文件夹
   # 预处理字典
   preDict:
     - 00通用字典_译前.txt
-    - 01H字典_矫正_译前.txt  # 用于口齿不清的矫正
+    - 01H字典_矫正_译前.txt # 用于口齿不清的矫正
     - (project_dir)项目字典_译前.txt # (project_dir)代表字典在项目文件夹
   # GPT 字典
   gpt.dict:
@@ -40,7 +40,7 @@ backendSpecific:
   GPT35: # GPT3.5 官方 API
     tokens: # 令牌列表
       - token: sk-xxxxxxxx # 你的令牌
-        endpoint: https://api.openai.com  # OPENAI API请求的域名，使用转发或第三方API时修改
+        endpoint: https://api.openai.com # OPENAI API请求的域名，使用转发或第三方API时修改
       - token: sk-yyyyyyyy
         endpoint: ""
     defaultEndpoint: https://api.openai.com # 默认 API 端点，一般不修改

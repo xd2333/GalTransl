@@ -20,7 +20,7 @@ proxy:
       # password: bar
 # 字典
 dictionary:
-  dictionary_folder: Dict #通用字典文件夹
+  defaultDictFolder: Dict #通用字典文件夹
   # 预处理字典
   preDict:
     - 00通用字典_译前.txt

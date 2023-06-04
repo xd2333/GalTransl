@@ -102,7 +102,7 @@ class COpenAITokenPool:
                         headers=auth,
                         json={
                             "model": "gpt-3.5-turbo",
-                            "messages": [{"role": "user", "content": "Hello, world!"}],
+                            "messages": [{"role": "user", "content": "Echo OK"}],
                             "temperature": 0.7,
                         },
                     )
@@ -150,6 +150,9 @@ class COpenAITokenPool:
         self.tokens = newList
 
     def reportTokenProblem(self, token: COpenAIToken) -> None:
+        """
+        报告令牌无效
+        """
         for id, tokenPair in enumerate(self.tokens):
             if tokenPair[1] == token:
                 self.tokens[id][0] = False
@@ -157,6 +160,9 @@ class COpenAITokenPool:
         pass
 
     def getToken(self, needGPT3: bool, needGPT4: bool) -> COpenAIToken:
+        """
+        获取一个有效的 token
+        """
         rounds: int = 0
         while True:
             if rounds > 10:

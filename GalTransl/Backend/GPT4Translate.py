@@ -6,8 +6,8 @@ from GalTransl import LOGGER
 from sys import exit
 from GalTransl.ConfigHelper import (
     CProjectConfig,
-    randSelectInList,
 )
+from random import choice
 from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
@@ -123,7 +123,7 @@ class CGPT4Translate:
             gpt_config = {
                 "model": "gpt-4",
                 "paid": True,
-                "access_token": randSelectInList(
+                "access_token": choice(
                     config.getBackendConfigSection("ChatGPT")["access_tokens"]
                 )["access_token"],
                 "proxy": self.proxyProvider.getProxy().addr if self.proxies else None,

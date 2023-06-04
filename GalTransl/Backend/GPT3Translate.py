@@ -6,9 +6,9 @@ import traceback
 import zhconv
 
 from typing import List, Optional
+from random import choice
 from GalTransl.CSentense import *
 from GalTransl.ConfigHelper import (
-    randSelectInList,
     CProjectConfig,
 )
 from GalTransl.COpenAI import COpenAIToken, COpenAITokenPool
@@ -94,7 +94,7 @@ class CGPT35Translate:
             from GalTransl.Backend.revChatGPT.V1 import Chatbot as ChatbotV1
 
             gpt_config = {
-                "access_token": randSelectInList(
+                "access_token": choice(
                     config.getBackendConfigSection("ChatGPT")["access_tokens"]
                 )["access_token"],
                 "proxy": self.proxyProvider.getProxy().addr

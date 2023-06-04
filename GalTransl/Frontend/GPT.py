@@ -252,7 +252,7 @@ async def doGPT4Translate(
 
 
 async def doNewBingTranslate(
-    projectConfig: CProjectConfig, multiThreading=False
+    projectConfig: CProjectConfig, proxyPool: Optional[CProxyPool], multiThreading=False
 ) -> bool:
     # 加载字典
     pre_dic = CNormalDic(
@@ -281,7 +281,7 @@ async def doNewBingTranslate(
     for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
         cookieList.append(joinpath(projectConfig.getProjectDir(), i))
 
-    gptapi = CBingGPT4Translate(projectConfig, cookieList)
+    gptapi = CBingGPT4Translate(projectConfig, cookieList, proxyPool)
 
     for dir_path in [
         projectConfig.getInputPath(),

@@ -6,9 +6,10 @@ import traceback
 import zhconv
 from sys import exit
 
+from typing import Optional
 from EdgeGPT import Chatbot, ConversationStyle
 from GalTransl import LOGGER
-from GalTransl.ConfigHelper import CProjectConfig, initProxyList, randSelectInList
+from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.CSentense import CTransList, CSentense
 from GalTransl.Dictionary import CGptDict
@@ -62,18 +63,23 @@ Input:
 
 
 class CBingGPT4Translate:
-    def __init__(self, config: CProjectConfig, cookiefile_list: list[str]):
+    def __init__(
+        self,
+        config: CProjectConfig,
+        cookiefile_list: list[str],
+        proxyPool: Optional[CProxyPool],
+    ):
         LOGGER.info("NewBing transl-api version:0.8 [2023.05.20]")
         if config.getKey("internals.enableProxy") == True:
-            self.proxies = initProxyList(config)
+            self.proxyProvider = proxyPool
         else:
-            self.proxies = None
+            self.proxyProvider = None
             LOGGER.warning("不使用代理")
 
         self.cookiefile_list = cookiefile_list
         self.current_cookie_file = ""
         self.throttled_cookie_list = []
-        self.proxy = randSelectInList(self.proxies)["addr"] if self.proxies else None
+        self.proxy = self.proxyProvider.getProxy().addr if self.proxyProvider else None
         self.request_count = 0
         self.sleep_time = 0
         self.last_file_name = ""

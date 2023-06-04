@@ -160,16 +160,6 @@ class CProxyPool:
                 return proxy
 
 
-def randSelectInList(lst: list[dict]) -> dict:
-    """
-    随机选择一项（token或代理）
-    """
-    from random import randint
-
-    idx = randint(0, len(lst) - 1)
-    return lst[idx]
-
-
 def initProxyList(config: CProjectConfig) -> Optional[list[dict]]:
     """
     处理代理设置项

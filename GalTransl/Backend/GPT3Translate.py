@@ -15,6 +15,7 @@ from GalTransl.COpenAI import COpenAIToken, COpenAITokenPool
 from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
+from GalTransl.Backend.revChatGPT.typings import APIConnectionError
 from GalTransl import LOGGER
 
 TRANS_PROMPT = """Acting as translatorGPT with Gal Mode enabled.
@@ -91,7 +92,7 @@ class CGPT35Translate:
             )
 
         elif type == "unoffapi":
-            from GalTransl.Backend.revChatGPT.V1 import Chatbot as ChatbotV1
+            from GalTransl.Backend.revChatGPT.V1 import AsyncChatbot as ChatbotV1
 
             gpt_config = {
                 "access_token": choice(
@@ -122,6 +123,9 @@ class CGPT35Translate:
         prompt_req = prompt_req.replace("[Glossary]", dict)
         while True:  # 一直循环，直到得到数据
             try:
+                # change token
+                if type == "offapi":
+                    self.chatbot.set_api_key(self.tokenProvider.getToken(True, False))
                 LOGGER.info(f"->翻译输入：\n{dict}\n{input_json}\n")
                 LOGGER.info("->输出：\n")
                 resp = ""
@@ -138,11 +142,13 @@ class CGPT35Translate:
                         resp = data["message"]
             except asyncio.CancelledError:
                 raise
-            except Exception as ex:
+            except APIConnectionError as ex:
                 if hasattr(ex, "message"):
                     if "Too many requests" in ex.message:
                         LOGGER.info("Too many requests, sleep 5 minutes")
                         await asyncio.sleep(300)
+                        if self.type == "offapi":
+                            self.chatbot.set_api_key(self.tokenProvider.getToken())
                         continue
                 traceback.print_exc()
                 LOGGER.info("Error:%s, Please wait 5 seconds" % ex)

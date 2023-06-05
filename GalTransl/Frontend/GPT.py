@@ -7,6 +7,7 @@ from os import makedirs as mkdir
 from os import listdir
 from typing import Optional
 from asyncio import Semaphore, gather
+from time import time
 from GalTransl.Backend.GPT3Translate import CGPT35Translate
 from GalTransl.Backend.GPT4Translate import CGPT4Translate
 from GalTransl.Backend.BingGPT4Translate import CBingGPT4Translate
@@ -38,6 +39,7 @@ async def doGPT3TranslateSingleFile(
     gptapi: CGPT35Translate,
 ) -> bool:
     async with semaphore:
+        st = time()
         # 1、初始化trans_list
         trans_list = load_transList_from_json_jp(
             joinpath(projectConfig.getInputPath(), file_name)
@@ -83,6 +85,8 @@ async def doGPT3TranslateSingleFile(
         save_transList_to_json_cn(
             trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
         )
+        et = time()
+        LOGGER.info(f"文件 {file_name} 翻译完成，用时 {st-st}s.")
 
 
 async def doGPT3Translate(
@@ -130,7 +134,7 @@ async def doGPT3Translate(
         if not isPathExists(dir_path):
             mkdir(dir_path)
 
-        semaphore = Semaphore(projectConfig.getKey("coroutinePerFile"))
+        semaphore = Semaphore(projectConfig.getKey("coroutinePerProject"))
         tasks = [
             doGPT3TranslateSingleFile(
                 semaphore,

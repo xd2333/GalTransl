@@ -168,6 +168,9 @@ class CGPT4Translate:
 
         while True:  # 一直循环，直到得到数据
             try:
+                # change token
+                if type == "offapi":
+                    self.chatbot.set_api_key(self.tokenProvider.getToken(False, True))
                 # LOGGER.info("->输入：\n" +  prompt_req+ "\n")
                 LOGGER.info("->输入：\n" + dict + "\n" + input_json + "\n")
                 LOGGER.info("->输出：\n")

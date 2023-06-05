@@ -408,3 +408,6 @@ class Chatbot:
 
     def chenge_api_addr(self, new_api_addr: str) -> None:
         self.api_address = new_api_addr
+
+    def set_api_key(self, new_api_key: str) -> None:
+        self.api_key = new_api_key

@@ -12,7 +12,7 @@ from GalTransl import (
 # from GalTransl.COpenAI import COpenAIToken
 from GalTransl.Problem import CTranslateProblem
 from asyncio import gather
-from httpx import AsyncClient
+from httpx import AsyncClient, TimeoutException
 from time import time
 from typing import Optional
 from random import choice
@@ -125,6 +125,9 @@ class CProxyPool:
                     return False, proxy
                 else:
                     return True, proxy
+        except TimeoutException:
+            LOGGER.debug("we got exception in testing proxy %s", proxy.addr)
+            return False, proxy
         except:
             LOGGER.debug("we got exception in testing proxy %s", proxy.addr)
             raise

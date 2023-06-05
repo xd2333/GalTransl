@@ -45,7 +45,7 @@ def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
             COpenAIToken(
                 tokenEntry["token"],
                 tokenEntry["endpoint"]
-                if tokenEntry["endpoint"]
+                if tokenEntry.get("endpoint")
                 else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
                 True,
                 False,
@@ -57,7 +57,7 @@ def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
             COpenAIToken(
                 tokenEntry["token"],
                 tokenEntry["endpoint"]
-                if tokenEntry["endpoint"]
+                if tokenEntry.get("endpoint")
                 else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
                 True if degradeBackend else False,
                 True,
@@ -142,7 +142,8 @@ class COpenAITokenPool:
         for isAvailable, isGPT3Available, isGPT4Available, token in result:
             if isAvailable != True:
                 LOGGER.info(
-                    "removed proxy %s, because it's not available", token.maskToken()
+                    "removed OpenAI token %s, because it's not available",
+                    token.maskToken(),
                 )
             else:
                 newList.append((True, token))

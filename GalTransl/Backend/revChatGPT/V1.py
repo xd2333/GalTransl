@@ -189,7 +189,7 @@ class Chatbot:
             AuthError: _description_
         """
         if "access_token" in self.config:
-            self.set_access_token(self.config["access_token"])
+            self.set_api_key(self.config["access_token"])
         elif "email" not in self.config or "password" not in self.config:
             error = t.AuthenticationError("Insufficient login details provided!")
             raise error
@@ -201,7 +201,7 @@ class Chatbot:
                 raise error
 
     @logger(is_timed=False)
-    def set_access_token(self, access_token: str) -> None:
+    def set_api_key(self, access_token: str) -> None:
         """Set access token in request header and self.config, then cache it to file.
 
         Args:
@@ -328,7 +328,7 @@ class Chatbot:
         )
         log.debug("Using authenticator to get access token")
 
-        self.set_access_token(auth.auth())
+        self.set_api_key(auth.auth())
 
     @logger(is_timed=True)
     def __send_request(

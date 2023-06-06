@@ -12,8 +12,8 @@ edgegpt = "^0.6.10"
 requests = "^2.31.0"
 revchatgpt = "^6.0.0"
 ttkbootstrap = "^1.10.1"
-zhconv = "^1.4.3"
 pyyaml = "^6.0"
+OpenCC = "^1.1.0"
 
 
 [build-system]

@@ -754,6 +754,26 @@ files = [
 requests = "*"
 
 [[package]]
+name = "opencc"
+version = "1.1.6"
+description = "Conversion between Traditional and Simplified Chinese"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "OpenCC-1.1.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ab82f6b908eedda8f998946ff8ef3632015c345923b035931be87fa0c038357c"},
+    {file = "OpenCC-1.1.6-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:68fa39f8aa1c471f03969d7e7dec13d8f60d30168a895808a51ac4325f88eb95"},
+    {file = "OpenCC-1.1.6-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:f84fdf2a5abd97171edc477a884f248b5f78b1269020d5b82482ad34d7692fcc"},
+    {file = "OpenCC-1.1.6-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:d0537a0068166e9bf391db4c85dbc9099866fd29ec0a8b3d2abb8cf10e8f50df"},
+    {file = "OpenCC-1.1.6-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:12e91c7ddb2a7e2c3e96a1c2b7378049f49209ea2bedaf9ea5deb56d9d11f186"},
+    {file = "OpenCC-1.1.6-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:60047946f94e304e36c95a3288cd78007dd5e26a73fdbf9d810697362dce8ab8"},
+    {file = "OpenCC-1.1.6-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:9f5f6a779839b2f4d63102814c7c74b262ae9542fa9e05c686f493400926ddfa"},
+    {file = "OpenCC-1.1.6-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:0e7fccb562051be44824809b985ba22dc54fe4ea165d75f1904e9e274b29f0a5"},
+    {file = "OpenCC-1.1.6-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:62b3ff13fbf7a92601f5df0052aa1cb948c27b5bb669b3b9ccecaad2d59f588a"},
+    {file = "OpenCC-1.1.6-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:e1a51039319d4d420e6809accfb231e808533d38d526d27846c1979052face40"},
+]
+
+[[package]]
 name = "pillow"
 version = "9.5.0"
 description = "Python Imaging Library (Fork)"
@@ -1416,18 +1436,7 @@ files = [
 idna = ">=2.0"
 multidict = ">=4.0"
 
-[[package]]
-name = "zhconv"
-version = "1.4.3"
-description = "A simple implementation of Simplified-Traditional Chinese conversion."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "zhconv-1.4.3.tar.gz", hash = "sha256:ad42d9057ca0605f8e41d62b67ca797f879f58193ee6840562c51459b2698c45"},
-]
-
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "6723ebc18b793efa9d7d5f8be4f4d102628fa493a3e99ec7d07218e73b793340"
+content-hash = "da4324f7f643357f574bb44833361705995ff900493b94933615829caa40a5c3"

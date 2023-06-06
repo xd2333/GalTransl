@@ -3,9 +3,9 @@ import random
 import time
 import asyncio
 import traceback
-import zhconv
 from sys import exit
 
+from opencc import OpenCC
 from typing import Optional
 from EdgeGPT import Chatbot, ConversationStyle
 from GalTransl import LOGGER
@@ -84,6 +84,7 @@ class CBingGPT4Translate:
         self.sleep_time = 0
         self.last_file_name = ""
         self.chatbot = Chatbot(cookies=self.get_random_cookie(), proxy=self.proxy)
+        self.opencc = OpenCC()
 
     async def translate(self, trans_list: CTransList, dict="", proofread=False):
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT
@@ -231,7 +232,7 @@ class CBingGPT4Translate:
                     i
                 ].post_jp.startswith("\r\n"):
                     result[key_name] = result[key_name][2:]
-                result[key_name] = zhconv.convert(result[key_name], "zh-cn")  # 防止出现繁体
+                result[key_name] = self.opencc.convert(result[key_name])  # 防止出现繁体
                 if not proofread:
                     trans_list[i].pre_zh = result[key_name]
                     trans_list[i].post_zh = result[key_name]

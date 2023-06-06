@@ -3,8 +3,8 @@ import json
 import time
 import asyncio
 import traceback
-import zhconv
 
+from opencc import OpenCC
 from typing import List, Optional
 from random import choice
 from GalTransl.CSentense import *
@@ -106,6 +106,7 @@ class CGPT35Translate:
             self.chatbot = ChatbotV1(config=gpt_config)
             self.chatbot.clear_conversations()
 
+        self.opencc = OpenCC()
         pass
 
     async def asyncTranslate(self, content: CTransList, dict="") -> CTransList:
@@ -239,7 +240,7 @@ class CGPT35Translate:
                 ].post_jp.startswith("\r\n"):
                     result[key_name] = result[key_name][2:]
                 # 防止出现繁体
-                result[key_name] = zhconv.convert(result[key_name], "zh-cn")
+                result[key_name] = self.opencc.convert(result[key_name])
                 content[i].pre_zh = result[key_name]
                 content[i].post_zh = result[key_name]
                 content[i].trans_by = "ChatGPT"

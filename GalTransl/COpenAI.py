@@ -168,11 +168,14 @@ class COpenAITokenPool:
         while True:
             if rounds > 10:
                 raise RuntimeError("COpenAITokenPool::getToken: 迭代次数过多！")
-            available, token = choice(self.tokens)
-            if not available:
-                continue
-            if needGPT3 and token.isGPT35Available:
-                return token
-            if needGPT4 and token.isGPT4Available:
-                return token
-            rounds += 1
+            try:
+                available, token = choice(self.tokens)
+                if not available:
+                    continue
+                if needGPT3 and token.isGPT35Available:
+                    return token
+                if needGPT4 and token.isGPT4Available:
+                    return token
+                rounds += 1
+            except IndexError:
+                raise RuntimeError("没有可用的 OpenAI token！")

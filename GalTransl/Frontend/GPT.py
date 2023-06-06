@@ -132,6 +132,7 @@ async def doGPT3Translate(
         projectConfig.getCachePath(),
     ]:
         if not isPathExists(dir_path):
+            LOGGER.info("%s 文件夹不存在，让我们创建它...", dir_path)
             mkdir(dir_path)
 
         semaphore = Semaphore(projectConfig.getKey("coroutinePerProject"))

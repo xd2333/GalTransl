@@ -48,6 +48,8 @@ def main() -> int:
         LOGGER.info("正在等待现有请求返回...")
         loop.stop()
         LOGGER.info("Goodbye.")
+    except RuntimeError as ex:
+        LOGGER.error("程序遇到问题，即将退出（诊断信息：%s）", ex)
     except BaseException as ex:
         print(ex)
         traceback.print_exception(type(ex), ex, ex.__traceback__)

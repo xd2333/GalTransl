@@ -52,7 +52,7 @@ class CProjectConfig:
         self.keyValues["internals.enableProxy"] = self.projectConfig["proxy"][
             "enableProxy"
         ]
-        LOGGER.info(
+        LOGGER.debug(
             "inputPath: %s, outputPath: %s, cachePath: %s,keyValues: %s",
             self.inputPath,
             self.outputPath,

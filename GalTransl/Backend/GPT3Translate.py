@@ -16,6 +16,7 @@ from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Backend.revChatGPT.typings import APIConnectionError
+from httpx import ProtocolError
 from GalTransl import LOGGER
 
 TRANS_PROMPT = """Acting as translatorGPT with Gal Mode enabled.
@@ -142,7 +143,7 @@ class CGPT35Translate:
                         resp = data["message"]
             except asyncio.CancelledError:
                 raise
-            except APIConnectionError as ex:
+            except (APIConnectionError, ProtocolError) as ex:
                 if hasattr(ex, "message"):
                     if "Too many requests" in ex.message:
                         LOGGER.info("Too many requests, sleep 5 minutes")
@@ -150,6 +151,8 @@ class CGPT35Translate:
                         if self.type == "offapi":
                             self.chatbot.set_api_key(self.tokenProvider.getToken())
                         continue
+                    else:
+                        await asyncio.sleep(10)
                 traceback.print_exc()
                 LOGGER.info("Error:%s, Please wait 5 seconds" % ex)
                 await asyncio.sleep(5)

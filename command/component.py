@@ -108,8 +108,8 @@ class BulletMenu:
                 choice_index = self.handle_input()
                 if choice_index is not None:
                     reset_cursor()
-                    for _ in range(len(self.choices) + 1):
+                    for _ in range(len(self.choices) + 2):
                         move_cursor(1, "UP")
                         clear_line()
-                    forceWrite(self.choices[choice_index], "\n")
+                    forceWrite(f"{self.prompt}{self.choices[choice_index]}", "\n")
                     return self.choices[choice_index]

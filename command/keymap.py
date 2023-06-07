@@ -1,6 +1,7 @@
 """
 Utilities relating to parsing raw characters from the keyboard, based on https://github.com/bchao1/bullet
 """
+import os
 import string
 import sys
 
@@ -44,38 +45,50 @@ KEYMAP = dict(KEYMAP, **{str(i): ord(str(i)) for i in range(10)})
 
 def get_raw_chars():
     "Gets raw characters from inputs"
-    import msvcrt
+    if os.name == "nt":
+        import msvcrt
 
-    encoding = "mbcs"
-    # Flush the keyboard buffer
-    while msvcrt.kbhit():
-        msvcrt.getch()
-    if len(WIN_CH_BUFFER) == 0:
-        # Read the keystroke
-        ch = msvcrt.getch()
+        encoding = "mbcs"
+        # Flush the keyboard buffer
+        while msvcrt.kbhit():
+            msvcrt.getch()
+        if len(WIN_CH_BUFFER) == 0:
+            # Read the keystroke
+            ch = msvcrt.getch()
 
-        # If it is a prefix char, get second part
-        if ch in (b"\x00", b"\xe0"):
-            ch2 = ch + msvcrt.getch()
-            # Translate actual Win chars to bullet char types
-            try:
-                chx = chr(WIN_KEYMAP[ch2])
-                WIN_CH_BUFFER.append(chr(KEYMAP["mod_int"]))
-                WIN_CH_BUFFER.append(chx)
-                if ord(chx) in (
-                    KEYMAP["insert"] - 1 << 9,
-                    KEYMAP["delete"] - 1 << 9,
-                    KEYMAP["pg_up"] - 1 << 9,
-                    KEYMAP["pg_down"] - 1 << 9,
-                ):
-                    WIN_CH_BUFFER.append(chr(126))
-                ch = chr(KEYMAP["esc"])
-            except KeyError:
-                ch = ch2[1]
+            # If it is a prefix char, get second part
+            if ch in (b"\x00", b"\xe0"):
+                ch2 = ch + msvcrt.getch()
+                # Translate actual Win chars to bullet char types
+                try:
+                    chx = chr(WIN_KEYMAP[ch2])
+                    WIN_CH_BUFFER.append(chr(KEYMAP["mod_int"]))
+                    WIN_CH_BUFFER.append(chx)
+                    if ord(chx) in (
+                        KEYMAP["insert"] - 1 << 9,
+                        KEYMAP["delete"] - 1 << 9,
+                        KEYMAP["pg_up"] - 1 << 9,
+                        KEYMAP["pg_down"] - 1 << 9,
+                    ):
+                        WIN_CH_BUFFER.append(chr(126))
+                    ch = chr(KEYMAP["esc"])
+                except KeyError:
+                    ch = ch2[1]
+            else:
+                ch = ch.decode(encoding)
         else:
-            ch = ch.decode(encoding)
-    else:
-        ch = WIN_CH_BUFFER.pop(0)
+            ch = WIN_CH_BUFFER.pop(0)
+    elif os.name == "posix":
+        import termios
+        import tty
+
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
 
 

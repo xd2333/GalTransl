@@ -1,5 +1,6 @@
 import json
 import random
+import sys
 import time
 import asyncio
 import traceback
@@ -114,9 +115,26 @@ class CBingGPT4Translate:
             try:
                 self.request_count += 1
                 LOGGER.info("->请求次数：" + str(self.request_count) + "\n")
-                resp = await self.chatbot.ask(
-                    prompt=prompt_req, conversation_style=ConversationStyle.creative
-                )
+                LOGGER.info("->输出：\n")
+                wrote_len = 0
+                resp = ""
+                bing_reject = False
+                async for final, response in self.chatbot.ask_stream(
+                    prompt_req, conversation_style=ConversationStyle.creative
+                ):
+                    if not final:
+                        if not wrote_len:
+                            print(response, end="")
+                            sys.stdout.flush()
+                        else:
+                            print(response[wrote_len:], end="")
+                            sys.stdout.flush()
+                        wrote_len = len(response)
+
+                    if wrote_len > len(response):
+                        bing_reject = True
+
+                    resp = response
             except Exception as ex:
                 LOGGER.info("Error:%s, Please wait 30 seconds" % ex)
                 traceback.print_exc()
@@ -139,29 +157,7 @@ class CBingGPT4Translate:
                 await self.chatbot.reset()
                 continue
 
-            if (
-                "messages" not in resp["item"]
-                or len(resp["item"]["messages"]) < 2
-                or "text" not in resp["item"]["messages"][1]
-                or "[{" not in resp["item"]["messages"][1]["text"]
-            ):
-                for tran in trans_list:
-                    if not proofread:
-                        tran.pre_zh = "Failed translation"
-                        tran.post_zh = "Failed translation"
-                        tran.trans_by = "NewBing(Failed)"
-                    else:
-                        tran.proofread_zh = tran.post_zh
-                        tran.proofread_by = "NewBing(Failed)"
-                LOGGER.info("->NewBing大小姐拒绝了本次请求🙏\n")
-                # 换一个cookie
-                self.chatbot = Chatbot(
-                    cookies=self.get_random_cookie(), proxy=self.proxy
-                )
-                return trans_list
-
             result_text = resp["item"]["messages"][1]["text"]
-            LOGGER.info("->输出：\n" + result_text + "\n")
             result_text = result_text[
                 result_text.find("[{") : result_text.rfind("}]") + 2
             ].strip()
@@ -180,7 +176,22 @@ class CBingGPT4Translate:
             try:
                 result_json = json.loads(result_text)  # 尝试解析json
             except:
-                LOGGER.info("->非json：\n" + result_text + "\n")
+                if bing_reject:
+                    for tran in trans_list:
+                        if not proofread:
+                            tran.pre_zh = "Failed translation"
+                            tran.post_zh = "Failed translation"
+                            tran.trans_by = "NewBing(Failed)"
+                        else:
+                            tran.proofread_zh = tran.post_zh
+                            tran.proofread_by = "NewBing(Failed)"
+                    print("->NewBing大小姐拒绝了本次请求🙏\n")
+                    # 换一个cookie
+                    self.chatbot = Chatbot(
+                        cookies=self.get_random_cookie(), proxy=self.proxy
+                    )
+                    return trans_list
+                print("->非json：\n" + result_text + "\n")
                 traceback.print_exc()
                 time.sleep(2)
                 await self.chatbot.reset()
@@ -194,12 +205,14 @@ class CBingGPT4Translate:
             key_name = "dst" if not proofread else "newdst"
             have_error = False
             for i, result in enumerate(result_json):
-                if key_name not in result:
-                    LOGGER.info("->缺少输出：\n" + result_text + "\n")
+                # 本行输出不正常
+                if key_name not in result or type(result[key_name]) != str:
+                    LOGGER.info(f"->第{trans_list[i].index}句不正常")
                     have_error = True
                     break
-                if trans_list[i].post_jp != "" and result[key_name] == "":  # 本行输出不应为空
-                    LOGGER.info("->空白输出：\n" + result_text + "\n")
+                # 本行输出不应为空
+                if trans_list[i].post_jp != "" and result[key_name] == "":
+                    LOGGER.info(f"->第{trans_list[i].index}句空白")
                     have_error = True
                     break
                 if (
@@ -213,7 +226,7 @@ class CBingGPT4Translate:
                     )
                     or ("/" in result[key_name] and "/" not in trans_list[i].post_jp)
                 ):
-                    LOGGER.info("->多余符号：\n" + result_text + "\n")
+                    LOGGER.info(f"->第{trans_list[i].index}句多余符号")
                     result[key_name] = self.remove_extra_pronouns(result[key_name])
                     await self.chatbot.reset()
                 # 修复输出中的换行符
@@ -302,8 +315,10 @@ class CBingGPT4Translate:
             )
 
             i += num_pre_request
+            result_output = ""
             for trans in trans_result:
-                LOGGER.info(trans)
+                result_output = result_output + repr(trans)
+            LOGGER.info(result_output)
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path, proofread=proofread)
             LOGGER.info(

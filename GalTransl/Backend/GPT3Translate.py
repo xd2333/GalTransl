@@ -172,10 +172,13 @@ class CGPT35Translate:
             error_flag = False
             key_name = "dst"
             for i, result in enumerate(result_json):
+                # 本行输出不正常
+                if key_name not in result or type(result[key_name]) != str:
+                    LOGGER.info(f"->第{content[i].index}句不正常")
+                    error_flag = True
+                    break
                 # 本行输出不应为空
-                if key_name not in result or (
-                    content[i].post_jp != "" and result[key_name] == ""
-                ):
+                if content[i].post_jp != "" and result[key_name] == "":
                     LOGGER.info(f"->第{content[i].index}句空白")
                     error_flag = True
                     break

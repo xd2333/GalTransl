@@ -22,6 +22,7 @@ while not os.path.exists(os.path.join(project_dir, CONFIG_FILENAME)):
     print(f"项目文件夹内不存在配置文件{CONFIG_FILENAME}，请检查后重新输入\n")
     project_dir = input("请输入项目文件夹路径，或拖入项目文件夹：")
 
+os.system("")   # 解决cmd的ANSI转义bug 
 translator = BulletMenu("翻译器：", TRANSLATOR_SUPPORTED).run()
 
 cfg = CProjectConfig(project_dir)

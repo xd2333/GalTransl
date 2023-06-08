@@ -229,11 +229,14 @@ class CGPT4Translate:
             error_flag = False
             key_name = "dst" if not proofread else "newdst"
             for i, result in enumerate(result_json):
+                # 本行输出不正常
+                if key_name not in result or type(result[key_name]) != str:
+                    LOGGER.info(f"->第{content[i].index}句不正常")
+                    error_flag = True
+                    break
                 # 本行输出不应为空
-                if key_name not in result or (
-                    trans_list[i].post_jp != "" and result[key_name] == ""
-                ):
-                    LOGGER.info(f"->第{trans_list[i].index}句空白")
+                if content[i].post_jp != "" and result[key_name] == "":
+                    LOGGER.info(f"->第{content[i].index}句空白")
                     error_flag = True
                     break
                 # 多余符号
@@ -274,12 +277,13 @@ class CGPT4Translate:
 
             for i, result in enumerate(result_json):  # 正常输出
                 # 修复输出中的换行符
-                if "\r\n" not in result[key_name] and "\n" in result[key_name]:
-                    result[key_name] = result[key_name].replace("\n", "\r\n")
-                if result[key_name].startswith("\r\n") and not trans_list[
-                    i
-                ].post_jp.startswith("\r\n"):
-                    result[key_name] = result[key_name][2:]
+                if "\r\n" in trans_list[i].post_jp:
+                    if "\r\n" not in result[key_name] and "\n" in result[key_name]:
+                        result[key_name] = result[key_name].replace("\n", "\r\n")
+                    if result[key_name].startswith("\r\n") and not trans_list[
+                        i
+                    ].post_jp.startswith("\r\n"):
+                        result[key_name] = result[key_name][2:]
                 result[key_name] = zhconv.convert(result[key_name], "zh-cn")  # 防止出现繁体
                 if not proofread:
                     trans_list[i].pre_zh = result[key_name]

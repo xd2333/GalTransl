@@ -225,12 +225,13 @@ class CGPT35Translate:
 
             for i, result in enumerate(result_json):  # 正常输出
                 # 修复输出中的换行符
-                if "\r\n" not in result[key_name] and "\n" in result[key_name]:
-                    result[key_name] = result[key_name].replace("\n", "\r\n")
-                if result[key_name].startswith("\r\n") and not content[
-                    i
-                ].post_jp.startswith("\r\n"):
-                    result[key_name] = result[key_name][2:]
+                if "\r\n" in content[i].post_jp:
+                    if "\r\n" not in result[key_name] and "\n" in result[key_name]:
+                        result[key_name] = result[key_name].replace("\n", "\r\n")
+                    if result[key_name].startswith("\r\n") and not content[
+                        i
+                    ].post_jp.startswith("\r\n"):
+                        result[key_name] = result[key_name][2:]
                 # 防止出现繁体
                 result[key_name] = zhconv.convert(result[key_name], "zh-cn")
                 content[i].pre_zh = result[key_name]

@@ -202,18 +202,19 @@ class CBingGPT4Translate:
                 time.sleep(2)
                 await self.chatbot.reset()
                 continue
+            
             key_name = "dst" if not proofread else "newdst"
-            have_error = False
+            error_flag = False
             for i, result in enumerate(result_json):
                 # 本行输出不正常
                 if key_name not in result or type(result[key_name]) != str:
                     LOGGER.info(f"->第{trans_list[i].index}句不正常")
-                    have_error = True
+                    error_flag = True
                     break
                 # 本行输出不应为空
                 if trans_list[i].post_jp != "" and result[key_name] == "":
                     LOGGER.info(f"->第{trans_list[i].index}句空白")
-                    have_error = True
+                    error_flag = True
                     break
                 if (
                     ("(" in result[key_name] and "（" not in trans_list[i].post_jp)
@@ -229,13 +230,21 @@ class CBingGPT4Translate:
                     LOGGER.info(f"->第{trans_list[i].index}句多余符号")
                     result[key_name] = self.remove_extra_pronouns(result[key_name])
                     await self.chatbot.reset()
+
+            if error_flag:
+                time.sleep(2)
+                await self.chatbot.reset()
+                continue
+
+            for i, result in enumerate(result_json):
                 # 修复输出中的换行符
-                if "\r\n" not in result[key_name] and "\n" in result[key_name]:
-                    result[key_name] = result[key_name].replace("\n", "\r\n")
-                if result[key_name].startswith("\r\n") and not trans_list[
-                    i
-                ].post_jp.startswith("\r\n"):
-                    result[key_name] = result[key_name][2:]
+                if "\r\n" in trans_list[i].post_jp:
+                    if "\r\n" not in result[key_name] and "\n" in result[key_name]:
+                        result[key_name] = result[key_name].replace("\n", "\r\n")
+                    if result[key_name].startswith("\r\n") and not trans_list[
+                        i
+                    ].post_jp.startswith("\r\n"):
+                        result[key_name] = result[key_name][2:]
                 result[key_name] = zhconv.convert(result[key_name], "zh-cn")  # 防止出现繁体
                 if not proofread:
                     trans_list[i].pre_zh = result[key_name]
@@ -251,12 +260,7 @@ class CBingGPT4Translate:
                     trans_list[i].proofread_zh = result[key_name]
                     trans_list[i].proofread_by = "NewBing"
 
-            if have_error:
-                time.sleep(2)
-                await self.chatbot.reset()
-                continue
 
-            break
         return trans_list
 
     def batch_translate(

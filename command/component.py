@@ -30,9 +30,9 @@ class BulletMenu:
     def print_choice(self, index: int):
         "Prints the choice at the given index"
         if index == self.position:
-            writeColor(f" {self.arrow_char} ", color="blue")
+            writeColor(f" {self.arrow_char} ", color="green")
             writeColor(
-                f"{self.choices[index]:20}{self.descriptions[index]}", color="blue"
+                f"{self.choices[index]:20}{self.descriptions[index]}", color="green"
             )
         else:
             forceWrite(f"    {self.choices[index]:20}{self.descriptions[index]}")

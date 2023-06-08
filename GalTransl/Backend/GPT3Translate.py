@@ -139,8 +139,8 @@ class CGPT35Translate:
                         resp = data["message"]
             except Exception as ex:
                 if hasattr(ex, "message"):
-                    if "Too many requests" in ex.message:
-                        LOGGER.info("Too many requests, sleep 5 minutes")
+                    if "try again later" in ex.message:
+                        LOGGER.info("-> 请求次数超限，5分钟后继续尝试")
                         time.sleep(300)
                         continue
                 traceback.print_exc()

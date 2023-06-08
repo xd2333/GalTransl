@@ -184,7 +184,7 @@ class CGPT4Translate:
                 LOGGER.info("\n")
             except Exception as ex:
                 if hasattr(ex, "message"):
-                    if "too many" in str(ex.message):
+                    if "try again later" in str(ex.message):
                         LOGGER.info("-> 请求次数超限，30分钟后继续尝试")
                         time.sleep(1800)
                         continue

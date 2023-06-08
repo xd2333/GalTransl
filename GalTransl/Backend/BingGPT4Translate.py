@@ -7,7 +7,7 @@ import traceback
 import zhconv
 from sys import exit
 
-from EdgeGPT import Chatbot, ConversationStyle
+from EdgeGPT.EdgeGPT import Chatbot, ConversationStyle
 from GalTransl import LOGGER
 from GalTransl.ConfigHelper import CProjectConfig, initProxyList, randSelectInList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json

@@ -69,6 +69,7 @@ remove origin `src` and `dst`, replace by `newdst` for zh-cn proofreading result
 Input:
 [Input]"""
 
+SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture."
 
 class CGPT4Translate:
     # init
@@ -112,9 +113,9 @@ class CGPT4Translate:
                 api_key=randSelectInList(self.tokens).token,
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=8192,
-                temperature=0.5,
+                temperature=0.4,
                 frequency_penalty=0.2,
-                system_prompt="You are a helpful assistant.",
+                system_prompt=SYSTEM_PROMPT,
                 engine="gpt-4",
             )
         elif type == "unoffapi":
@@ -124,9 +125,10 @@ class CGPT4Translate:
                 "model": "gpt-4",
                 "paid": True,
                 "access_token": randSelectInList(config.getBackendConfigSection("ChatGPT")["access_tokens"])["access_token"],
-                "proxy": randSelectInList(self.proxies) if self.proxies else None,
+                "proxy": randSelectInList(self.proxies) if self.proxies else "",
             }
-
+            if gpt_config["proxy"] == "":
+                del gpt_config["proxy"]
             self.chatbot = ChatbotV1(config=gpt_config)
             self.chatbot.clear_conversations()
 

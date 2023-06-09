@@ -84,7 +84,7 @@ class CGPT35Translate:
                 api_key=rand_token.token,
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=4096,
-                temperature=0.5,
+                temperature=0.4,
                 system_prompt=SYSTEM_PROMPT,
             )
         elif type == "unoffapi":
@@ -94,8 +94,10 @@ class CGPT35Translate:
                 "access_token": randSelectInList(config.getBackendConfigSection("ChatGPT")["access_tokens"])["access_token"],
                 "proxy": randSelectInList(self.proxies)["addr"]
                 if self.proxies
-                else None,
+                else "",
             }
+            if gpt_config["proxy"] == "":
+                del gpt_config["proxy"]
             self.chatbot = ChatbotV1(config=gpt_config)
             self.chatbot.clear_conversations()
 
@@ -131,6 +133,7 @@ class CGPT35Translate:
                     for data in self.chatbot.ask_stream(prompt_req):
                         print(data, end="", flush=True)
                         resp += data
+                    print()
                 if self.type == "unoffapi":
                     for data in self.chatbot.ask(prompt_req):
                         resp = data["message"]
@@ -145,7 +148,6 @@ class CGPT35Translate:
                 time.sleep(5)
                 continue
 
-            LOGGER.info("\n")
             result_text = resp[resp.find("[{") : resp.rfind("}]") + 2].strip()
 
             try:

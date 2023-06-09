@@ -116,10 +116,11 @@ def doGPT3Translate(
     ]:
         if not isPathExists(dir_path):
             mkdir(dir_path)
-        for file_name in listdir(projectConfig.getInputPath()):
-            doGPT3TranslateSingleFile(
-                file_name, projectConfig, type, pre_dic, post_dic, gpt_dic, gptapi
-            )
+
+    for file_name in listdir(projectConfig.getInputPath()):
+        doGPT3TranslateSingleFile(
+            file_name, projectConfig, type, pre_dic, post_dic, gpt_dic, gptapi
+        )
 
 
 def doGPT4Translate(
@@ -157,6 +158,7 @@ def doGPT4Translate(
     ]:
         if not isPathExists(dir_path):
             mkdir(dir_path)
+            
     for file_name in listdir(projectConfig.getInputPath()):
         # 1、初始化trans_list
         trans_list = load_transList_from_json_jp(

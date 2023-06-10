@@ -59,6 +59,10 @@ class CGPT35Translate:
             self.restore_context_mode = val
         else:
             self.restore_context_mode = False  # 恢复上下文模式
+        if val := config.getKey("gpt.fullContextMode"):
+            self.full_context_mode = val # 挥霍token模式
+        else:
+            self.full_context_mode = False  
         if val := initGPTToken(config):
             self.tokens: list[COpenAIToken] = []
             for i in val:
@@ -129,7 +133,8 @@ class CGPT35Translate:
                 LOGGER.info("->输出：\n")
                 resp = ""
                 if self.type == "offapi":
-                    self.del_old_input()
+                    if not self.full_context_mode:
+                        self.del_old_input()
                     for data in self.chatbot.ask_stream(prompt_req):
                         print(data, end="", flush=True)
                         resp += data
@@ -144,7 +149,7 @@ class CGPT35Translate:
                         time.sleep(300)
                         continue
                 traceback.print_exc()
-                LOGGER.info("Error:%s, Please wait 5 seconds" % ex)
+                LOGGER.error("Error:%s, 5秒后重试" % ex)
                 time.sleep(5)
                 continue
 
@@ -246,9 +251,7 @@ class CGPT35Translate:
 
     def reset_conversation(self):
         if self.type == "offapi":
-            for diag in self.chatbot.conversation["default"]:
-                if diag["role"] != "system":
-                    self.chatbot.conversation["default"].remove(diag)
+            self.chatbot.reset()
         if self.type == "unoffapi":
             self.chatbot.reset_chat()
             time.sleep(5)

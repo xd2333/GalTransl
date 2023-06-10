@@ -90,6 +90,10 @@ class CGPT4Translate:
         self.record_confidence = config.getKey("gpt.recordConfidence")
         self.last_file_name = ""
         self.restore_context_mode = config.getKey("gpt.restoreContextMode")
+        if val := config.getKey("gpt.fullContextMode"):
+            self.full_context_mode = val # 挥霍token模式
+        else:
+            self.full_context_mode = False  
         if val := initGPTToken(config):
             self.tokens = []
             for i in val:
@@ -173,7 +177,8 @@ class CGPT4Translate:
                 LOGGER.info("->输出：\n")
                 resp = ""
                 if self.type == "offapi":
-                    self.del_old_input()
+                    if not self.full_context_mode:
+                        self.del_old_input()
                     for data in self.chatbot.ask_stream(prompt_req):
                         print(data, end="", flush=True)
                         resp += data
@@ -375,9 +380,8 @@ class CGPT4Translate:
         return trans_result_list
 
     def reset_conversation(self):
-        time.sleep(5)
         if self.type == "offapi":
-            self.clear_conversation()
+            self.chatbot.reset()
         if self.type == "unoffapi":
             self.chatbot.reset_chat()
 
@@ -408,12 +412,6 @@ class CGPT4Translate:
                 self.chatbot.conversation["default"].pop()
         elif self.type == "unoffapi":
             pass
-
-    def clear_conversation(self):
-        if self.type == "offapi":
-            for diag in self.chatbot.conversation["default"]:
-                if diag["role"] != "system":
-                    self.chatbot.conversation["default"].remove(diag)
 
     def restore_context(self, trans_list_unhit: CTransList, num_pre_request: int):
         if self.type == "offapi":

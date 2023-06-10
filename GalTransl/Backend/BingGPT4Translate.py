@@ -136,20 +136,19 @@ class CBingGPT4Translate:
 
                     resp = response
             except Exception as ex:
+                if "Request is throttled." in str(ex):
+                    LOGGER.info("->Request is throttled.")
+                    self.throttled_cookie_list.append(self.current_cookie_file)
+                    self.cookiefile_list.remove(self.current_cookie_file)
+                    time.sleep(self.sleep_time)
+                    self.chatbot = Chatbot(
+                        cookies=self.get_random_cookie(), proxy=self.proxy
+                    )
+                    await self.chatbot.reset()
+                    continue
                 LOGGER.info("Error:%s, Please wait 30 seconds" % ex)
                 traceback.print_exc()
                 time.sleep(5)
-                continue
-            # LOGGER.info("->输出：" + str(resp) + "\n")
-            if "Request is throttled." in str(resp):
-                LOGGER.info("->Request is throttled.")
-                self.throttled_cookie_list.append(self.current_cookie_file)
-                self.cookiefile_list.remove(self.current_cookie_file)
-                time.sleep(self.sleep_time)
-                self.chatbot = Chatbot(
-                    cookies=self.get_random_cookie(), proxy=self.proxy
-                )
-                await self.chatbot.reset()
                 continue
 
             if "New topic" in str(resp):

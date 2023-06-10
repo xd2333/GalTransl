@@ -178,7 +178,6 @@ def doGPT4Translate(
             projectConfig.getKey("gpt.numPerRequestTranslate"),
             retry_failed=projectConfig.getKey("retranslFail"),
             chatgpt_dict=gpt_dic,
-            proofread=True,
         )
         if projectConfig.getKey("gpt.enableProofRead"):
             gptapi.batch_translate(
@@ -188,6 +187,7 @@ def doGPT4Translate(
                 projectConfig.getKey("gpt.numPerRequestProofRead"),
                 retry_failed=projectConfig.getKey("retranslFail"),
                 chatgpt_dict=gpt_dic,
+                proofread=True,
             )
 
         # 4、翻译后处理

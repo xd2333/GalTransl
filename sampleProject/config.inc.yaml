@@ -1,26 +1,27 @@
 ---
 # 通用（杂项）设置
 common:
-  loggingLevel: debug # 日志等级，可选 ["debug", "info", "warning", "error"]
+  loggingLevel: info # 日志等级，可选 ["debug", "info", "warning", "error"]
+  retranslFail: false # 重翻NewBing拒绝翻译的句子，True/False
+  multiThread: false # 多线程，True/False（暂不可用）
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
-  gpt.numPerRequestProofRead: 7 # 单次校润句子数量，不建议修改
-  retryFail: true # (True/False)每次启动时重翻所有翻译失败的句子（目前仅NewBing会翻译失败）
-  multiThread: false # (True/False)多线程（暂不可用）
-  gpt.degradeBackend: false # 是否将 GPT4 的key用于 GPT3.5 的请求
-  gpt.lineBreaksImprovementMode: false # (True/False)换行符改善模式，减少丢换行符情况，但可能导致循环重试
-  gpt.restoreContextMode: true # (True/False)重启自动恢复上下文
-  gpt.enableProofRead: false # (True/False)是否开启译后校润，仅NewBing，GPT4支持
+  gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润，True/False
+  gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
+  gpt.degradeBackend: false # 是否将 GPT4 的key用于 GPT3.5 的请求，True/False
+  gpt.lineBreaksImprovementMode: false # (GPT35)换行符改善模式，减少丢换行符情况，但可能导致循环重试，True/False
+  gpt.restoreContextMode: true # (GPT35/GPT4官方API)重启自动恢复上下文，True/False
+  gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token
+
 # 代理设置
 proxy:
-  # 是否启用代理
-  enableProxy: false
+  enableProxy: false # 是否启用代理，True/False
   proxies:
     - address: socks5://127.0.0.1:10818
       # username: foo
       # password: bar
 # 字典
 dictionary:
-  defaultDictFolder: Dict #通用字典文件夹
+  defaultDictFolder: Dict # 通用字典文件夹，相对于程序目录
   # 预处理字典
   preDict:
     - 00通用字典_译前.txt
@@ -51,18 +52,16 @@ backendSpecific:
       - token: sk-yyyyyyyy
         endpoint: ""
     defaultEndpoint: https://api.openai.com
-  ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API，模拟网页操作
-    access_tokens:
+  ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API，模拟网页操作模式
+    access_tokens: # 访问https://chat.openai.com/api/auth/session，提取accessToken
       - access_token: xxx
-    accounts:
+    accounts: # 暂不支持
       - username: foo
         password: bar
-      - username: bar
-        password: foo
   bingGPT4:
     cookiePath:
-      - newbing_cookies/cookie1.json # 你的 cookies 文件
-      - newbing_cookies/cookie2.json # 你的 cookies 文件
+      - newbing_cookies/cookie1.json # 你的 cookies 文件，相对于项目目录
+      - newbing_cookies/cookie2.json # 你的 cookies 文件2
 # 问题分析机制配置
 problemAnalyze:
   GPT35: # GPT35 / ChatGPT
@@ -80,10 +79,13 @@ problemAnalyze:
     - 残留日文
     - 丢失换行
     - 多加换行
-  bingGPT4:
+  bingGPT4: # NewBing
     - 词频过高
     - 本无括号
     - 本无引号
     - 残留日文
     - 丢失换行
     - 多加换行
+  arinashiDict: # 格式为 aaa:<空格>bbb
+    aaa: bbb
+    ccc: ddd

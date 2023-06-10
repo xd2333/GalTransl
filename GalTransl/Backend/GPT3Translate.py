@@ -327,15 +327,18 @@ class CGPT35Translate:
         chatgpt_dict: CGptDict = None,
         proofread: bool = False,
     ) -> CTransList:
+
+        _, trans_list_unhit = get_transCache_from_json(
+            trans_list, cache_file_path, retry_failed=retry_failed
+        )
+        if len(trans_list_unhit) == 0:
+            return []
+        
         # 新文件重置chatbot
         if self.last_file_name != filename:
             self.reset_conversation()
             self.last_file_name = filename
             LOGGER.info(f"-> 开始翻译文件：{filename}")
-
-        _, trans_list_unhit = get_transCache_from_json(
-            trans_list, cache_file_path, retry_failed=retry_failed
-        )
         if (
             self.type == "offapi"
             and self.restore_context_mode

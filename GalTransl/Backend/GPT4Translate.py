@@ -87,9 +87,9 @@ class CGPT4Translate:
         """
         LOGGER.info("GPT4 transl-api version: 0.7.1 [2023.06.01]")
         self.type = type
-        self.record_confidence = False
+        self.record_confidence = config.getKey("gpt.recordConfidence")
         self.last_file_name = ""
-        self.restore_context_mode = False  # 恢复上下文模式
+        self.restore_context_mode = config.getKey("gpt.restoreContextMode")
         if val := initGPTToken(config):
             self.tokens = []
             for i in val:
@@ -233,12 +233,12 @@ class CGPT4Translate:
             for i, result in enumerate(result_json):
                 # 本行输出不正常
                 if key_name not in result or type(result[key_name]) != str:
-                    LOGGER.info(f"->第{content[i].index}句不正常")
+                    LOGGER.info(f"->第{trans_list[i].index}句不正常")
                     error_flag = True
                     break
                 # 本行输出不应为空
-                if content[i].post_jp != "" and result[key_name] == "":
-                    LOGGER.info(f"->第{content[i].index}句空白")
+                if trans_list[i].post_jp != "" and result[key_name] == "":
+                    LOGGER.info(f"->第{trans_list[i].index}句空白")
                     error_flag = True
                     break
                 # 多余符号

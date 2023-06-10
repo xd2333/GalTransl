@@ -49,7 +49,7 @@ class CProjectConfig:
         for k,v in self.projectConfig["common"].items():
             self.keyValues[k] = v
         self.keyValues["enableProxy"] = self.projectConfig["proxy"]["enableProxy"]
-        LOGGER.info(
+        LOGGER.debug(
             "inputPath: %s, outputPath: %s, cachePath: %s,keyValues: %s",
             self.inputPath,
             self.outputPath,
@@ -99,6 +99,9 @@ class CProjectConfig:
             result.append(CTranslateProblem[i])
 
         return result
+    
+    def getProblemAnalyzeArinashiDict(self) -> dict:
+        return self.projectConfig["problemAnalyze"]["arinashiDict"]
 
 
 class CProxyPool:

@@ -22,9 +22,6 @@ from GalTransl.ConfigHelper import CProjectConfig, initDictList
 from GalTransl import LOGGER
 
 
-arinashi_dict = {}
-
-
 def doGPT3TranslateSingleFile(
     file_name: str,
     projectConfig: CProjectConfig,
@@ -52,7 +49,7 @@ def doGPT3TranslateSingleFile(
         cache_file_path,
         trans_list,
         projectConfig.getKey("gpt.numPerRequestTranslate"),
-        retry_failed=projectConfig.getKey("retryFail"),
+        retry_failed=projectConfig.getKey("retranslFail"),
         chatgpt_dict=gpt_dic,
     )
 
@@ -63,6 +60,7 @@ def doGPT3TranslateSingleFile(
         tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
 
     # 用于保存problems
+    arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
     find_problems(
         trans_list,
         find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
@@ -158,7 +156,7 @@ def doGPT4Translate(
     ]:
         if not isPathExists(dir_path):
             mkdir(dir_path)
-            
+
     for file_name in listdir(projectConfig.getInputPath()):
         # 1、初始化trans_list
         trans_list = load_transList_from_json_jp(
@@ -178,7 +176,7 @@ def doGPT4Translate(
             cache_file_path,
             trans_list,
             projectConfig.getKey("gpt.numPerRequestTranslate"),
-            retry_failed=projectConfig.getKey("retryFail"),
+            retry_failed=projectConfig.getKey("retranslFail"),
             chatgpt_dict=gpt_dic,
             proofread=True,
         )
@@ -188,7 +186,7 @@ def doGPT4Translate(
                 cache_file_path,
                 trans_list,
                 projectConfig.getKey("gpt.numPerRequestProofRead"),
-                retry_failed=projectConfig.getKey("retryFail"),
+                retry_failed=projectConfig.getKey("retranslFail"),
                 chatgpt_dict=gpt_dic,
             )
 
@@ -199,6 +197,7 @@ def doGPT4Translate(
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
 
         # 用于保存problems
+        arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
         find_problems(
             trans_list,
             find_type=projectConfig.getProblemAnalyzeConfig("GPT4"),
@@ -278,7 +277,7 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
                     cache_file_path,
                     trans_list,
                     projectConfig.getKey("gpt.numPerRequestTranslate"),
-                    retry_failed=projectConfig.getKey("retryFail"),
+                    retry_failed=projectConfig.getKey("retranslFail"),
                     chatgpt_dict=gpt_dic,
                 )
                 if projectConfig.getKey("gpt.enableProofRead"):
@@ -287,7 +286,7 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
                         cache_file_path,
                         trans_list,
                         projectConfig.getKey("gpt.numPerRequestProofRead"),
-                        retry_failed=projectConfig.getKey("retryFail"),
+                        retry_failed=projectConfig.getKey("retranslFail"),
                         chatgpt_dict=gpt_dic,
                         proofread=True,
                     )
@@ -303,6 +302,7 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
 
         # 用于保存problems
+        arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
         find_problems(
             trans_list,
             find_type=projectConfig.getProblemAnalyzeConfig("bingGPT4"),

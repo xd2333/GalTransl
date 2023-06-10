@@ -191,6 +191,8 @@ backendSpecific:
 
 &ensp;&ensp;&ensp;&ensp;**但是**，我不建议你就这样开始翻译了，你至少要先看一下[GPT字典的使用](https://github.com/XD2333/GalTransl#gpt字典)，为你要翻译的gal设定好各角色的人名字典，这样才能保证基本的质量。   
 
+&ensp;&ensp;&ensp;&ensp;翻译完成后，如果你想手工修正，见[翻译缓存章节](https://github.com/XD2333/GalTransl#翻译缓存)
+
 * **【2.3. 构建中文脚本】**   
 &ensp;&ensp;&ensp;&ensp;如果你是使用GalTransl提取注入工具提取的脚本，构建同理，选择日文脚本目录、中文json目录、中文脚本保存目录，然后点'注入'，即可将文本注入回脚本。但这里面有一些坑，第四章会提到。
 
@@ -467,7 +469,9 @@ $str20	$str20	player's codename, boy
 `unknown_proper_noun`  未知专有名词，仅NewBing、GPT4支持，方便后期人工修正   
 `problem`  存储问题。见下方自动化找错。   
 
-* 简单讲下如何用Emeditor修缓存：选中一个文件，先右键-Emeditor打开，然后把cache内所有文件全选拖进去。这时候标签可能会占很大位置，右键标签-自定义标签页，将"标签不合适时"改成"无"，这样标签就只会在一行了。接着ctrl+f搜索，搜索你感兴趣的关键字（如problem、doub_content），勾选"搜索组群中所有文档"，即可快速在所有文件中搜索，或点提取快速预览所有的问题。   
+* 简单讲下如何用Emeditor修缓存：选中一个文件，先右键-Emeditor打开，然后把transl_cache内所有文件全选拖进去。   
+这时候标签可能会占很大位置，右键标签-自定义标签页，将"标签不合适时"改成"无"，这样标签就只会在一行了。   
+接着ctrl+f搜索，搜索你感兴趣的关键字（如problem、doub_content），勾选"搜索组群中所有文档"，即可快速在所有文件中搜索，或点提取快速预览所有的问题。   
   
 </details>
 
@@ -508,7 +512,7 @@ problemAnalyze:
 * 比日文长：通常来说中文的信息量是比日文大的。所以如果某一句翻译后明显比日文长的话，说明这句的翻译可能窜行了（上一句或下一句的翻译窜到了本句）。在problem中会以"比日文长x倍"的形式记录。
 * 彩云不识：仅用于彩云小译。彩云小译遇到没见过的词会翻译成something。
 
-arinashi_dict是一个可以自定义规则的字典，配置格式为
+arinashi_dict是一个可以自定义规则的找问题字典，配置格式为
 ```
     # 格式为 aaa:<空格>bbb
     aaa: bbb
@@ -543,7 +547,7 @@ newbing_cookies文件夹内可以有多个cookie的txt，当一个账号到达�
 ```
 
 开启校润模式：   
-配置`  gpt.enableProofRead: true`   
+配置`  gpt.enableProofRead: true`，翻译完一个json后会开始对这个json自动化再润色   
 
 * **ChatGPT**   
 官方API调用方式见上手教程   
@@ -569,7 +573,7 @@ newbing_cookies文件夹内可以有多个cookie的txt，当一个账号到达�
 ```
 
 开启校润模式：   
-配置`  gpt.enableProofRead: true`   
+配置`  gpt.enableProofRead: true`，翻译完一个json后会开始对这个json自动化再润色   
 * **彩云小译**  
 沉迷王国之泪，后面再补！   
 

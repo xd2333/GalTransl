@@ -260,8 +260,7 @@ class CBingGPT4Translate:
                     trans_list[i].proofread_zh = result[key_name]
                     trans_list[i].proofread_by = "NewBing"
 
-
-        return trans_list
+            return trans_list
 
     def batch_translate(
         self,

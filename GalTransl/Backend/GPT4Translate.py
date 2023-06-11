@@ -129,7 +129,7 @@ class CGPT4Translate:
                 "model": "gpt-4",
                 "paid": True,
                 "access_token": randSelectInList(config.getBackendConfigSection("ChatGPT")["access_tokens"])["access_token"],
-                "proxy": randSelectInList(self.proxies) if self.proxies else "",
+                "proxy": randSelectInList(self.proxies)["addr"] if self.proxies else "",
             }
             if gpt_config["proxy"] == "":
                 del gpt_config["proxy"]

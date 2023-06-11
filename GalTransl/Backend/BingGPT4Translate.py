@@ -157,6 +157,11 @@ class CBingGPT4Translate:
                 continue
 
             result_text = resp["item"]["messages"][1]["text"]
+            if not result_text.endswith("}]"): # try to fix json parse error
+                if result_text.endswith("}"):
+                    result_text = result_text + "]"
+                else:
+                    result_text = result_text + "}]"
             result_text = result_text[
                 result_text.find("[{") : result_text.rfind("}]") + 2
             ].strip()
@@ -201,7 +206,7 @@ class CBingGPT4Translate:
                 time.sleep(2)
                 await self.chatbot.reset()
                 continue
-            
+
             key_name = "dst" if not proofread else "newdst"
             error_flag = False
             for i, result in enumerate(result_json):

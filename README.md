@@ -17,7 +17,7 @@
 
 * 开源是因为下半年要转去忙自己的事了，以后可能也没什么时间搞这些了（~~开源了以后你们做，我玩2333~~）。另外项目整体已经有一定的完成度，拿得出手了。   
    
-* 支持我：只要你愿意为大家无偿分享做的补丁就是支持我了。能提一下是用GalTransl翻译的就更好了233。   
+* 支持我：只要你愿意为大家无偿分享做的补丁就是支持我了，能提一下是用GalTransl翻译的就更好了233。（PS. 分享补丁时请注明GPT翻译）   
 
 * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群）   
 
@@ -563,8 +563,10 @@ common:
 ```
 cookiePath下可以将多个文件按例子往下写，当一个账号到达上限后，会切到下一个账号。
 
-* 开启校润模式：   
+> 开启校润模式：   
 配置`  gpt.enableProofRead: true`，翻译完一个json后会开始对这个json自动化再润色   
+
+> 针对newbing经常吞内容，一个推荐的技巧是先设置`gpt.numPerRequestTranslate`为9或12，翻译一遍后，设置`retranslFail`为True，设置`gpt.numPerRequestTranslate`为3，再跑一遍。另外，如果脚本有将hs分开，可以单独为hs建一个项目文件夹翻，翻完合并json_jp和transl_cache。
 
 * **ChatGPT**   
 官方API调用方式见上手教程   
@@ -590,7 +592,7 @@ cookiePath下可以将多个文件按例子往下写，当一个账号到达上�
       - access_token: xxx # 此处粘贴accessToken
 ```
 
-* 开启校润模式：   
+> 开启校润模式：   
 配置`  gpt.enableProofRead: true`，翻译完一个json后会开始对这个json自动化再润色   
 
 * **彩云小译**  

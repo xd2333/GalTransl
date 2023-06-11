@@ -13,21 +13,21 @@
   7. 结合其他项目支持多引擎脚本一键解包与注入，提供完整教程降低上手难度   
 
 ## 前言
-* 最早做这个工具的初衷是在两年前发现大部分机翻补丁的质量太影响观感（人名都翻不对），于是断断续续的结合彩云小译开始写这个工具，期间还推倒重做了一次（之前不会python）。在去年年底ChatGPT出现后开始研究将GPT引入Gal翻译，并逐步形成了这套体系。   
+* 最早做这个工具的初衷是在两年前发现大部分机翻补丁的质量太影响观感（人名都翻不对），于是断断续续的结合彩云小译开始写这个工具，期间还推倒重做了一次~~（源码弄丢）~~，用python重写了这个项目。在去年年底ChatGPT出现后开始研究将GPT引入Gal翻译，并逐步形成了这套体系。   
 
-* 为什么开源？ 开源是因为下半年要转去忙自己的事了，以后也就不打算再投入时间做这些东西了，~~开源了以后你们做，我玩2333~~。   
+* 开源是因为下半年要转去忙自己的事了，以后可能也没什么时间搞这些了（~~开源了以后你们做，我玩2333~~）。另外项目整体已经有一定的完成度，拿得出手了。   
    
-* 支持我：只要你愿意为大家无偿分享你做的补丁就是支持我了。能提一嘴是使用GalTransl翻译的就更好了233   
+* 支持我：只要你愿意为大家无偿分享做的补丁就是支持我了。能提一下是用GalTransl翻译的就更好了233。   
 
 * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群）   
 
-* 感谢：ryank231231、Isotr0py，完善了我的杂鱼代码   
+* 代码贡献：感谢ryank231231、Isotr0py，完善了我的杂鱼代码。   
 
   **Readme还有一些图没贴**
 
 ## 使用GalTransl翻译的游戏
 
-* 《指尖连结/ゆびさきコネクション》 [链接](https://www.2dfan.com/downloads/16358)   
+* 《指尖连结/ゆびさきコネクション》 [链接](https://tieba.baidu.com/p/8282814801?pid=146960460177)   
 这是**全网首个**使用chatgpt翻译的galgame，使用了GalTransl的早期版本。  
 翻译：主线-NewBing，hs-GPT3.5   
 
@@ -46,7 +46,6 @@
 * [翻译引擎介绍](https://github.com/XD2333/GalTransl#翻译引擎介绍)：本篇介绍各个翻译引擎的优缺点与推荐的组合   
 * [翻译引擎调用](https://github.com/XD2333/GalTransl#翻译引擎调用配置)：本篇详细介绍各个翻译引擎API的调用与配置方式。   
 * [GalTransl核心功能介绍](https://github.com/XD2333/GalTransl#galtransl核心功能介绍)：介绍GPT字典、缓存、普通字典、找问题等功能。  
-* [结语](https://github.com/XD2333/GalTransl#结语)：结语。   
 
 ## 环境准备
   * Python   
@@ -165,11 +164,11 @@ backendSpecific:
       - token: sk-xxxxxxxx # 你的令牌
         endpoint: https://openaiapi.cx2333.com  # 使用转发API端点
 ```   
-&ensp;&ensp;&ensp;&ensp;如果连api key也没有的话，你甚至还可以使用第三方api项目，但要注意这里获取的key是第三方的key，不能用于官方API和我的转发API端点：   
+&ensp;&ensp;&ensp;&ensp;如果连api key也没有的话，你甚至还可以使用第三方api项目：   
 * 使用[GPT-API-free项目](https://github.com/chatanywhere/GPT_API_free)，这是一个openai api的第三方代理，提供每小时120请求的**免费API**。   
 * 或[openai-sb项目](https://openai-sb.com/)，这也是个代理项目，价格还算优惠，这不是推广，我也不担保它的稳定性。   
    
-&ensp;&ensp;&ensp;&ensp;如果你使用类似项目的话，做以下额外的修改：   
+&ensp;&ensp;&ensp;&ensp;但要注意这里获取的key是第三方的key，不能用于官方API和我的转发API端点。如果你使用类似项目的话，做以下额外的修改：   
 ```python
   enableProxy: false # 此时不要设置代理
 
@@ -235,18 +234,20 @@ GalTransl提取注入工具的VNTextPatch模式注入脚本时默认是以sjis�
 最后还是去看[Dir-A佬的教程](https://space.bilibili.com/8144708/)，里面有教如何下断点、修改，完全没接触过逆向的话这可能很难，但没办法，照着视频多试试。   
 
 * **使用路线2**   
-在注入脚本时先什么都不勾，如果有提示"sjis_ext.bin包含文字：xxx"的话，说明程序是以sjis编码注入的，并把这些不支持显示的字符放到script_cn目录内的sjis_ext.bin里供sjis隧道模式调用了。   
+在注入脚本时先什么都不勾选，如果有提示"sjis_ext.bin包含文字：xxx"的话，说明程序是以sjis编码注入的，并把这些不支持显示的字符放到script_cn目录内的sjis_ext.bin里供sjis隧道模式调用了。   
 
 **sjis隧道**：仍然来自arcusmaximus大佬的VNTranslationTools项目中的[VNTextProxy组件](https://github.com/arcusmaximus/VNTranslationTools#vntextproxy)。VNTextPatch在将文本注入回脚本时，会将sjis编码不支持的字符临时替换为sjis编码中未定义的字符，VNTextProxy通过DLL劫持技术HOOK游戏，并在遇到这些字符时再把它还原回去。   
 
-当使用sjis隧道模式时，将`项目目录\script_cn`内的`sjis_ext.bin`文件移动到游戏目录内，然后将useful_tools\VNTextProxy内的所有dll逐个丢到游戏目录内(一般推荐先试version.dll，或使用PEID/DIE等工具查输入表)，运行游戏，看有没有哪个dll可以正确的hook游戏并让不显示的文本可以正常显示（不正常的话那些地方会是空的）。
+当使用sjis隧道模式时，将`script_cn`内的`sjis_ext.bin`文件移动到游戏目录内，然后将useful_tools\VNTextProxy内的所有dll逐个丢到游戏目录内(一般推荐先试version.dll，或使用PEID/DIE等工具查输入表)，运行游戏，看有没有哪个dll可以正确的hook游戏并让不显示的文本可以正常显示（不正常的话那些地方会是空的）。不正常的话，删掉这个DLL，换下一个。[详细设置见此](https://github.com/XD2333/GalTransl/tree/main/useful_tools/VNTextProxy)
 
 **sjis替换**：来自AtomCrafty大佬的[UniversalInjectorFramework(通用注入框架)](https://github.com/AtomCrafty/UniversalInjectorFramework#character-substitution)项目，也是通过DLL劫持技术HOOK游戏，并可以将某个字符根据设置替换成指定的另一个字符，不限编码。我建立了一套替换字典，按一些规则梳理了sjis编码内不支持的简中汉字与sjis支持的汉字的映射关系，可以满足99.99%常用简体中文汉字的正常显示(见hanzi2kanji_table.txt)，并将替换功能写在了GalTransl提取注入工具内。在替换后结合sjis替换功能在游戏中将这些汉字替换回简中文字，实现游戏的正常显示。
 
-当使用sjis替换模式时，可以先运行一遍GalTransl提取注入工具的注入文本，获取游戏不支持的文字列表（注入后会提示"sjis_ext.bin包含文字：xxx"），然后勾选"sjis替换模式注入"，把这些文字复制到右边的文本框内，再点击注入。注入后会获得一个sjis替换模式配置。打开useful_tools/UniversalInjectorFramework文件夹，里面也是很多dll，也是逐个尝试，一般推荐先试winmm.dll，把目录内的uif_config.json一并复制到游戏目录，然后编辑这个json，按GalTransl提取注入工具提供的配置填写`source_characters`和`target_characters`。然后运行游戏，如果游戏可以正常运行，并且弹出了一个像这样的控制台：
+当使用sjis替换模式时，可以先运行一遍GalTransl提取注入工具的注入文本，获取游戏不支持的文字列表（注入后会提示"sjis_ext.bin包含文字：xxx"），然后，勾选"sjis替换模式注入"，把这些文字复制到右边的文本框内，再点击注入。注入后会获得一个sjis替换模式配置。
 
-那多半就搞定了。
-注：UniversalInjectorFramework也支持sjis隧道模式，可以设置`tunnel_decoder`为`True`然后在`mapping`里填入sjis_ext.bin包含文字。
+打开useful_tools/UniversalInjectorFramework文件夹，里面也是很多dll，也是逐个尝试，一般推荐先试winmm.dll，把目录内的uif_config.json一并复制到游戏目录，然后编辑这个json，按GalTransl提取注入工具提供的配置填写`source_characters`和`target_characters`。然后运行游戏，如果游戏可以正常运行，并且弹出了一个像这样的控制台：
+![img_terminal](./img/img_terminal.png)
+那多半就搞定了。如果不正常的话，删掉这个DLL，尝试换下一个。
+注：UniversalInjectorFramework也支持sjis隧道模式，可以设置`tunnel_decoder`为`True`然后在`mapping`里填入sjis_ext.bin包含文字。[详细设置见此](https://github.com/XD2333/GalTransl/tree/main/useful_tools/UniversalInjectorFramework)
 
 </details>
 

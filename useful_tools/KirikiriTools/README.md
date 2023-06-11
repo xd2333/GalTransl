@@ -1,8 +1,9 @@
+作者arcusmaximus，原项目地址：https://github.com/arcusmaximus/KirikiriTools
+NewBing翻译   
+
 # KirikiriTools
 
 用于Kirikiri视觉小说引擎的工具。
-
-下载页面
 
 如果你想翻译一个Kirikiri游戏，可以看看VNTextPatch。
 

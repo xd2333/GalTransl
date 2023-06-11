@@ -411,10 +411,6 @@ $str20	$str20	player's codename, boy
 * 判断词：如果在查找位置中找到判断词，才会激活后面的替换。   
 * 判断词可以在开头加"!"代表"不存在则替换"，否则一般是代表"存在则替换"。   
 * 判断词可以使用`[or]`或`[and]`关键字连接，多个`[or]`连接代表"有一个条件满足就进入替换"，多个`[and]`连接代表"条件都满足才进入替换"   
-   
-条件字典有什么用呢，考虑这个情况：   
-(沉迷王国之泪，后面再补，GPT时代其实用处不大🤣) 
-
 
 </details>
 
@@ -533,6 +529,7 @@ arinashi_dict是一个可以自定义规则的找问题字典，配置格式为
 本篇介绍各个翻译引擎API的调用配置。
 </summary>  
 
+
 * **基础配置**   
 ```yaml
 # 通用（杂项）设置
@@ -555,8 +552,8 @@ common:
 需要微软账号。然后下载[EditThisCookie扩展](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)   
 访问https://www.bing.com/ ，登录后点EditThisCookie图标，点"导出Cookies"，   
 然后在示例项目的文件夹里新建一个`newbing_cookies`文件夹，然后在里面新建一个txt，名称随意，把点击导出Cookies得到的内容粘贴进去保存即可。   
-newbing_cookies文件夹内可以有多个cookie的txt，当一个账号到达上限后，会切到下一个账号。
-在配置文件中添加以下配置：   
+
+在配置文件中修改以下配置：   
 
 ```yaml
   bingGPT4:
@@ -564,8 +561,9 @@ newbing_cookies文件夹内可以有多个cookie的txt，当一个账号到达�
       - newbing_cookies/cookie1.txt # 你的 cookies 文件1
       - newbing_cookies/cookie2.json # 你的 cookies 文件2，后缀不影响程序读取
 ```
+cookiePath下可以将多个文件按例子往下写，当一个账号到达上限后，会切到下一个账号。
 
-开启校润模式：   
+* 开启校润模式：   
 配置`  gpt.enableProofRead: true`，翻译完一个json后会开始对这个json自动化再润色   
 
 * **ChatGPT**   
@@ -573,26 +571,28 @@ newbing_cookies文件夹内可以有多个cookie的txt，当一个账号到达�
 
 使用模拟网页操作模式时，登录网页版账号后访问https://chat.openai.com/api/auth/session
 
-拷贝其中"accessToken":后面双引号内的一大串内容，复制到配置里，然后调用时输入Chatgpt-gpt35引擎即可调用
+拷贝其中"accessToken":后面双引号内的一大串内容，复制到配置里，然后调用时选择Chatgpt-gpt35引擎即可调用
 ```yaml
   ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API，模拟网页操作
     access_tokens:
       - access_token: xxx # 此处粘贴accessToken
 ```
+
 * **GPT-4**   
 官方API调用方式见上手教程，api key填入`  GPT4: # GPT4 官方 API`中   
 
 使用模拟网页操作模式时，登录网页版账号后访问https://chat.openai.com/api/auth/session
 
-拷贝其中"accessToken":后面双引号内的一大串内容，复制到配置里，然后调用时输入Chatgpt-gpt4引擎即可调用
+拷贝其中"accessToken":后面双引号内的一大串内容，复制到配置里，然后调用时选择Chatgpt-gpt4引擎即可调用
 ```yaml
   ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API，模拟网页操作
     access_tokens:
       - access_token: xxx # 此处粘贴accessToken
 ```
 
-开启校润模式：   
+* 开启校润模式：   
 配置`  gpt.enableProofRead: true`，翻译完一个json后会开始对这个json自动化再润色   
+
 * **彩云小译**  
 沉迷王国之泪，后面再补！   
 

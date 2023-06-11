@@ -267,13 +267,13 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
   ✔ 在确信度低时，支持自动记录**它觉得存疑的片段**，方便人工校对   
   ✔ 支持自动记录**它不认识的专有名词**，方便人工校对   
   ✔ 支持对初翻做二次**自动化校对润色**   
-  ✔ 无需翻墙（不一定）   
    
   * 缺点：   
   🔞 **涩涩打咩**，只能用于非h内容，需要结合其他引擎   
   ❔ 每账号目前24小时提问200次   
   🚸 速度较慢，如果开启自动化再校润，会慢更多   
-  ❔ 自动化校润目前不算稳定
+  ❔ 目前自动化校润不算稳定   
+  🛫 目前需要翻墙   
     
   * 总结：它很强，但它运行在青少年模式(NewBing大小姐拒绝了本次请求🙏)   
   ---   
@@ -382,7 +382,7 @@ $str20	$str20	player's codename, boy
 
 运行时字典会动态的展示在每一次请求里：
 
-![img_gptdic](./img/img_gptdic.png)
+![img_start](./img/img_start.png)
 
 </details>   
    
@@ -531,6 +531,24 @@ arinashi_dict是一个可以自定义规则的找问题字典，配置格式为
 <summary>  
 本篇介绍各个翻译引擎API的调用配置。
 </summary>  
+
+* **基础配置**   
+```yaml
+# 通用（杂项）设置
+common:
+  loggingLevel: info # 日志等级，可选 ["debug", "info", "warning", "error"]
+  retranslFail: false # 重翻NewBing拒绝翻译的句子，True/False
+  multiThread: false # 多线程，True/False（暂不可用）
+  gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
+  gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。True/False
+  gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
+  gpt.degradeBackend: false # 是否将 GPT4 的key用于 GPT3.5 的请求。True/False
+  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，减少丢换行符情况，但可能导致循环重试。True/False
+  gpt.restoreContextMode: true # (GPT3.5/4官方API)重启自动恢复上下文。True/False
+  gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token
+  gpt.fullContextMode: false # (GPT3.5/4官方API)保留更多前文，消耗token约翻4倍。True/False
+```
+
 
 * **NewBing**   
 需要微软账号。然后下载[EditThisCookie扩展](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)   

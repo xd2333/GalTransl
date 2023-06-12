@@ -271,6 +271,7 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
         while True:
+            success = False
             try:
                 gptapi.batch_translate(
                     file_name,
@@ -290,10 +291,15 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
                         chatgpt_dict=gpt_dic,
                         proofread=True,
                     )
+                success = True
             except TypeError:  # https://github.com/acheong08/EdgeGPT/issues/376
                 pass
+            except KeyboardInterrupt:
+                LOGGER.info("->KeyboardInterrupt")
+                exit(0)
             finally:
-                break
+                if success:
+                    break
 
         # 4、翻译后处理
         for i, tran in enumerate(trans_list):

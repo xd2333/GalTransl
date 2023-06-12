@@ -13,11 +13,15 @@ from tkinter.scrolledtext import ScrolledText
 
 from ttkbootstrap import Style
 
+VERSION="1.1"
+message_dict = {}
+name_dict = {}
+
 
 class VNTextPatchGUI:
     def __init__(self, master):
         self.master = master
-        master.title("GalTransl 提取注入工具v1.0 by cx2333")
+        master.title(f"GalTransl 提取注入工具v{VERSION} by cx2333")
         master.config(padx=20, pady=20)
 
         # Create Notebook widget
@@ -466,6 +470,8 @@ class VNTextPatchGUI:
         script_cn_folder = self.script_cn_folder_textbox.get()
         jp_encoding = str(self.japanese_encoding_var.get())
         cn_encoding = str(self.chinese_encoding_var.get())
+        message_regex = self.regex_textbox.get()
+        name_regex = self.name_regex_textbox.get()
 
         if not script_jp_folder:
             messagebox.showerror("Error", "请选择日文脚本目录.")
@@ -478,6 +484,9 @@ class VNTextPatchGUI:
             return False
         if not json_jp_folder:
             messagebox.showerror("Error", "请选择日文json目录.")
+            return False
+        if not message_regex:
+            messagebox.showerror("Error", "请输入正则.")
             return False
 
         self.output_textbox2.delete(1.0, tk.END)
@@ -506,13 +515,22 @@ class VNTextPatchGUI:
                 jp_data = json.load(f)
             with open(cn_json_path, "r", encoding="utf-8") as f:
                 cn_data = json.load(f)
-            replace_dict = {}
+
+            global message_dict, name_dict
             for i in range(len(jp_data)):
-                replace_dict[jp_data[i]["message"]] = cn_data[i]["message"]
+                message_dict[jp_data[i]["message"]] = cn_data[i]["message"]
+                if name_regex != "":
+                    if "name" in jp_data[i] and "name" in cn_data[i]:
+                        if jp_data[i]["name"] not in name_dict:
+                            name_dict[jp_data[i]["name"]] = cn_data[i]["name"]
+
             with open(script_path, "r", encoding=jp_encoding, errors="ignore") as f:
                 script_content = f.read()
-            for jp_text, cn_text in replace_dict.items():
-                script_content = script_content.replace(jp_text, cn_text)
+
+            script_content = re.sub(message_regex, get_cn_message, script_content)
+            if name_regex != "":
+                script_content = re.sub(name_regex, get_cn_name, script_content)
+
             output_path = os.path.join(script_cn_folder, filename)
             with open(output_path, "w", encoding=cn_encoding, errors="ignore") as f:
                 f.write(script_content)
@@ -576,6 +594,20 @@ def read_sjis_ext_bin(file_path):
     return "".join(chars)
 
 
+def get_cn_message(matched):
+    if matched.group(1) in message_dict:
+        return matched.group().replace(matched.group(1),message_dict[matched.group(1)])
+    else:
+        return matched.group()
+
+
+def get_cn_name(matched):
+    if matched.group(1) in name_dict:
+        return matched.group().replace(matched.group(1), name_dict[matched.group(1)])
+    else:
+        return matched.group()
+
+
 def read_proxy_dict(filename, proxy_words=""):
     char_dict = {}
     with open(filename, "r", encoding="utf-8") as f:
@@ -630,7 +662,6 @@ random_theme = random.choice(
         "yeti",
         "pulse",
         "united",
-        "morph",
         "journal",
     ]
 )

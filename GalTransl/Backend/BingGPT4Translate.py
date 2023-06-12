@@ -150,6 +150,9 @@ class CBingGPT4Translate:
                 traceback.print_exc()
                 time.sleep(5)
                 continue
+            except KeyboardInterrupt:
+                LOGGER.info("->KeyboardInterrupt")
+                sys.exit(0)
 
             if "New topic" in str(resp):
                 LOGGER.info("->Need New topic")
@@ -203,6 +206,21 @@ class CBingGPT4Translate:
 
             if len(result_json) != len(input_list):
                 LOGGER.info("->错误的输出行数：\n" + result_text + "\n")
+                if bing_reject:
+                    for tran in trans_list:
+                        if not proofread:
+                            tran.pre_zh = "Failed translation"
+                            tran.post_zh = "Failed translation"
+                            tran.trans_by = "NewBing(Failed)"
+                        else:
+                            tran.proofread_zh = tran.post_zh
+                            tran.proofread_by = "NewBing(Failed)"
+                    print("->NewBing大小姐拒绝了本次请求🙏\n")
+                    # 换一个cookie
+                    self.chatbot = Chatbot(
+                        cookies=self.get_random_cookie(), proxy=self.proxy
+                    )
+                    return trans_list
                 time.sleep(2)
                 await self.chatbot.reset()
                 continue

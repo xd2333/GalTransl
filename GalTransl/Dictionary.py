@@ -116,7 +116,7 @@ class CNormalDic:
     def load_dic(self, dic_path: str):
         """加载一个字典txt到这个对象的内存"""
         if not path.exists(dic_path):
-            LOGGER.WARNING(f"{dic_path}不存在，请检查路径。")
+            LOGGER.warning(f"{dic_path}不存在，请检查路径。")
             return
         with open(dic_path, encoding="utf8") as f:
             dic_lines = f.readlines()
@@ -267,7 +267,7 @@ class CGptDict:
     def load_dic(self, dic_path: str):
         """加载一个字典txt到这个对象的内存"""
         if not path.exists(dic_path):
-            LOGGER.WARNING(f"{dic_path}不存在，请检查路径。")
+            LOGGER.warning(f"{dic_path}不存在，请检查路径。")
             return
         with open(dic_path, encoding="utf8") as f:
             dic_lines = f.readlines()

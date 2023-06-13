@@ -13,10 +13,11 @@ from GalTransl.ConfigHelper import CProjectConfig, initProxyList, randSelectInLi
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.CSentense import CTransList, CSentense
 from GalTransl.Dictionary import CGptDict
+from GalTransl.StringUtils import extract_code_blocks
 
 TRANS_PROMPT = """Generate content for translating the input and output as required.#no_search
 # On Input
-The last line is a fragment of a Japanese visual novel script in key-value objects list json format.
+The last line is a fragment of a Japanese visual novel script in key-value jsonline format.
 # On Translating Steps:
 Process the objects one by one, step by step:
 1. If the `id` is incrementing, first reasoning the context for sort out the subject/object relationship and choose the polysemy wording that best fits the plot and common sense to retain the original meaning as faithful as possible.
@@ -26,7 +27,9 @@ Treat as monologue/narrator if no name key, should be translated from the charac
 3. Translate Japanese to Simplified Chinese word by word, keep same use of punctuation, linebreak(\\r\\n) and spacing as the original text.The translation should be faithful, fluent, no missing words.
 Ensure that the content of different objects are decoupled.Then move to the next object.
 # On Output:
-Your output start with "Transl:", then write the result json with same id and name,
+Your output start with "Transl:", 
+write the whole result json objects list in a json block(```jsonline),
+copy the `id` and `name`(if have) directly, 
 in each object, remove `src` and add `dst` for translation result, add `"conf": <0-1.00>` for assessing translation confidence,
 if conf <= 0.94, add `"doub": <list>` to store doubtful content,
 if found unknown proper noun, add `"unkn": <list>` to store.
@@ -107,7 +110,11 @@ class CBingGPT4Translate:
                     del tmp_obj["name"]
 
                 input_list.append(tmp_obj)
-        input_json = json.dumps(input_list, ensure_ascii=False)
+        input_json = ""
+        # dump as jsonline
+        for obj in input_list:
+            input_json += json.dumps(obj, ensure_ascii=False) + "\n"
+
         prompt_req = prompt_req.replace("[Input]", input_json)
         prompt_req = prompt_req.replace("[Glossary]", dict)
         LOGGER.info(f"->{'翻译输入' if not proofread else '校对输入'}：{dict}\n{input_json}\n")
@@ -160,17 +167,7 @@ class CBingGPT4Translate:
                 continue
 
             result_text = resp["item"]["messages"][1]["text"]
-            if not result_text.endswith("}]"): # try to fix json parse error
-                if result_text.endswith("}"):
-                    result_text = result_text + "]"
-                else:
-                    result_text = result_text + "}]"
-            result_text = result_text[
-                result_text.find("[{") : result_text.rfind("}]") + 2
-            ].strip()
-            result_text = result_text.replace("\r", "\\r").replace(
-                "\n", "\\n"
-            )  # 防止json解析错误
+            result_text = result_text[result_text.find('{"id') :]
             # 修复丢冒号
             result_text = (
                 result_text.replace(", src:", ', "src":')
@@ -180,109 +177,77 @@ class CBingGPT4Translate:
                 .replace(", unkn:", ', "unkn":')
                 .replace("},\\n{", "},{")
             )
-            try:
-                result_json = json.loads(result_text)  # 尝试解析json
-            except:
-                if bing_reject:
-                    for tran in trans_list:
-                        if not proofread:
-                            tran.pre_zh = "Failed translation"
-                            tran.post_zh = "Failed translation"
-                            tran.trans_by = "NewBing(Failed)"
-                        else:
-                            tran.proofread_zh = tran.post_zh
-                            tran.proofread_by = "NewBing(Failed)"
-                    print("->NewBing大小姐拒绝了本次请求🙏\n")
-                    # 换一个cookie
-                    self.chatbot = Chatbot(
-                        cookies=self.get_random_cookie(), proxy=self.proxy
-                    )
-                    return trans_list
-                print("->非json：\n" + result_text + "\n")
-                traceback.print_exc()
-                time.sleep(2)
-                await self.chatbot.reset()
-                continue
+            i = -1
+            result_trans_list = []
+            for line in result_text.split("\n"):
+                try:
+                    line_json = json.loads(line)  # 尝试解析json
+                    i += 1
+                except:
+                    if i == -1:
+                        if bing_reject:
+                            if not proofread:
+                                trans_list[0].pre_zh = "Failed translation"
+                                trans_list[0].post_zh = "Failed translation"
+                                trans_list[0].trans_by = "NewBing(Failed)"
+                            else:
+                                trans_list[0].proofread_zh = trans_list[0].post_zh
+                                trans_list[0].proofread_by = "NewBing(Failed)"
+                            print("->NewBing大小姐拒绝了本次请求🙏\n")
+                            # 换一个cookie
+                            self.chatbot = Chatbot(
+                                cookies=self.get_random_cookie(), proxy=self.proxy
+                            )
+                            return 1, [trans_list[0]]
+                        print("->非json：\n" + result_text + "\n")
+                        traceback.print_exc()
+                        time.sleep(2)
+                        await self.chatbot.reset()
+                    continue
 
-            if len(result_json) != len(input_list):
-                LOGGER.info("->错误的输出行数：\n" + result_text + "\n")
-                if bing_reject:
-                    for tran in trans_list:
-                        if not proofread:
-                            tran.pre_zh = "Failed translation"
-                            tran.post_zh = "Failed translation"
-                            tran.trans_by = "NewBing(Failed)"
-                        else:
-                            tran.proofread_zh = tran.post_zh
-                            tran.proofread_by = "NewBing(Failed)"
-                    print("->NewBing大小姐拒绝了本次请求🙏\n")
-                    # 换一个cookie
-                    self.chatbot = Chatbot(
-                        cookies=self.get_random_cookie(), proxy=self.proxy
-                    )
-                    return trans_list
-                time.sleep(2)
-                await self.chatbot.reset()
-                continue
-
-            key_name = "dst" if not proofread else "newdst"
-            error_flag = False
-            for i, result in enumerate(result_json):
+                key_name = "dst" if not proofread else "newdst"
+                error_flag = False
                 # 本行输出不正常
-                if key_name not in result or type(result[key_name]) != str:
-                    LOGGER.info(f"->第{trans_list[i].index}句不正常")
+                if "id" not in line_json or type(line_json["id"]) != int:
+                    LOGGER.info(f"->没id不正常")
+                    error_flag = True
+                    break
+                line_id = line_json["id"]
+                if key_name not in line_json or type(line_json[key_name]) != str:
+                    LOGGER.info(f"->第{line_id}句不正常")
                     error_flag = True
                     break
                 # 本行输出不应为空
-                if trans_list[i].post_jp != "" and result[key_name] == "":
-                    LOGGER.info(f"->第{trans_list[i].index}句空白")
+                if trans_list[i].post_jp != "" and line_json[key_name] == "":
+                    LOGGER.info(f"->第{line_id}句空白")
                     error_flag = True
                     break
-                if (
-                    ("(" in result[key_name] and "（" not in trans_list[i].post_jp)
-                    or ("（" in result[key_name] and "（" not in trans_list[i].post_jp)
-                    or (
-                        "*" in result[key_name]
-                        or "<" in result[key_name]
-                        or "“" == result[key_name][0]
-                        or "”" == result[key_name][-1]
-                    )
-                    or ("/" in result[key_name] and "/" not in trans_list[i].post_jp)
-                ):
-                    LOGGER.info(f"->第{trans_list[i].index}句多余符号")
-                    result[key_name] = self.remove_extra_pronouns(result[key_name])
-                    await self.chatbot.reset()
+
+                line_json[key_name] = zhconv.convert(
+                    line_json[key_name], "zh-cn"
+                )  # 防止出现繁体
+                if not proofread:
+                    trans_list[i].pre_zh = line_json[key_name]
+                    trans_list[i].post_zh = line_json[key_name]
+                    trans_list[i].trans_by = "NewBing"
+                    if "conf" in line_json:
+                        trans_list[i].trans_conf = line_json["conf"]
+                    if "doub" in line_json:
+                        trans_list[i].doub_content = line_json["doub"]
+                    if "unkn" in line_json:
+                        trans_list[i].unknown_proper_noun = line_json["unkn"]
+                    result_trans_list.append(trans_list[i])
+                else:
+                    trans_list[i].proofread_zh = line_json[key_name]
+                    trans_list[i].proofread_by = "NewBing"
+                    result_trans_list.append(trans_list[i])
 
             if error_flag:
                 time.sleep(2)
                 await self.chatbot.reset()
                 continue
-
-            for i, result in enumerate(result_json):
-                # 修复输出中的换行符
-                if "\r\n" in trans_list[i].post_jp:
-                    if "\r\n" not in result[key_name] and "\n" in result[key_name]:
-                        result[key_name] = result[key_name].replace("\n", "\r\n")
-                    if result[key_name].startswith("\r\n") and not trans_list[
-                        i
-                    ].post_jp.startswith("\r\n"):
-                        result[key_name] = result[key_name][2:]
-                result[key_name] = zhconv.convert(result[key_name], "zh-cn")  # 防止出现繁体
-                if not proofread:
-                    trans_list[i].pre_zh = result[key_name]
-                    trans_list[i].post_zh = result[key_name]
-                    trans_list[i].trans_by = "NewBing"
-                    if "conf" in result:
-                        trans_list[i].trans_conf = result["conf"]
-                    if "doub" in result:
-                        trans_list[i].doub_content = result["doub"]
-                    if "unkn" in result:
-                        trans_list[i].unknown_proper_noun = result["unkn"]
-                else:
-                    trans_list[i].proofread_zh = result[key_name]
-                    trans_list[i].proofread_by = "NewBing"
-
-            return trans_list
+            else:
+                return i + 1, result_trans_list
 
     def batch_translate(
         self,
@@ -335,11 +300,11 @@ class CBingGPT4Translate:
             else:
                 dic_prompt = ""
 
-            trans_result = asyncio.run(
+            num, trans_result = asyncio.run(
                 self.translate(trans_list_split, dic_prompt, proofread=proofread)
             )
-
-            i += num_pre_request
+            if num > 0:
+                i += num
             result_output = ""
             for trans in trans_result:
                 result_output = result_output + repr(trans)

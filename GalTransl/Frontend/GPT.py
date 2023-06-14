@@ -25,9 +25,6 @@ from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl import LOGGER
 
 
-arinashi_dict = {}
-
-
 async def doGPT3TranslateSingleFile(
     semaphore: Semaphore,
     file_name: str,
@@ -58,7 +55,7 @@ async def doGPT3TranslateSingleFile(
             cache_file_path,
             trans_list,
             projectConfig.getKey("gpt.numPerRequestTranslate"),
-            retry_failed=projectConfig.getKey("retryFail"),
+            retry_failed=projectConfig.getKey("retranslFail"),
             chatgpt_dict=gpt_dic,
         )
 
@@ -68,11 +65,18 @@ async def doGPT3TranslateSingleFile(
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
 
-        # 用于保存problems
-        find_problems(
-            trans_list,
-            find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
-            arinashi_dict=arinashi_dict,
+    # 用于保存problems
+    arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
+    find_problems(
+        trans_list,
+        find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
+        arinashi_dict=arinashi_dict,
+    )
+    save_transCache_to_json(trans_list, cache_file_path)
+    # 5、整理输出
+    if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
+        name_dict = load_name_table(
+            joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
         )
         save_transCache_to_json(trans_list, cache_file_path)
         # 5、整理输出
@@ -99,21 +103,21 @@ async def doGPT3Translate(
     pre_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["preDict"],
-            projectConfig.getDictCfgSection()["default_dictionary_folder"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
             projectConfig.getProjectDir(),
         )
     )
     post_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["postDict"],
-            projectConfig.getDictCfgSection()["default_dictionary_folder"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
             projectConfig.getProjectDir(),
         )
     )
     gpt_dic = CGptDict(
         initDictList(
             projectConfig.getDictCfgSection()["gpt.dict"],
-            projectConfig.getDictCfgSection()["default_dictionary_folder"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
             projectConfig.getProjectDir(),
         )
     )
@@ -151,6 +155,10 @@ async def doGPT3Translate(
         ]
         await gather(*tasks)  # run
 
+    for file_name in listdir(projectConfig.getInputPath()):
+        doGPT3TranslateSingleFile(
+            file_name, projectConfig, type, pre_dic, post_dic, gpt_dic, gptapi
+        )
 
 async def doGPT4Translate(
     projectConfig: CProjectConfig,
@@ -162,21 +170,21 @@ async def doGPT4Translate(
     pre_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["preDict"],
-            projectConfig.getDictCfgSection()["default_dictionary_folder"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
             projectConfig.getProjectDir(),
         )
     )
     post_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["postDict"],
-            projectConfig.getDictCfgSection()["default_dictionary_folder"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
             projectConfig.getProjectDir(),
         )
     )
     gpt_dic = CGptDict(
         initDictList(
             projectConfig.getDictCfgSection()["gpt.dict"],
-            projectConfig.getDictCfgSection()["default_dictionary_folder"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
             projectConfig.getProjectDir(),
         )
     )
@@ -195,6 +203,7 @@ async def doGPT4Translate(
     ]:
         if not isPathExists(dir_path):
             mkdir(dir_path)
+
     for file_name in listdir(projectConfig.getInputPath()):
         # 1、初始化trans_list
         trans_list = load_transList_from_json_jp(
@@ -214,9 +223,8 @@ async def doGPT4Translate(
             cache_file_path,
             trans_list,
             projectConfig.getKey("gpt.numPerRequestTranslate"),
-            retry_failed=projectConfig.getKey("retryFail"),
+            retry_failed=projectConfig.getKey("retranslFail"),
             chatgpt_dict=gpt_dic,
-            proofread=True,
         )
         if projectConfig.getKey("gpt.enableProofRead"):
             gptapi.batch_translate(
@@ -224,8 +232,9 @@ async def doGPT4Translate(
                 cache_file_path,
                 trans_list,
                 projectConfig.getKey("gpt.numPerRequestProofRead"),
-                retry_failed=projectConfig.getKey("retryFail"),
+                retry_failed=projectConfig.getKey("retranslFail"),
                 chatgpt_dict=gpt_dic,
+                proofread=True,
             )
 
         # 4、翻译后处理
@@ -235,6 +244,7 @@ async def doGPT4Translate(
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
 
         # 用于保存problems
+        arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
         find_problems(
             trans_list,
             find_type=projectConfig.getProblemAnalyzeConfig("GPT4"),
@@ -263,21 +273,21 @@ async def doNewBingTranslate(
     pre_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["preDict"],
-            projectConfig.getDictCfgSection()["default_dictionary_folder"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
             projectConfig.getProjectDir(),
         )
     )
     post_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["postDict"],
-            projectConfig.getDictCfgSection()["default_dictionary_folder"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
             projectConfig.getProjectDir(),
         )
     )
     gpt_dic = CGptDict(
         initDictList(
             projectConfig.getDictCfgSection()["gpt.dict"],
-            projectConfig.getDictCfgSection()["default_dictionary_folder"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
             projectConfig.getProjectDir(),
         )
     )
@@ -310,13 +320,14 @@ async def doNewBingTranslate(
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
         while True:
+            success = False
             try:
                 gptapi.batch_translate(
                     file_name,
                     cache_file_path,
                     trans_list,
                     projectConfig.getKey("gpt.numPerRequestTranslate"),
-                    retry_failed=projectConfig.getKey("retryFail"),
+                    retry_failed=projectConfig.getKey("retranslFail"),
                     chatgpt_dict=gpt_dic,
                 )
                 if projectConfig.getKey("gpt.enableProofRead"):
@@ -325,14 +336,19 @@ async def doNewBingTranslate(
                         cache_file_path,
                         trans_list,
                         projectConfig.getKey("gpt.numPerRequestProofRead"),
-                        retry_failed=projectConfig.getKey("retryFail"),
+                        retry_failed=projectConfig.getKey("retranslFail"),
                         chatgpt_dict=gpt_dic,
                         proofread=True,
                     )
+                success = True
             except TypeError:  # https://github.com/acheong08/EdgeGPT/issues/376
                 pass
+            except KeyboardInterrupt:
+                LOGGER.info("->KeyboardInterrupt")
+                exit(0)
             finally:
-                break
+                if success:
+                    break
 
         # 4、翻译后处理
         for i, tran in enumerate(trans_list):
@@ -341,6 +357,7 @@ async def doNewBingTranslate(
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
 
         # 用于保存problems
+        arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
         find_problems(
             trans_list,
             find_type=projectConfig.getProblemAnalyzeConfig("bingGPT4"),

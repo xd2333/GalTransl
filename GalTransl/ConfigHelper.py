@@ -102,6 +102,9 @@ class CProjectConfig:
             result.append(CTranslateProblem[i])
 
         return result
+    
+    def getProblemAnalyzeArinashiDict(self) -> dict:
+        return self.projectConfig["problemAnalyze"]["arinashiDict"]
 
 
 class CProxyPool:

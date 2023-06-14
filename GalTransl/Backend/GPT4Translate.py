@@ -71,6 +71,7 @@ remove origin `src` and `dst`, replace by `newdst` for zh-cn proofreading result
 Input:
 [Input]"""
 
+SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture."
 
 class CGPT4Translate:
     # init
@@ -94,9 +95,13 @@ class CGPT4Translate:
         """
         LOGGER.info("GPT4 transl-api version: 0.7.1 [2023.06.01]")
         self.type = type
-        self.record_confidence = False
+        self.record_confidence = config.getKey("gpt.recordConfidence")
         self.last_file_name = ""
-        self.restore_context_mode = False  # 恢复上下文模式
+        self.restore_context_mode = config.getKey("gpt.restoreContextMode")
+        if val := config.getKey("gpt.fullContextMode"):
+            self.full_context_mode = val # 挥霍token模式
+        else:
+            self.full_context_mode = False  
         self.tokenProvider = token_pool
         if config.getKey("internals.enableProxy") == True:
             self.proxyProvider = proxy_pool
@@ -112,9 +117,9 @@ class CGPT4Translate:
                 api_key=token.token,
                 proxy=self.proxyProvider.getProxy().addr if self.proxies else None,
                 max_tokens=8192,
-                temperature=0.5,
+                temperature=0.4,
                 frequency_penalty=0.2,
-                system_prompt="You are a helpful assistant.",
+                system_prompt=SYSTEM_PROMPT,
                 engine="gpt-4",
                 api_address=token.domain + "/v1/chat/completions",
             )
@@ -129,7 +134,8 @@ class CGPT4Translate:
                 )["access_token"],
                 "proxy": self.proxyProvider.getProxy().addr if self.proxies else None,
             }
-
+            if gpt_config["proxy"] == "":
+                del gpt_config["proxy"]
             self.chatbot = ChatbotV1(config=gpt_config)
             self.chatbot.clear_conversations()
 
@@ -179,7 +185,8 @@ class CGPT4Translate:
                 LOGGER.info("->输出：\n")
                 resp = ""
                 if self.type == "offapi":
-                    self.del_old_input()
+                    if not self.full_context_mode:
+                        self.del_old_input()
                     async for data in self.chatbot.ask_stream_async(prompt_req):
                         # print(data, end="", flush=True)
                         resp += data
@@ -195,7 +202,7 @@ class CGPT4Translate:
                 raise
             except Exception as ex:
                 if hasattr(ex, "message"):
-                    if "too many" in str(ex.message):
+                    if "try again later" in str(ex.message):
                         LOGGER.info("-> 请求次数超限，30分钟后继续尝试")
                         await asyncio.sleep(1800)
                         continue
@@ -240,10 +247,13 @@ class CGPT4Translate:
             error_flag = False
             key_name = "dst" if not proofread else "newdst"
             for i, result in enumerate(result_json):
+                # 本行输出不正常
+                if key_name not in result or type(result[key_name]) != str:
+                    LOGGER.info(f"->第{trans_list[i].index}句不正常")
+                    error_flag = True
+                    break
                 # 本行输出不应为空
-                if key_name not in result or (
-                    trans_list[i].post_jp != "" and result[key_name] == ""
-                ):
+                if trans_list[i].post_jp != "" and result[key_name] == "":
                     LOGGER.info(f"->第{trans_list[i].index}句空白")
                     error_flag = True
                     break
@@ -285,12 +295,13 @@ class CGPT4Translate:
 
             for i, result in enumerate(result_json):  # 正常输出
                 # 修复输出中的换行符
-                if "\r\n" not in result[key_name] and "\n" in result[key_name]:
-                    result[key_name] = result[key_name].replace("\n", "\r\n")
-                if result[key_name].startswith("\r\n") and not trans_list[
-                    i
-                ].post_jp.startswith("\r\n"):
-                    result[key_name] = result[key_name][2:]
+                if "\r\n" in trans_list[i].post_jp:
+                    if "\r\n" not in result[key_name] and "\n" in result[key_name]:
+                        result[key_name] = result[key_name].replace("\n", "\r\n")
+                    if result[key_name].startswith("\r\n") and not trans_list[
+                        i
+                    ].post_jp.startswith("\r\n"):
+                        result[key_name] = result[key_name][2:]
                 result[key_name] = self.opencc.convert(result[key_name])  # 防止出现繁体
                 if not proofread:
                     trans_list[i].pre_zh = result[key_name]
@@ -381,7 +392,7 @@ class CGPT4Translate:
 
     def reset_conversation(self):
         if self.type == "offapi":
-            self.clear_conversation()
+            self.chatbot.reset()
         if self.type == "unoffapi":
             self.chatbot.reset_chat()
 
@@ -412,12 +423,6 @@ class CGPT4Translate:
                 self.chatbot.conversation["default"].pop()
         elif self.type == "unoffapi":
             pass
-
-    def clear_conversation(self):
-        if self.type == "offapi":
-            for diag in self.chatbot.conversation["default"]:
-                if diag["role"] != "system":
-                    self.chatbot.conversation["default"].remove(diag)
 
     def restore_context(self, trans_list_unhit: CTransList, num_pre_request: int):
         if self.type == "offapi":

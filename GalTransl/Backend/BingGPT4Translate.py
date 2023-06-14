@@ -157,11 +157,8 @@ class CBingGPT4Translate:
                     LOGGER.info("->Request is throttled.")
                     self.throttled_cookie_list.append(self.current_cookie_file)
                     self.cookiefile_list.remove(self.current_cookie_file)
+                    self._change_cookie()
                     time.sleep(self.sleep_time)
-                    self.chatbot = Chatbot(
-                        cookies=self.get_random_cookie(), proxy=self.proxy
-                    )
-                    await self.chatbot.reset()
                     continue
                 elif "InvalidRequest" in str(ex):
                     await self.chatbot.reset()
@@ -198,40 +195,10 @@ class CBingGPT4Translate:
                     line_json = json.loads(line)  # 尝试解析json
                     i += 1
                 except:
-                    if bing_reject:
-                        if self.force_NewBing_hs_mode:
-                            if i == -1:
-                                if not proofread:
-                                    trans_list[0].pre_zh = "Failed translation"
-                                    trans_list[0].post_zh = "Failed translation"
-                                    trans_list[0].trans_by = "NewBing(Failed)"
-                                else:
-                                    trans_list[0].proofread_zh = trans_list[0].post_zh
-                                    trans_list[0].proofread_by = "NewBing(Failed)"
-                        else:
-                            for tran in trans_list:
-                                if not proofread:
-                                    tran.pre_zh = "Failed translation"
-                                    tran.post_zh = "Failed translation"
-                                    tran.trans_by = "NewBing(Failed)"
-                                else:
-                                    tran.proofread_zh = tran.post_zh
-                                    tran.proofread_by = "NewBing(Failed)"
-                        print("->NewBing大小姐拒绝了本次请求🙏\n")
-                        # 换一个cookie
-                        self.chatbot = Chatbot(
-                            cookies=self.get_random_cookie(), proxy=self.proxy
-                        )
-                        if self.force_NewBing_hs_mode:
-                            return 1, [trans_list[0]]
-                        else:
-                            return len(trans_list), trans_list
-
-                    print("->非json：\n" + result_text + "\n")
-                    traceback.print_exc()
-                    time.sleep(2)
-                    await self.chatbot.reset()
-                    continue
+                    if bing_reject and self.force_NewBing_hs_mode and i == -1:
+                        break
+                    else:
+                        continue
 
                 key_name = "dst" if not proofread else "newdst"
                 error_flag = False
@@ -241,6 +208,10 @@ class CBingGPT4Translate:
                     error_flag = True
                     break
                 line_id = line_json["id"]
+                if line_id != trans_list[i].index:
+                    LOGGER.info(f"->id不对应")
+                    error_flag = True
+                    break
                 if key_name not in line_json or type(line_json[key_name]) != str:
                     LOGGER.info(f"->第{line_id}句不正常")
                     error_flag = True
@@ -270,12 +241,40 @@ class CBingGPT4Translate:
                     trans_list[i].proofread_by = "NewBing"
                     result_trans_list.append(trans_list[i])
 
+            if i + 1 != len(trans_list):
+                if self.force_NewBing_hs_mode and bing_reject and i == -1:
+                    if not proofread:
+                        trans_list[0].pre_zh = "Failed translation"
+                        trans_list[0].post_zh = "Failed translation"
+                        trans_list[0].trans_by = "NewBing(Failed)"
+                    else:
+                        trans_list[0].proofread_zh = trans_list[0].post_zh
+                        trans_list[0].proofread_by = "NewBing(Failed)"
+                    print("->NewBing大小姐拒绝了本次请求🙏\n")
+                    self._change_cookie()
+                    return 1, [trans_list[0]]
+                elif not self.force_NewBing_hs_mode and bing_reject:
+                    while i + 1 < len(trans_list):
+                        i = i + 1
+                        if not proofread:
+                            trans_list[i].pre_zh = "Failed translation"
+                            trans_list[i].post_zh = "Failed translation"
+                            trans_list[i].trans_by = "NewBing(Failed)"
+                        else:
+                            trans_list[i].proofread_zh = trans_list[i].post_zh
+                            trans_list[i].proofread_by = "NewBing(Failed)"
+                    print("->NewBing大小姐拒绝了本次请求🙏\n")
+                    self._change_cookie()
+                elif not self.force_NewBing_hs_mode:
+                    LOGGER.info(f"->翻译数量不对应")
+                    error_flag = True
+
             if error_flag:
                 time.sleep(2)
                 await self.chatbot.reset()
                 continue
-            else:
-                return i + 1, result_trans_list
+
+            return i + 1, result_trans_list
 
     def batch_translate(
         self,
@@ -366,3 +365,15 @@ class CBingGPT4Translate:
         LOGGER.info(f"当前使用cookie文件：{self.current_cookie_file}")
         cookies = json.loads(open(self.current_cookie_file, encoding="utf-8").read())
         return cookies
+
+    def _change_cookie(self):
+        while True:
+            try:
+                self.chatbot = Chatbot(
+                    cookies=self.get_random_cookie(), proxy=self.proxy
+                )
+                break
+            except Exception as e:
+                LOGGER.info(f"换cookie失败：{e}")
+                time.sleep(1)
+                continue

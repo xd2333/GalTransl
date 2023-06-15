@@ -60,16 +60,15 @@ class CGPT35Translate:
         else:
             self.restore_context_mode = False  # 恢复上下文模式
         if val := config.getKey("gpt.fullContextMode"):
-            self.full_context_mode = val # 挥霍token模式
+            self.full_context_mode = val  # 挥霍token模式
         else:
-            self.full_context_mode = False  
+            self.full_context_mode = False
         if val := initGPTToken(config):
             self.tokens: list[COpenAIToken] = []
             for i in val:
                 if not i.isGPT35Available:
                     continue
                 self.tokens.append(i)
-            
 
         else:
             raise RuntimeError("无法获取 OpenAI API Token！")
@@ -81,11 +80,13 @@ class CGPT35Translate:
 
         if type == "offapi":
             from revChatGPT.V3 import Chatbot as ChatbotV3
+
             rand_token = randSelectInList(self.tokens)
             os.environ["API_URL"] = rand_token.domain
 
             self.chatbot = ChatbotV3(
                 api_key=rand_token.token,
+                engine="gpt-3.5-turbo-0613",
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=4096,
                 temperature=0.4,
@@ -95,10 +96,10 @@ class CGPT35Translate:
             from revChatGPT.V1 import Chatbot as ChatbotV1
 
             gpt_config = {
-                "access_token": randSelectInList(config.getBackendConfigSection("ChatGPT")["access_tokens"])["access_token"],
-                "proxy": randSelectInList(self.proxies)["addr"]
-                if self.proxies
-                else "",
+                "access_token": randSelectInList(
+                    config.getBackendConfigSection("ChatGPT")["access_tokens"]
+                )["access_token"],
+                "proxy": randSelectInList(self.proxies)["addr"] if self.proxies else "",
             }
             if gpt_config["proxy"] == "":
                 del gpt_config["proxy"]
@@ -134,7 +135,7 @@ class CGPT35Translate:
                 resp = ""
                 if self.type == "offapi":
                     if not self.full_context_mode:
-                        self.del_old_input()
+                        self._del_previous_message()
                     for data in self.chatbot.ask_stream(prompt_req):
                         print(data, end="", flush=True)
                         resp += data
@@ -150,6 +151,7 @@ class CGPT35Translate:
                         continue
                 traceback.print_exc()
                 LOGGER.error("Error:%s, 5秒后重试" % ex)
+                self._del_last_answer()
                 time.sleep(5)
                 continue
 
@@ -160,7 +162,7 @@ class CGPT35Translate:
             except:
                 LOGGER.info("->非json：\n" + result_text + "\n")
                 if self.type == "offapi":
-                    self.del_last_answer()
+                    self._del_last_answer()
                 elif self.type == "unoffapi":
                     self.reset_conversation()
                 continue
@@ -168,7 +170,7 @@ class CGPT35Translate:
             if len(result_json) != len(input_list):  # 输出行数错误
                 LOGGER.info("->错误的输出行数：\n" + result_text + "\n")
                 if self.type == "offapi":
-                    self.del_last_answer()
+                    self._del_last_answer()
                 elif self.type == "unoffapi":
                     self.reset_conversation()
                 continue
@@ -222,7 +224,7 @@ class CGPT35Translate:
 
             if error_flag:
                 if self.type == "offapi":
-                    self.del_last_answer()
+                    self._del_last_answer()
                 elif self.type == "unoffapi":
                     self.reset_conversation()
                 continue
@@ -256,24 +258,20 @@ class CGPT35Translate:
             self.chatbot.reset_chat()
             time.sleep(5)
 
-    def del_old_input(self):
+    def _del_previous_message(self) -> None:
+        """删除历史消息，只保留最后一次的翻译结果，节约tokens"""
         if self.type == "offapi":
-            # 删除过多的输入
-            for diag in self.chatbot.conversation["default"]:
-                if diag["role"] == "user":
-                    self.chatbot.conversation["default"].remove(diag)
-            # 删除过多的输出
-            for diag in self.chatbot.conversation["default"]:
-                if diag["role"] == "system":
-                    continue
-                if len(self.chatbot.conversation["default"]) > 2:
-                    self.chatbot.conversation["default"].remove(diag)
-                else:
-                    break
+            last_assistant_message = None
+            for message in self.chatbot.conversation["default"]:
+                if message["role"] == "assistant":
+                    last_assistant_message = message
+            system_message = self.chatbot.conversation["default"][0]
+            if last_assistant_message != None:
+                self.chatbot.conversation["default"]= [system_message, last_assistant_message]
         elif self.type == "unoffapi":
             pass
 
-    def del_last_answer(self):
+    def _del_last_answer(self):
         if self.type == "offapi":
             # 删除上次输出
             if self.chatbot.conversation["default"][-1]["role"] == "assistant":
@@ -330,13 +328,12 @@ class CGPT35Translate:
         chatgpt_dict: CGptDict = None,
         proofread: bool = False,
     ) -> CTransList:
-
         _, trans_list_unhit = get_transCache_from_json(
             trans_list, cache_file_path, retry_failed=retry_failed
         )
         if len(trans_list_unhit) == 0:
             return []
-        
+
         # 新文件重置chatbot
         if self.last_file_name != filename:
             self.reset_conversation()

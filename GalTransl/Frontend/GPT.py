@@ -66,7 +66,7 @@ def doGPT3TranslateSingleFile(
         find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
         arinashi_dict=arinashi_dict,
     )
-    save_transCache_to_json(trans_list, cache_file_path)
+    save_transCache_to_json(trans_list, cache_file_path, post_save=True)
     # 5、整理输出
     if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
         name_dict = load_name_table(
@@ -203,7 +203,7 @@ def doGPT4Translate(
             find_type=projectConfig.getProblemAnalyzeConfig("GPT4"),
             arinashi_dict=arinashi_dict,
         )
-        save_transCache_to_json(trans_list, cache_file_path)
+        save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 
         # 5、整理输出
         if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
@@ -314,7 +314,7 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
             find_type=projectConfig.getProblemAnalyzeConfig("bingGPT4"),
             arinashi_dict=arinashi_dict,
         )
-        save_transCache_to_json(trans_list, cache_file_path)
+        save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 
         # 5、整理输出
         if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):

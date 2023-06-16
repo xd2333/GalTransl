@@ -362,7 +362,7 @@ class CGPT4Translate:
                 result = trans.pre_zh if not proofread else trans.proofread_zh
                 LOGGER.info(result.replace("\r\n", "\\r\\n"))
             trans_result_list += trans_result
-            save_transCache_to_json(trans_list, cache_file_path, proofread=proofread)
+            save_transCache_to_json(trans_list, cache_file_path)
             LOGGER.info(
                 f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}"
             )

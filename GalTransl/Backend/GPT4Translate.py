@@ -246,16 +246,6 @@ class CGPT4Translate:
                     LOGGER.info(f"->第{trans_list[i].index}句空白")
                     error_flag = True
                     break
-                # 多余符号
-                elif ("(" in result[key_name] or "（" in result[key_name]) and (
-                    "(" not in trans_list[i].post_jp
-                    and "（" not in trans_list[i].post_jp
-                ):
-                    LOGGER.info(
-                        f"->第{trans_list[i].index}句多余括号：" + result[key_name] + "\n"
-                    )
-                    error_flag = True
-                    break
                 elif "*" in result[key_name] and "*" not in trans_list[i].post_jp:
                     LOGGER.info(
                         f"->第{trans_list[i].index}句多余 * 符号：" + result[key_name] + "\n"

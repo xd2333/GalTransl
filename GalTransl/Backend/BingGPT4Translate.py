@@ -241,7 +241,13 @@ class CBingGPT4Translate:
                     trans_list[i].proofread_by = "NewBing"
                     result_trans_list.append(trans_list[i])
 
+            if error_flag:
+                time.sleep(2)
+                await self.chatbot.reset()
+                continue
+
             if i + 1 != len(trans_list):
+                # force_NewBing_hs_mode下newbig第一句就拒绝了，为第一句标记为失败
                 if self.force_NewBing_hs_mode and bing_reject and i == -1:
                     if not proofread:
                         trans_list[0].pre_zh = "Failed translation"
@@ -253,6 +259,7 @@ class CBingGPT4Translate:
                     print("->NewBing大小姐拒绝了本次请求🙏\n")
                     self._change_cookie()
                     return 1, [trans_list[0]]
+                # 非force_NewBing_hs_mode下newbig拒绝了，为后面的句子标记为失败
                 elif not self.force_NewBing_hs_mode and bing_reject:
                     while i + 1 < len(trans_list):
                         i = i + 1
@@ -265,14 +272,6 @@ class CBingGPT4Translate:
                             trans_list[i].proofread_by = "NewBing(Failed)"
                     print("->NewBing大小姐拒绝了本次请求🙏\n")
                     self._change_cookie()
-                elif not self.force_NewBing_hs_mode:
-                    LOGGER.info(f"->翻译数量不对应")
-                    error_flag = True
-
-            if error_flag:
-                time.sleep(2)
-                await self.chatbot.reset()
-                continue
 
             return i + 1, result_trans_list
 

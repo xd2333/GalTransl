@@ -145,11 +145,10 @@ class CGPT35Translate:
                     for data in self.chatbot.ask(prompt_req):
                         resp = data["message"]
             except Exception as ex:
-                if hasattr(ex, "message"):
-                    if "try again later" in ex.message:
-                        LOGGER.info("-> 请求次数超限，5分钟后继续尝试")
-                        time.sleep(300)
-                        continue
+                if "try again later" in str(ex) or "too many requests" in str(ex):
+                    LOGGER.info("-> 请求次数超限，5分钟后继续尝试")
+                    time.sleep(300)
+                    continue
                 traceback.print_exc()
                 LOGGER.error("Error:%s, 5秒后重试" % ex)
                 self._del_last_answer()
@@ -199,8 +198,9 @@ class CGPT35Translate:
                     LOGGER.info(
                         f"->第{content[i].index}句多余 ： 符号：" + result[key_name] + "\n"
                     )
-                    error_flag = True
-                    break
+                    self.reset_conversation() # 重置会话替代重试
+                    # error_flag = True
+                    # break
                 elif "/" in result[key_name]:
                     if "／" not in content[i].post_jp and "/" not in content[i].post_jp:
                         LOGGER.info(
@@ -259,7 +259,10 @@ class CGPT35Translate:
                     last_assistant_message = message
             system_message = self.chatbot.conversation["default"][0]
             if last_assistant_message != None:
-                self.chatbot.conversation["default"]= [system_message, last_assistant_message]
+                self.chatbot.conversation["default"] = [
+                    system_message,
+                    last_assistant_message,
+                ]
         elif self.type == "unoffapi":
             pass
 

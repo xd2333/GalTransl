@@ -268,6 +268,8 @@ class CGPT35Translate:
             # 删除上次输出
             if self.chatbot.conversation["default"][-1]["role"] == "assistant":
                 self.chatbot.conversation["default"].pop()
+            elif self.chatbot.conversation["default"][-1]["role"] is None:
+                self.chatbot.conversation["default"].pop()
             # 删除上次输入
             if self.chatbot.conversation["default"][-1]["role"] == "user":
                 self.chatbot.conversation["default"].pop()

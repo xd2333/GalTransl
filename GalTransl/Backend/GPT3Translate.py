@@ -149,9 +149,12 @@ class CGPT35Translate:
                     LOGGER.info("-> 请求次数超限，5分钟后继续尝试")
                     time.sleep(300)
                     continue
+                if "expired" in str(ex):
+                    LOGGER.info("-> access_token过期，请更换")
+                    exit()
+                self._del_last_answer()
                 traceback.print_exc()
                 LOGGER.error("Error:%s, 5秒后重试" % ex)
-                self._del_last_answer()
                 time.sleep(5)
                 continue
 

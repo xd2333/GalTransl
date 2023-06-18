@@ -190,6 +190,8 @@ class CBingGPT4Translate:
                 result_text = result_text + "}"
             i = -1
             result_trans_list = []
+            key_name = "dst" if not proofread else "newdst"
+            error_flag = False
             for line in result_text.split("\n"):
                 try:
                     line_json = json.loads(line)  # 尝试解析json
@@ -199,8 +201,6 @@ class CBingGPT4Translate:
                         break
                     else:
                         continue
-
-                key_name = "dst" if not proofread else "newdst"
                 error_flag = False
                 # 本行输出不正常
                 if "id" not in line_json or type(line_json["id"]) != int:

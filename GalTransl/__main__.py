@@ -1,7 +1,7 @@
 import argparse
 from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.Runner import run_galtransl
-from GalTransl import PROGRAM_SPLASH, TRANSLATOR_SUPPORTED, CORE_VERSION, AUTHOR, CONTRIBUTORS
+from GalTransl import PROGRAM_SPLASH, TRANSLATOR_SUPPORTED, GALTRANSL_VERSION, AUTHOR, CONTRIBUTORS
 
 
 def main() -> int:
@@ -17,7 +17,7 @@ def main() -> int:
     args = parser.parse_args()
 
     print(PROGRAM_SPLASH)
-    print(f"GalTransl Core version: {CORE_VERSION}")
+    print(f"GalTransl Core version: {GALTRANSL_VERSION}")
     print(f"Author: {AUTHOR}")
     print(f"Contributors: {CONTRIBUTORS}")
 

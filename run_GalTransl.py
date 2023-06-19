@@ -5,7 +5,7 @@ from GalTransl import (
     AUTHOR,
     CONFIG_FILENAME,
     CONTRIBUTORS,
-    CORE_VERSION,
+    GALTRANSL_VERSION,
     PROGRAM_SPLASH,
     TRANSLATOR_SUPPORTED,
 )
@@ -13,7 +13,7 @@ from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.Runner import run_galtransl
 
 print(PROGRAM_SPLASH)
-print(f"GalTransl Core version: {CORE_VERSION}")
+print(f"GalTransl version: {GALTRANSL_VERSION}")
 print(f"Author: {AUTHOR}")
 print(f"Contributors: {CONTRIBUTORS}\n")
 

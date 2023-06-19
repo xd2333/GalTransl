@@ -47,7 +47,6 @@ SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, base
 
 class CGPT35Translate:
     def __init__(self, config: CProjectConfig, type):
-        LOGGER.info("ChatGPT transl-api version: 1.1.0 [2023.06.09]")
         self.type = type
         self.last_file_name = ""
         if val := config.getKey("gpt.lineBreaksImprovementMode"):

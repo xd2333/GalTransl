@@ -4,3 +4,4 @@ __pycache__/
 # VSCode
 .vscode
 useful_tools/GalTransl_DumpInjector/config.ini
+useful_tools/GalTransl_DumpInjector/VNTextPatch/names.xml

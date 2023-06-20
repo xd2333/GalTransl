@@ -124,8 +124,8 @@ class CBingGPT4Translate:
         while True:  # 一直循环，直到得到数据
             try:
                 self.request_count += 1
-                LOGGER.info("->请求次数：" + str(self.request_count) + "\n")
-                LOGGER.info("->输出：\n")
+                LOGGER.info("->请求次数：" + str(self.request_count))
+                LOGGER.info("->输出：")
                 wrote_len = 0
                 resp = ""
                 bing_reject = False
@@ -202,23 +202,31 @@ class CBingGPT4Translate:
                 error_flag = False
                 # 本行输出不正常
                 if "id" not in line_json or type(line_json["id"]) != int:
-                    LOGGER.info(f"->没id不正常")
+                    LOGGER.error(f"->没id不正常")
                     error_flag = True
                     break
                 line_id = line_json["id"]
                 if line_id != trans_list[i].index:
-                    LOGGER.info(f"->id不对应")
+                    LOGGER.error(f"->id不对应")
                     error_flag = True
                     break
                 if key_name not in line_json or type(line_json[key_name]) != str:
-                    LOGGER.info(f"->第{line_id}句不正常")
+                    LOGGER.error(f"->第{line_id}句不正常")
                     error_flag = True
                     break
                 # 本行输出不应为空
                 if trans_list[i].post_jp != "" and line_json[key_name] == "":
-                    LOGGER.info(f"->第{line_id}句空白")
+                    LOGGER.error(f"->第{line_id}句空白")
                     error_flag = True
                     break
+                if "/" in line_json[key_name]:
+                    if (
+                        "／" not in trans_list[i].post_jp
+                        and "/" not in trans_list[i].post_jp
+                    ):
+                        LOGGER.error(f"->第{line_id}句多余 / 符号：" + line_json[key_name])
+                        error_flag = True
+                        break
 
                 line_json[key_name] = zhconv.convert(
                     line_json[key_name], "zh-cn"

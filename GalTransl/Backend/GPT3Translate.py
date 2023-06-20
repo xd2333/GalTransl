@@ -182,38 +182,36 @@ class CGPT35Translate:
             for i, result in enumerate(result_json):
                 # 本行输出不正常
                 if key_name not in result or type(result[key_name]) != str:
-                    LOGGER.info(f"->第{content[i].index}句不正常")
+                    LOGGER.error(f"->第{content[i].index}句不正常")
                     error_flag = True
                     break
                 # 本行输出不应为空
                 if content[i].post_jp != "" and result[key_name] == "":
-                    LOGGER.info(f"->第{content[i].index}句空白")
+                    LOGGER.error(f"->第{content[i].index}句空白")
                     error_flag = True
                     break
-                elif "*" in result[key_name] and "*" not in content[i].post_jp:
-                    LOGGER.info(
-                        f"->第{content[i].index}句多余 * 符号：" + result[key_name] + "\n"
-                    )
-                    error_flag = True
-                    break
-                elif "：" in result[key_name] and "：" not in content[i].post_jp:
-                    LOGGER.info(
-                        f"->第{content[i].index}句多余 ： 符号：" + result[key_name] + "\n"
-                    )
-                    self.reset_conversation() # 重置会话替代重试
+                if "*" in result[key_name] and "*" not in content[i].post_jp:
+                    LOGGER.warning(f"->第{content[i].index}句多余 * 符号：" + result[key_name])
+                    result[key_name] = result[key_name].replace("*", "")
+                    self.reset_conversation()  # 重置会话替代重试
                     # error_flag = True
                     # break
-                elif "/" in result[key_name]:
+                if "：" in result[key_name] and "：" not in content[i].post_jp:
+                    LOGGER.warning(f"->第{content[i].index}句多余 ： 符号：" + result[key_name])
+                    self.reset_conversation()  # 重置会话替代重试
+                    # error_flag = True
+                    # break
+                if "/" in result[key_name]:
                     if "／" not in content[i].post_jp and "/" not in content[i].post_jp:
-                        LOGGER.info(
-                            f"->第{content[i].index}句多余 / 符号：" + result[key_name] + "\n"
+                        LOGGER.error(
+                            f"->第{content[i].index}句多余 / 符号：" + result[key_name]
                         )
                         error_flag = True
                         break
 
             if self.line_breaks_improvement_mode and len(input_list) > 3:
                 if "\\r\\n" in input_json and "\\r\\n" not in result_text:
-                    LOGGER.info("->触发换行符改善模式")
+                    LOGGER.warning("->触发换行符改善模式")
                     error_flag = True
 
             if error_flag:

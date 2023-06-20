@@ -308,6 +308,10 @@ class VNTextPatchGUI:
             return False
         self.output_textbox.delete(1.0, tk.END)
         engine = self.engine_var.get()
+        if " " in script_jp_folder:
+            script_jp_folder = f'"{script_jp_folder}"'
+        if " " in json_jp_folder:
+            json_jp_folder = f'"{json_jp_folder}"'
         if engine != "自动判断":
             cmd = f".\\VNTextPatch\\VNTextPatch.exe extractlocal {script_jp_folder} {json_jp_folder} --format={engine}"
         else:
@@ -346,6 +350,12 @@ class VNTextPatchGUI:
         else:
             cmd = ".\\VNTextPatch\\VNTextPatchGBK.exe "
 
+        if " " in script_jp_folder:
+            script_jp_folder = f'"{script_jp_folder}"'
+        if " " in json_cn_folder:
+            json_cn_folder = f'"{json_cn_folder}"'
+        if " " in script_cn_folder:
+            script_cn_folder = f'"{script_cn_folder}"'
         engine = self.engine_var.get()
         if engine != "自动判断":
             cmd = (

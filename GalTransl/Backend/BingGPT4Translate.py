@@ -77,6 +77,10 @@ class CBingGPT4Translate:
             self.force_NewBing_hs_mode = val
         else:
             self.force_NewBing_hs_mode = False
+        if val := config.getKey("gpt.streamOutputMode"):
+            self.streamOutputMode = val  # 流式输出模式
+        else:
+            self.streamOutputMode = False
         self.cookiefile_list = cookiefile_list
         self.current_cookie_file = ""
         self.throttled_cookie_list = []
@@ -139,11 +143,13 @@ class CBingGPT4Translate:
                 ):
                     if not final:
                         if not wrote_len:
-                            print(response, end="")
-                            sys.stdout.flush()
+                            if self.streamOutputMode:
+                                print(response, end="")
+                                sys.stdout.flush()
                         else:
-                            print(response[wrote_len:], end="")
-                            sys.stdout.flush()
+                            if self.streamOutputMode:
+                                print(response[wrote_len:], end="")
+                                sys.stdout.flush()
                         wrote_len = len(response)
 
                     if wrote_len > len(response):
@@ -175,6 +181,8 @@ class CBingGPT4Translate:
                 continue
 
             result_text = resp["item"]["messages"][1]["text"]
+            if not self.streamOutputMode:
+                LOGGER.info(result_text)
             result_text = result_text[result_text.find('{"id') :]
             # 修复丢冒号
             result_text = (

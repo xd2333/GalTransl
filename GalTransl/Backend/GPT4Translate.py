@@ -95,6 +95,10 @@ class CGPT4Translate:
             self.full_context_mode = val  # 挥霍token模式
         else:
             self.full_context_mode = False
+        if val := config.getKey("gpt.streamOutputMode"):
+            self.streamOutputMode = val  # 流式输出模式
+        else:
+            self.streamOutputMode = False
         if val := initGPTToken(config):
             self.tokens = []
             for i in val:
@@ -189,16 +193,17 @@ class CGPT4Translate:
                     if not self.full_context_mode:
                         self._del_previous_message()
                     for data in self.chatbot.ask_stream(prompt_req):
-                        print(data, end="", flush=True)
+                        if self.streamOutputMode:
+                            print(data, end="", flush=True)
                         resp += data
 
                 if self.type == "unoffapi":
                     for data in self.chatbot.ask(prompt_req):
-                        print(data["message"][len(resp) :], end="", flush=True)
+                        if self.streamOutputMode:
+                            print(data["message"][len(resp) :], end="", flush=True)
                         resp = data["message"]
-                    # LOGGER.info(resp)
-
-                LOGGER.info("\n")
+                if not self.streamOutputMode:
+                    LOGGER.info(resp)
             except Exception as ex:
                 if "try again later" in str(ex) or "too many requests" in str(ex):
                     LOGGER.info("-> 请求次数超限，5分钟后继续尝试")

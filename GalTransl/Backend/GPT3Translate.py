@@ -61,6 +61,10 @@ class CGPT35Translate:
             self.full_context_mode = val  # 挥霍token模式
         else:
             self.full_context_mode = False
+        if val := config.getKey("gpt.streamOutputMode"):
+            self.streamOutputMode = val  # 流式输出模式
+        else:
+            self.streamOutputMode = False
         if val := initGPTToken(config):
             self.tokens: list[COpenAIToken] = []
             for i in val:
@@ -137,12 +141,16 @@ class CGPT35Translate:
                     if not self.full_context_mode:
                         self._del_previous_message()
                     for data in self.chatbot.ask_stream(prompt_req):
-                        print(data, end="", flush=True)
+                        if self.streamOutputMode:
+                            print(data, end="", flush=True)
                         resp += data
-                    print()
                 if self.type == "unoffapi":
                     for data in self.chatbot.ask(prompt_req):
+                        if self.streamOutputMode:
+                            print(data["message"][len(resp) :], end="", flush=True)
                         resp = data["message"]
+                if not self.streamOutputMode:
+                    LOGGER.info(resp)
             except Exception as ex:
                 if "try again later" in str(ex) or "too many requests" in str(ex):
                     LOGGER.info("-> 请求次数超限，5分钟后继续尝试")
@@ -360,8 +368,10 @@ class CGPT35Translate:
                 self.asyncTranslate(trans_list_split, dic_prompt)
             )
             i += num_pre_request
+            result_output = ""
             for trans in trans_result:
-                LOGGER.info(trans.pre_zh.replace("\r\n", "\\r\\n"))
+                result_output = result_output + repr(trans)
+            LOGGER.info(result_output)
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path)
             LOGGER.info(

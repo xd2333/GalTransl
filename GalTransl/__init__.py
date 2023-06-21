@@ -14,7 +14,7 @@ PROGRAM_SPLASH = """
   \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|                                           
 """
 
-GALTRANSL_VERSION = "2.1.1"
+GALTRANSL_VERSION = "2.2.0"
 AUTHOR = "cx2333"
 CONTRIBUTORS = "ryank231231, Isotr0py"
 

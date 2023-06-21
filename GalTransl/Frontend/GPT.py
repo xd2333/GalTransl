@@ -6,6 +6,7 @@ from os.path import exists as isPathExists
 from os import makedirs as mkdir
 from os import listdir
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
+import traceback
 from GalTransl.Backend.GPT3Translate import CGPT35Translate
 from GalTransl.Backend.GPT4Translate import CGPT4Translate
 from GalTransl.Backend.BingGPT4Translate import CBingGPT4Translate
@@ -297,6 +298,10 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
             except KeyboardInterrupt:
                 LOGGER.info("->KeyboardInterrupt")
                 exit(0)
+            except Exception as e:
+                LOGGER.error("->Exception: %s", e)
+                LOGGER.error("->Exception: %s", traceback.format_exc())
+                LOGGER.info("->Retrying...")
             finally:
                 if success:
                     break

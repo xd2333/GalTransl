@@ -196,7 +196,7 @@ class CGPT4Translate:
                     for data in self.chatbot.ask(prompt_req):
                         print(data["message"][len(resp) :], end="", flush=True)
                         resp = data["message"]
-                    LOGGER.info(resp)
+                    # LOGGER.info(resp)
 
                 LOGGER.info("\n")
             except Exception as ex:
@@ -237,8 +237,12 @@ class CGPT4Translate:
 
                 error_flag = False
                 # 本行输出不正常
-                if "id" not in line_json or type(line_json["id"]) != int:
-                    LOGGER.error(f"->没id不正常")
+                if (
+                    "id" not in line_json
+                    or type(line_json["id"]) != int
+                    or i > len(trans_list) - 1
+                ):
+                    LOGGER.error(f"->输出不正常")
                     error_flag = True
                     break
                 line_id = line_json["id"]

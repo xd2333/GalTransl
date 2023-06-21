@@ -286,7 +286,7 @@ class CGPT4Translate:
 
             if error_flag:
                 if self.type == "offapi":
-                    self.del_last_answer()
+                    self._del_last_answer()
                 elif self.type == "unoffapi":
                     self.reset_conversation()
                 continue

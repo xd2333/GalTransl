@@ -8,6 +8,7 @@ from os import listdir
 from typing import Optional
 from asyncio import Semaphore, gather
 from time import time
+import traceback
 from GalTransl.Backend.GPT3Translate import CGPT35Translate
 from GalTransl.Backend.GPT4Translate import CGPT4Translate
 from GalTransl.Backend.BingGPT4Translate import CBingGPT4Translate
@@ -72,7 +73,7 @@ async def doGPT3TranslateSingleFile(
         find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
         arinashi_dict=arinashi_dict,
     )
-    save_transCache_to_json(trans_list, cache_file_path)
+    save_transCache_to_json(trans_list, cache_file_path, post_save=True)
     # 5、整理输出
     if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
         name_dict = load_name_table(
@@ -250,7 +251,7 @@ async def doGPT4Translate(
             find_type=projectConfig.getProblemAnalyzeConfig("GPT4"),
             arinashi_dict=arinashi_dict,
         )
-        save_transCache_to_json(trans_list, cache_file_path)
+        save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 
         # 5、整理输出
         if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
@@ -346,6 +347,10 @@ async def doNewBingTranslate(
             except KeyboardInterrupt:
                 LOGGER.info("->KeyboardInterrupt")
                 exit(0)
+            except Exception as e:
+                LOGGER.error("->Exception: %s", e)
+                LOGGER.error("->Exception: %s", traceback.format_exc())
+                LOGGER.info("->Retrying...")
             finally:
                 if success:
                     break
@@ -363,7 +368,7 @@ async def doNewBingTranslate(
             find_type=projectConfig.getProblemAnalyzeConfig("bingGPT4"),
             arinashi_dict=arinashi_dict,
         )
-        save_transCache_to_json(trans_list, cache_file_path)
+        save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 
         # 5、整理输出
         if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):

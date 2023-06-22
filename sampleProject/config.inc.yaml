@@ -1,21 +1,23 @@
 ---
 # 通用（杂项）设置
 common:
-  loggingLevel: info # 日志等级，可选 ["debug", "info", "warning", "error"]
-  retranslFail: false # 重翻NewBing拒绝翻译的句子，True/False
-  multiThread: false # 多线程，True/False（暂不可用）
+  loggingLevel: info # 日志等级，可选 [debug/info/warning/error]
+  retranslFail: false # 重翻NewBing拒绝翻译的句子。[True/False]
+  multiThread: false # 多线程，[True/False]（暂不可用）
+  gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果。[True/False]
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
-  gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。True/False
+  gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。[True/False]
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
-  gpt.degradeBackend: false # 是否将 GPT4 的key用于 GPT3.5 的请求。True/False
-  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，减少丢换行符情况，但可能导致循环重试。True/False
-  gpt.restoreContextMode: true # (GPT3.5/4官方API)重启自动恢复上下文。True/False
-  gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token
-  gpt.fullContextMode: false # (GPT3.5/4官方API)保留更多前文，消耗token约翻4倍。True/False
+  gpt.degradeBackend: false # (GPT3.5/4 官方API)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
+  gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启自动恢复上下文。[True/False]
+  gpt.fullContextMode: false # (GPT3.5/4 官方API)尽可能多的保留前文，翻译逻辑性更好，消耗token约翻4倍。[True/False]
+  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，减少丢换行符情况，但可能导致循环重试。[True/False]
+  gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
+  gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。[True/False]
 
 # 代理设置
 proxy:
-  enableProxy: false # 是否启用代理，True/False
+  enableProxy: false # 是否启用代理。[True/False]
   proxies:
     - address: socks5://127.0.0.1:10818
       # username: foo

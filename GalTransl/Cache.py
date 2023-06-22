@@ -8,7 +8,15 @@ from json import dump, load, JSONDecodeError
 import os
 
 
-def save_transCache_to_json(trans_list: CTransList, cache_file_path, proofread=False):
+def save_transCache_to_json(trans_list: CTransList, cache_file_path, post_save=False):
+    """
+    此函数将翻译缓存保存到 JSON 文件中。
+
+    Args:
+        trans_list (CTransList): 要保存的翻译列表。
+        cache_file_path (str): 要保存到的 JSON 文件的路径。
+        post_save (bool, optional): 是否是翻译结束后的存储。默认为 False。
+    """
     cache_json = []
 
     for tran in trans_list:
@@ -25,7 +33,7 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, proofread=F
 
         cache_obj["proofread_zh"] = tran.proofread_zh
 
-        if tran.problem != "":
+        if post_save and tran.problem != "":
             cache_obj["problem"] = tran.problem
 
         cache_obj["trans_by"] = tran.trans_by
@@ -37,6 +45,8 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, proofread=F
             cache_obj["doub_content"] = tran.doub_content
         if tran.unknown_proper_noun != "":
             cache_obj["unknown_proper_noun"] = tran.unknown_proper_noun
+        if post_save:
+            cache_obj["post_zh_preview"] = tran.post_zh
         cache_json.append(cache_obj)
 
     with open(cache_file_path, mode="w", encoding="utf8") as f:
@@ -46,6 +56,18 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, proofread=F
 def get_transCache_from_json(
     trans_list: CTransList, cache_file_path, retry_failed=False, proofread=False
 ):
+    """
+    此函数从 JSON 文件中检索翻译缓存，并相应地更新翻译列表。
+
+    Args:
+        trans_list (CTransList): 要检索的翻译列表。
+        cache_file_path (str): 包含翻译缓存的 JSON 文件的路径。
+        retry_failed (bool, optional): 是否重试失败的翻译。默认为 False。
+        proofread (bool, optional): 是否是校对模式。默认为 False。
+
+    Returns:
+        Tuple[List[CTrans], List[CTrans]]: 包含两个列表的元组：击中缓存的翻译列表和未击中缓存的翻译列表。
+    """
     if not os.path.exists(cache_file_path):
         return [], trans_list
 

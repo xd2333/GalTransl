@@ -13,7 +13,7 @@
   7. 结合其他项目支持多引擎脚本一键解包与注入，提供完整教程降低上手难度   
 
 ## 前言
-* 最早做这个工具的初衷是在两年前发现大部分机翻补丁的质量太影响观感（人名都翻不对），于是断断续续的结合彩云小译开始写这个工具，期间还推倒重做了一次~~（源码弄丢）~~，用python重写了这个项目。在去年年底ChatGPT出现后开始研究将GPT引入Gal翻译，并逐步形成了这套体系。   
+* 最早做这个工具的初衷是在两年前发现大部分机翻补丁的质量太影响观感（人名都翻不对），于是断断续续的结合彩云小译开始写这个工具，期间还推倒重做了一次（~~源码弄丢~~），用python重写了这个项目。在去年年底ChatGPT出现后开始研究将GPT引入Gal翻译，并逐步形成了这套体系。   
 
 * 开源是因为下半年要转去忙自己的事了，以后可能也没什么时间搞这些了（~~开源了以后你们做，我玩2333~~）。另外项目整体已经有一定的完成度，拿得出手了。   
    
@@ -465,10 +465,13 @@ $str20	$str20	player's codename, boy
 `doub_content`  存疑片段，仅NewBing、GPT4支持，代表翻译引擎觉得翻译可能不准确的地方   
 `unknown_proper_noun`  未知专有名词，仅NewBing、GPT4支持，方便后期人工修正   
 `problem`  存储问题。见下方自动化找错。   
+`post_zh_preview`  用于预览json_cn，但对它的修改并不会应用到json_cn，要修改`pre_jp`/`proofread_zh`
 
 * 简单讲下如何用Emeditor修缓存：选中一个文件，先右键-Emeditor打开，然后把transl_cache内所有文件全选拖进去。   
 这时候标签可能会占很大位置，右键标签-自定义标签页，将"标签不合适时"改成"无"，这样标签就只会在一行了。   
 接着ctrl+f搜索，搜索你感兴趣的关键字（如problem、doub_content），勾选"搜索组群中所有文档"，即可快速在所有文件中搜索，或点提取快速预览所有的问题。   
+
+* 在确定需要修改的内容后，直接修改对应句子的`pre_zh`，或`proofread_zh`，然后重新运行程序，就会生成新的json_cn
   
 </details>
 
@@ -534,17 +537,19 @@ arinashi_dict是一个可以自定义规则的找问题字典，配置格式为
 ```yaml
 # 通用（杂项）设置
 common:
-  loggingLevel: info # 日志等级，可选 ["debug", "info", "warning", "error"]
-  retranslFail: false # 重翻NewBing拒绝翻译的句子，True/False
-  multiThread: false # 多线程，True/False（暂不可用）
+  loggingLevel: info # 日志等级，可选 [debug/info/warning/error]
+  retranslFail: false # 重翻NewBing拒绝翻译的句子。[True/False]
+  multiThread: false # 多线程，[True/False]（暂不可用）
+  gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果。[True/False]
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
-  gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。True/False
+  gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。[True/False]
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
-  gpt.degradeBackend: false # 是否将 GPT4 的key用于 GPT3.5 的请求。True/False
-  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，减少丢换行符情况，但可能导致循环重试。True/False
-  gpt.restoreContextMode: true # (GPT3.5/4官方API)重启自动恢复上下文。True/False
-  gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token
-  gpt.fullContextMode: false # (GPT3.5/4官方API)保留更多前文，消耗token约翻4倍。True/False
+  gpt.degradeBackend: false # (GPT3.5/4 官方API)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
+  gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启自动恢复上下文。[True/False]
+  gpt.fullContextMode: false # (GPT3.5/4 官方API)尽可能多的保留前文，翻译逻辑性更好，消耗token约翻4倍。[True/False]
+  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，减少丢换行符情况，但可能导致循环重试。[True/False]
+  gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
+  gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。[True/False]
 ```
 
 

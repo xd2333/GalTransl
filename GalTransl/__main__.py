@@ -35,7 +35,7 @@ def main() -> int:
     LOGGER.setLevel(DEBUG_LEVEL[args.debug_level])
 
     print(PROGRAM_SPLASH)
-    print(f"GalTransl Core version: {CORE_VERSION}")
+    print(f"GalTransl Core version: {GALTRANSL_VERSION}")
     print(f"Author: {AUTHOR}")
     print(f"Contributors: {CONTRIBUTORS}")
 
@@ -45,11 +45,11 @@ def main() -> int:
     try:
         run(run_galtransl(cfg, args.translator))
     except KeyboardInterrupt:
-        LOGGER.info("æ­£åœ¨ç­‰å¾…ç°æœ‰è¯·æ±‚è¿”å›...")
+        LOGGER.info("ÕıÔÚµÈ´ıÏÖÓĞÇëÇó·µ»Ø...")
         loop.stop()
         LOGGER.info("Goodbye.")
     except RuntimeError as ex:
-        LOGGER.error("ç¨‹åºé‡åˆ°é—®é¢˜ï¼Œå³å°†é€€å‡ºï¼ˆè¯Šæ–­ä¿¡æ¯ï¼š%sï¼‰", ex)
+        LOGGER.error("³ÌĞòÓöµ½ÎÊÌâ£¬¼´½«ÍË³ö£¨Õï¶ÏĞÅÏ¢£º%s£©", ex)
     except BaseException as ex:
         print(ex)
         traceback.print_exception(type(ex), ex, ex.__traceback__)

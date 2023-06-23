@@ -1,4 +1,5 @@
 import json, time, asyncio, zhconv, os
+import traceback
 from GalTransl import LOGGER
 from sys import exit
 from GalTransl.ConfigHelper import (
@@ -131,7 +132,7 @@ class CGPT4Translate:
             from revChatGPT.V1 import Chatbot as ChatbotV1
 
             gpt_config = {
-                "model": "gpt-4",
+                "model": "gpt-4-mobile",
                 "paid": True,
                 "access_token": randSelectInList(
                     config.getBackendConfigSection("ChatGPT")["access_tokens"]
@@ -205,6 +206,7 @@ class CGPT4Translate:
                 if not self.streamOutputMode:
                     LOGGER.info(resp)
             except Exception as ex:
+                LOGGER.error(ex)
                 if "try again later" in str(ex) or "too many requests" in str(ex):
                     LOGGER.info("-> 请求次数超限，5分钟后继续尝试")
                     time.sleep(300)

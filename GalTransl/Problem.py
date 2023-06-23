@@ -15,13 +15,14 @@ class CTranslateProblem(Enum):
     """
 
     词频过高 = 1
+    标点错漏 = 2
     本无括号 = 2
-    本无引号 = 3
-    残留日文 = 4
-    丢失换行 = 5
-    多加换行 = 6
-    比日文长 = 7
-    彩云不识 = 8
+    本无引号 = 2
+    残留日文 = 3
+    丢失换行 = 4
+    多加换行 = 5
+    比日文长 = 6
+    彩云不识 = 7
 
 
 def find_problems(
@@ -45,26 +46,39 @@ def find_problems(
             most_word, word_count = get_most_common_char(find_from_str)
             if word_count > 20 and most_word != ".":
                 problem_list.append(f"词频过高-'{most_word}'{str(word_count)}次")
-        if CTranslateProblem.本无括号 in find_type:
-            if "（" not in tran.pre_jp and (
-                "（" in find_from_str or ")" in find_from_str
+        if CTranslateProblem.标点错漏 in find_type:
+            if "（" not in tran.pre_jp and ")" not in tran.pre_jp:
+                if "（" in find_from_str or ")" in find_from_str:
+                    problem_list.append("本无括号")
+            elif "（" in tran.pre_jp:
+                if "（" not in find_from_str and ")" not in find_from_str:
+                    problem_list.append("本有括号")
+
+            if "：" not in tran.pre_jp:
+                if "：" in find_from_str:
+                    problem_list.append("本无冒号")
+            elif "：" in tran.pre_jp:
+                if "：" not in find_from_str:
+                    problem_list.append("本有冒号")
+
+            if (
+                "『" not in tran.post_jp
+                and "「" not in tran.post_jp
+                and "“" not in tran.post_jp
             ):
-                problem_list.append("本无括号")
-        if CTranslateProblem.本无引号 in find_type:
-            if "『" not in tran.post_jp and "「" not in tran.post_jp:
                 if "‘" in find_from_str or "“" in find_from_str:
                     problem_list.append("本无引号")
         if CTranslateProblem.残留日文 in find_type:
             if contains_japanese(find_from_str):
                 problem_list.append("残留日文")
         if CTranslateProblem.丢失换行 in find_type:
-            if tran.pre_jp.count("\r\n") > find_from_str.count("\r\n"):
+            if tran.pre_jp.count("\n") > find_from_str.count("\n"):
                 problem_list.append("丢失换行")
         if CTranslateProblem.多加换行 in find_type:
-            if tran.pre_jp.count("\r\n") < find_from_str.count("\r\n"):
+            if tran.pre_jp.count("\n") < find_from_str.count("\n"):
                 problem_list.append("多加换行")
         if CTranslateProblem.比日文长 in find_type:
-            if len(find_from_str) > len(tran.pre_jp) * 1.2:
+            if len(find_from_str) > len(tran.pre_jp) * 1.3:
                 problem_list.append(
                     f"比日文长{round(len(find_from_str)/len(tran.pre_jp),1)}倍"
                 )

@@ -159,6 +159,10 @@ class CGPT35Translate:
                 if "expired" in str(ex):
                     LOGGER.info("-> access_token过期，请更换")
                     exit()
+                if "try reload" in str(ex):
+                    self.reset_conversation()
+                    LOGGER.info("-> 报错重置会话")
+                    continue
                 self._del_last_answer()
                 traceback.print_exc()
                 LOGGER.error("Error:%s, 5秒后重试" % ex)

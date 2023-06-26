@@ -132,7 +132,7 @@ class CGPT4Translate:
             from revChatGPT.V1 import Chatbot as ChatbotV1
 
             gpt_config = {
-                "model": "gpt-4-mobile",
+                "model": "gpt-4",
                 "paid": True,
                 "access_token": randSelectInList(
                     config.getBackendConfigSection("ChatGPT")["access_tokens"]
@@ -214,6 +214,10 @@ class CGPT4Translate:
                 if "expired" in str(ex):
                     LOGGER.info("-> access_token过期，请更换")
                     exit()
+                if "try reload" in str(ex):
+                    self.reset_conversation()
+                    LOGGER.info("-> 报错重置会话")
+                    continue
                 self._del_last_answer()
                 LOGGER.info("-> 报错:%s, 5秒后重试" % ex)
                 time.sleep(5)

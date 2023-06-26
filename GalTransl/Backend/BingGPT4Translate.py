@@ -8,7 +8,7 @@ from sys import exit
 
 from opencc import OpenCC
 from typing import Optional
-from EdgeGPT import Chatbot, ConversationStyle
+from EdgeGPT.EdgeGPT import Chatbot, ConversationStyle
 from GalTransl import LOGGER
 from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
@@ -94,10 +94,10 @@ class CBingGPT4Translate:
         self.request_count = 0
         self.sleep_time = 0
         self.last_file_name = ""
-        asyncio.run(self._change_cookie())
         self.opencc = OpenCC()
 
     async def translate(self, trans_list: CTransList, dict="", proofread=False):
+        await self._change_cookie()
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT
         input_list = []
         for i, trans in enumerate(trans_list):
@@ -164,6 +164,8 @@ class CBingGPT4Translate:
             except asyncio.CancelledError:
                 raise
             except Exception as ex:
+                print(ex)
+                traceback.print_exc()
                 if "Request is throttled." in str(ex):
                     LOGGER.info("->Request is throttled.")
                     self.throttled_cookie_list.append(self.current_cookie_file)
@@ -186,7 +188,7 @@ class CBingGPT4Translate:
 
             result_text = resp["item"]["messages"][1]["text"]
             if not self.streamOutputMode:
-                LOGGER.info(result_text)
+                LOGGER.info("Translate result: %s", result_text)
             result_text = result_text[result_text.find('{"id') :]
             # 修复丢冒号
             result_text = (
@@ -208,8 +210,12 @@ class CBingGPT4Translate:
                     i += 1
                 except:
                     if bing_reject and self.force_NewBing_hs_mode and i == -1:
+                        LOGGER.warning(
+                            "->NewBing大小姐拒绝了本次请求🙏 (forceNewBingHs enabled)\n"
+                        )
                         break
                     else:
+                        LOGGER.warning("NB输出格式异常")
                         continue
                 error_flag = False
                 # 本行输出不正常
@@ -243,10 +249,7 @@ class CBingGPT4Translate:
                         LOGGER.error(f"->第{line_id}句多余 / 符号：" + line_json[key_name])
                         error_flag = True
                         break
-
-                line_json[key_name] = zhconv.convert(
-                    line_json[key_name], "zh-cn"
-                )  # 防止出现繁体
+                line_json[key_name] = self.opencc.convert(line_json[key_name])  # 防止出现繁体
                 if not proofread:
                     trans_list[i].pre_zh = line_json[key_name]
                     trans_list[i].post_zh = line_json[key_name]
@@ -268,7 +271,6 @@ class CBingGPT4Translate:
                 time.sleep(2)
                 await self.chatbot.reset()
                 continue
-
             if i + 1 != len(trans_list):
                 if bing_reject:
                     LOGGER.warning("->NewBing大小姐拒绝了本次请求🙏\n")
@@ -300,7 +302,7 @@ class CBingGPT4Translate:
 
             return i + 1, result_trans_list
 
-    def batch_translate(
+    async def batch_translate(
         self,
         filename,
         cache_file_path,
@@ -323,7 +325,7 @@ class CBingGPT4Translate:
         Returns:
             CTransList: _description_
         """
-
+        await self._change_cookie()
         _, trans_list_unhit = get_transCache_from_json(
             trans_list, cache_file_path, retry_failed=retry_failed, proofread=proofread
         )
@@ -351,8 +353,8 @@ class CBingGPT4Translate:
             else:
                 dic_prompt = ""
 
-            num, trans_result = asyncio.run(
-                self.translate(trans_list_split, dic_prompt, proofread=proofread)
+            num, trans_result = await self.translate(
+                trans_list_split, dic_prompt, proofread=proofread
             )
             if num > 0:
                 i += num

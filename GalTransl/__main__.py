@@ -5,7 +5,7 @@ from GalTransl.Runner import run_galtransl
 from GalTransl import (
     PROGRAM_SPLASH,
     TRANSLATOR_SUPPORTED,
-    CORE_VERSION,
+    GALTRANSL_VERSION,
     AUTHOR,
     CONTRIBUTORS,
     LOGGER,
@@ -45,11 +45,11 @@ def main() -> int:
     try:
         run(run_galtransl(cfg, args.translator))
     except KeyboardInterrupt:
-        LOGGER.info("ÕıÔÚµÈ´ıÏÖÓĞÇëÇó·µ»Ø...")
+        LOGGER.info("æ­£åœ¨ç­‰å¾…ç°æœ‰è¯·æ±‚è¿”å›...")
         loop.stop()
         LOGGER.info("Goodbye.")
     except RuntimeError as ex:
-        LOGGER.error("³ÌĞòÓöµ½ÎÊÌâ£¬¼´½«ÍË³ö£¨Õï¶ÏĞÅÏ¢£º%s£©", ex)
+        LOGGER.error("ç¨‹åºé‡åˆ°é—®é¢˜ï¼Œå³å°†é€€å‡ºï¼ˆè¯Šæ–­ä¿¡æ¯ï¼š%sï¼‰", ex)
     except BaseException as ex:
         print(ex)
         traceback.print_exception(type(ex), ex, ex.__traceback__)

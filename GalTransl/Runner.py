@@ -9,8 +9,10 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     start_time = time.time()
     proxyPool = CProxyPool(cfg) if cfg.getKey("internals.enableProxy") else None
     OpenAITokenPool = COpenAITokenPool(cfg)
-    await proxyPool.checkAvailablity()
-    await OpenAITokenPool.checkTokenAvailablity(proxyPool.getProxy())
+    if proxyPool:
+        await proxyPool.checkAvailablity()
+    if translator != "newbing":
+        await OpenAITokenPool.checkTokenAvailablity(proxyPool.getProxy())
 
     if translator == "gpt35":
         await doGPT3Translate(cfg, OpenAITokenPool, proxyPool)
@@ -21,7 +23,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     elif translator == "chatgpt-gpt4":
         await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, type="unoffapi")
     elif translator == "newbing":
-        await doNewBingTranslate(cfg)
+        await doNewBingTranslate(cfg, proxyPool)
     elif translator == "caiyun":
         raise RuntimeError("Work in progress!")
     end_time = time.time()

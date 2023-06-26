@@ -79,19 +79,13 @@ async def doGPT3TranslateSingleFile(
         name_dict = load_name_table(
             joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
         )
-        save_transCache_to_json(trans_list, cache_file_path)
-        # 5、整理输出
-        if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
-            name_dict = load_name_table(
-                joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
-            )
-        else:
-            name_dict = {}
-        save_transList_to_json_cn(
-            trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
-        )
-        et = time()
-        LOGGER.info(f"文件 {file_name} 翻译完成，用时 {st-st}s.")
+    else:
+        name_dict = {}
+    save_transList_to_json_cn(
+        trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
+    )
+    et = time()
+    LOGGER.info(f"文件 {file_name} 翻译完成，用时 {st-st}s.")
 
 
 async def doGPT3Translate(
@@ -100,6 +94,7 @@ async def doGPT3Translate(
     proxyPool: Optional[CProxyPool],
     type="offapi",
 ) -> bool:
+    print(projectConfig.getKey("internals.enableProxy"))
     # 加载字典
     pre_dic = CNormalDic(
         initDictList(
@@ -140,26 +135,95 @@ async def doGPT3Translate(
             LOGGER.info("%s 文件夹不存在，让我们创建它...", dir_path)
             mkdir(dir_path)
 
-        semaphore = Semaphore(projectConfig.getKey("coroutinePerProject"))
-        tasks = [
-            doGPT3TranslateSingleFile(
-                semaphore,
-                file_name,
-                projectConfig,
-                type,
-                pre_dic,
-                post_dic,
-                gpt_dic,
-                gptapi,
-            )
-            for file_name in listdir(projectConfig.getInputPath())
-        ]
-        await gather(*tasks)  # run
-
-    for file_name in listdir(projectConfig.getInputPath()):
+    semaphore = Semaphore(projectConfig.getKey("coroutinePerProject"))
+    tasks = [
         doGPT3TranslateSingleFile(
-            file_name, projectConfig, type, pre_dic, post_dic, gpt_dic, gptapi
+            semaphore,
+            file_name,
+            projectConfig,
+            type,
+            pre_dic,
+            post_dic,
+            gpt_dic,
+            gptapi,
         )
+        for file_name in listdir(projectConfig.getInputPath())
+    ]
+    await gather(*tasks)  # run
+
+
+async def doGPT4TranslateSingleFile(
+    semaphore: Semaphore,
+    file_name: str,
+    projectConfig: CProjectConfig,
+    type: str,
+    pre_dic: CNormalDic,
+    post_dic: CNormalDic,
+    gpt_dic: CGptDict,
+    gptapi: CGPT4Translate,
+):
+    async with semaphore:
+        st = time()
+        # 1、初始化trans_list
+        trans_list = load_transList_from_json_jp(
+            joinpath(projectConfig.getInputPath(), file_name)
+        )
+
+        # 2、翻译前处理
+        for i, tran in enumerate(trans_list):
+            tran.analyse_dialogue()  # 解析是否为对话
+            tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
+
+        # 3、读出未命中的Translate然后批量翻译
+        cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
+
+        await gptapi.batch_translate(
+            file_name,
+            cache_file_path,
+            trans_list,
+            projectConfig.getKey("gpt.numPerRequestTranslate"),
+            retry_failed=projectConfig.getKey("retranslFail"),
+            chatgpt_dict=gpt_dic,
+        )
+        if projectConfig.getKey("gpt.enableProofRead"):
+            await gptapi.batch_translate(
+                file_name,
+                cache_file_path,
+                trans_list,
+                projectConfig.getKey("gpt.numPerRequestProofRead"),
+                retry_failed=projectConfig.getKey("retranslFail"),
+                chatgpt_dict=gpt_dic,
+                proofread=True,
+            )
+
+        # 4、翻译后处理
+        for i, tran in enumerate(trans_list):
+            tran.some_normal_fix()
+            tran.recover_dialogue_symbol()  # 恢复对话框
+            tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
+
+    # 用于保存problems
+    arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
+    find_problems(
+        trans_list,
+        find_type=projectConfig.getProblemAnalyzeConfig("GPT4"),
+        arinashi_dict=arinashi_dict,
+    )
+    save_transCache_to_json(trans_list, cache_file_path, post_save=True)
+
+    # 5、整理输出
+    if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
+        name_dict = load_name_table(
+            joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
+        )
+    else:
+        name_dict = {}
+    save_transList_to_json_cn(
+        trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
+    )
+    et = time()
+    LOGGER.info(f"文件 {file_name} 翻译完成，用时 {st-st}s.")
+
 
 async def doGPT4Translate(
     projectConfig: CProjectConfig,
@@ -205,7 +269,33 @@ async def doGPT4Translate(
         if not isPathExists(dir_path):
             mkdir(dir_path)
 
-    for file_name in listdir(projectConfig.getInputPath()):
+    semaphore = Semaphore(projectConfig.getKey("coroutinePerProject"))
+    tasks = [
+        doGPT4TranslateSingleFile(
+            semaphore,
+            file_name,
+            projectConfig,
+            type,
+            pre_dic,
+            post_dic,
+            gpt_dic,
+            gptapi,
+        )
+        for file_name in listdir(projectConfig.getInputPath())
+    ]
+    await gather(*tasks)  # run
+
+
+async def doNewBingTranslateSingleFile(
+    semaphore: Semaphore,
+    file_name: str,
+    projectConfig: CProjectConfig,
+    pre_dic: CNormalDic,
+    post_dic: CNormalDic,
+    gpt_dic: CGptDict,
+    gptapi: CBingGPT4Translate,
+):
+    async with semaphore:
         # 1、初始化trans_list
         trans_list = load_transList_from_json_jp(
             joinpath(projectConfig.getInputPath(), file_name)
@@ -218,53 +308,66 @@ async def doGPT4Translate(
 
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
+        while True:
+            success = False
+            try:
+                await gptapi.batch_translate(
+                    file_name,
+                    cache_file_path,
+                    trans_list,
+                    projectConfig.getKey("gpt.numPerRequestTranslate"),
+                    retry_failed=projectConfig.getKey("retranslFail"),
+                    chatgpt_dict=gpt_dic,
+                )
+                if projectConfig.getKey("gpt.enableProofRead"):
+                    await gptapi.batch_translate(
+                        file_name,
+                        cache_file_path,
+                        trans_list,
+                        projectConfig.getKey("gpt.numPerRequestProofRead"),
+                        retry_failed=projectConfig.getKey("retranslFail"),
+                        chatgpt_dict=gpt_dic,
+                        proofread=True,
+                    )
+                success = True
+            except TypeError:  # https://github.com/acheong08/EdgeGPT/issues/376
+                pass
+            except KeyboardInterrupt:
+                LOGGER.info("->KeyboardInterrupt")
+                exit(0)
+            except Exception as e:
+                LOGGER.error("->Exception: %s", e)
+                LOGGER.error("->Exception: %s", traceback.format_exc())
+                LOGGER.info("->Retrying...")
+            finally:
+                if success:
+                    break
 
-        gptapi.batch_translate(
-            file_name,
-            cache_file_path,
-            trans_list,
-            projectConfig.getKey("gpt.numPerRequestTranslate"),
-            retry_failed=projectConfig.getKey("retranslFail"),
-            chatgpt_dict=gpt_dic,
+            # 4、翻译后处理
+            for i, tran in enumerate(trans_list):
+                tran.some_normal_fix()
+                tran.recover_dialogue_symbol()  # 恢复对话框
+                tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
+
+    # 用于保存problems
+    arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
+    find_problems(
+        trans_list,
+        find_type=projectConfig.getProblemAnalyzeConfig("bingGPT4"),
+        arinashi_dict=arinashi_dict,
+    )
+    save_transCache_to_json(trans_list, cache_file_path, post_save=True)
+
+    # 5、整理输出
+    if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
+        name_dict = load_name_table(
+            joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
         )
-        if projectConfig.getKey("gpt.enableProofRead"):
-            gptapi.batch_translate(
-                file_name,
-                cache_file_path,
-                trans_list,
-                projectConfig.getKey("gpt.numPerRequestProofRead"),
-                retry_failed=projectConfig.getKey("retranslFail"),
-                chatgpt_dict=gpt_dic,
-                proofread=True,
-            )
-
-        # 4、翻译后处理
-        for i, tran in enumerate(trans_list):
-            tran.some_normal_fix()
-            tran.recover_dialogue_symbol()  # 恢复对话框
-            tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
-
-        # 用于保存problems
-        arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
-        find_problems(
-            trans_list,
-            find_type=projectConfig.getProblemAnalyzeConfig("GPT4"),
-            arinashi_dict=arinashi_dict,
-        )
-        save_transCache_to_json(trans_list, cache_file_path, post_save=True)
-
-        # 5、整理输出
-        if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
-            name_dict = load_name_table(
-                joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
-            )
-        else:
-            name_dict = {}
-        save_transList_to_json_cn(
-            trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
-        )
-
-    pass
+    else:
+        name_dict = {}
+    save_transList_to_json_cn(
+        trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
+    )
 
 
 async def doNewBingTranslate(
@@ -293,11 +396,11 @@ async def doNewBingTranslate(
         )
     )
 
-    cookieList: list[str] = []
+    cookiePool: list[str] = []
     for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
-        cookieList.append(joinpath(projectConfig.getProjectDir(), i))
+        cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
 
-    gptapi = CBingGPT4Translate(projectConfig, cookieList, proxyPool)
+    gptapi = CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
 
     for dir_path in [
         projectConfig.getInputPath(),
@@ -307,78 +410,19 @@ async def doNewBingTranslate(
         if not isPathExists(dir_path):
             mkdir(dir_path)
 
-    for file_name in listdir(projectConfig.getInputPath()):
-        # 1、初始化trans_list
-        trans_list = load_transList_from_json_jp(
-            joinpath(projectConfig.getInputPath(), file_name)
+    semaphore = Semaphore(projectConfig.getKey("coroutinePerProject"))
+    tasks = [
+        doNewBingTranslateSingleFile(
+            semaphore,
+            file_name,
+            projectConfig,
+            pre_dic,
+            post_dic,
+            gpt_dic,
+            gptapi,
         )
-
-        # 2、翻译前处理
-        for i, tran in enumerate(trans_list):
-            tran.analyse_dialogue()  # 解析是否为对话
-            tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
-
-        # 3、读出未命中的Translate然后批量翻译
-        cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
-        while True:
-            success = False
-            try:
-                gptapi.batch_translate(
-                    file_name,
-                    cache_file_path,
-                    trans_list,
-                    projectConfig.getKey("gpt.numPerRequestTranslate"),
-                    retry_failed=projectConfig.getKey("retranslFail"),
-                    chatgpt_dict=gpt_dic,
-                )
-                if projectConfig.getKey("gpt.enableProofRead"):
-                    gptapi.batch_translate(
-                        file_name,
-                        cache_file_path,
-                        trans_list,
-                        projectConfig.getKey("gpt.numPerRequestProofRead"),
-                        retry_failed=projectConfig.getKey("retranslFail"),
-                        chatgpt_dict=gpt_dic,
-                        proofread=True,
-                    )
-                success = True
-            except TypeError:  # https://github.com/acheong08/EdgeGPT/issues/376
-                pass
-            except KeyboardInterrupt:
-                LOGGER.info("->KeyboardInterrupt")
-                exit(0)
-            except Exception as e:
-                LOGGER.error("->Exception: %s", e)
-                LOGGER.error("->Exception: %s", traceback.format_exc())
-                LOGGER.info("->Retrying...")
-            finally:
-                if success:
-                    break
-
-        # 4、翻译后处理
-        for i, tran in enumerate(trans_list):
-            tran.some_normal_fix()
-            tran.recover_dialogue_symbol()  # 恢复对话框
-            tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
-
-        # 用于保存problems
-        arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
-        find_problems(
-            trans_list,
-            find_type=projectConfig.getProblemAnalyzeConfig("bingGPT4"),
-            arinashi_dict=arinashi_dict,
-        )
-        save_transCache_to_json(trans_list, cache_file_path, post_save=True)
-
-        # 5、整理输出
-        if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
-            name_dict = load_name_table(
-                joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
-            )
-        else:
-            name_dict = {}
-        save_transList_to_json_cn(
-            trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
-        )
+        for file_name in listdir(projectConfig.getInputPath())
+    ]
+    await gather(*tasks)  # run
 
     pass

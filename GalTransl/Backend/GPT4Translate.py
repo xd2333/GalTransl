@@ -117,16 +117,19 @@ class CGPT4Translate:
         if type == "offapi":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
-            token = self.tokenProvider.getToken()
+            token = self.tokenProvider.getToken(False, True)
             self.chatbot = ChatbotV3(
                 api_key=token.token,
-                proxy=self.proxyProvider.getProxy().addr if self.proxies else None,
+                proxy=self.proxyProvider.getProxy().addr
+                if self.proxyProvider
+                else None,
                 temperature=0.4,
                 frequency_penalty=0.2,
                 system_prompt=SYSTEM_PROMPT,
                 engine="gpt-4",
                 api_address=token.domain + "/v1/chat/completions",
             )
+            self.chatbot.update_proxy(None)  # DO NOT COMMIT
         elif type == "unoffapi":
             from GalTransl.Backend.revChatGPT.V1 import Chatbot as ChatbotV1
 
@@ -281,9 +284,8 @@ class CGPT4Translate:
                         error_flag = True
                         break
 
-                line_json[key_name] = zhconv.convert(
-                    line_json[key_name], "zh-cn"
-                )  # 防止出现繁体
+                # 防止出现繁体
+                line_json[key_name] = self.opencc.convert(line_json[key_name])
                 if not proofread:
                     trans_list[i].pre_zh = line_json[key_name]
                     trans_list[i].post_zh = line_json[key_name]
@@ -360,7 +362,7 @@ class CGPT4Translate:
                 else ""
             )
 
-            trans_result = await self.translate(
+            num, trans_result = await self.translate(
                 trans_list_split, dic_prompt, proofread=proofread
             )
 

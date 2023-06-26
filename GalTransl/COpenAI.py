@@ -166,7 +166,7 @@ class COpenAITokenPool:
         """
         rounds: int = 0
         while True:
-            if rounds > 10:
+            if rounds > 20:
                 raise RuntimeError("COpenAITokenPool::getToken: 迭代次数过多！")
             try:
                 available, token = choice(self.tokens)

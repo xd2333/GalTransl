@@ -13,7 +13,8 @@ def load_transList_from_json_jp(json_str_or_list: str):
 
     if isinstance(json_str_or_list, str):
         if path.exists(json_str_or_list):
-            with open(json_str_or_list, "r", encoding="utf8") as f:
+            # DO NOT COMMIT
+            with open(json_str_or_list, "r", encoding="utf-8-sig") as f:
                 json_str_or_list = f.read()
         json_list = loads(json_str_or_list)
     elif isinstance(json_str_or_list, list):

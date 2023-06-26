@@ -8,13 +8,19 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-edgegpt = "^0.6.10"
+edgegpt = "^0.11"
 requests = "^2.31.0"
 revchatgpt = "^6.0.0"
 ttkbootstrap = "^1.10.1"
 pyyaml = "^6.0"
 OpenCC = "^1.1.0"
 
+
+[[tool.poetry.source]]
+name = "mirrors"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+default = true
+secondary = false
 
 [build-system]
 requires = ["poetry-core"]

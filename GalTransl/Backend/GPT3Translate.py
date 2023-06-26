@@ -11,7 +11,7 @@ from GalTransl.CSentense import *
 from GalTransl.ConfigHelper import (
     CProjectConfig,
 )
-from GalTransl.COpenAI import COpenAIToken, COpenAITokenPool
+from GalTransl.COpenAI import COpenAIToken, COpenAITokenPool, initGPTToken
 from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
@@ -65,8 +65,8 @@ class CGPT35Translate:
         else:
             self.restore_context_mode = False  # 恢复上下文模式
         self.tokenProvider = token_pool
-        if config.getKey("internals.enableProxy") == True:
-            self.proxyProvider = proxy_pool
+        # DO NOT COMMIT
+        self.proxyProvider = proxy_pool
         if val := config.getKey("gpt.fullContextMode"):
             self.full_context_mode = val  # 挥霍token模式
         else:
@@ -84,7 +84,9 @@ class CGPT35Translate:
         else:
             self.proxies = None
             LOGGER.warning("不使用代理")
-
+        # DO NOT COMMIT
+        assert self.proxyProvider
+        assert self.tokenProvider
         if type == "offapi":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
@@ -92,7 +94,7 @@ class CGPT35Translate:
             # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
             self.chatbot = ChatbotV3(
                 api_key=token.token,
-                engine="gpt-3.5-turbo-0613",
+                engine="gpt-3.5-turbo",
                 proxy=self.proxyProvider.getProxy().addr
                 if self.proxyProvider
                 else None,
@@ -102,6 +104,7 @@ class CGPT35Translate:
                 system_prompt=SYSTEM_PROMPT,
                 api_address=token.domain + "/v1/chat/completions",
             )
+            self.chatbot.update_proxy(self.proxyProvider.getProxy().addr)
 
         elif type == "unoffapi":
             from GalTransl.Backend.revChatGPT.V1 import AsyncChatbot as ChatbotV1
@@ -153,10 +156,10 @@ class CGPT35Translate:
                         resp += data
                 if self.type == "unoffapi":
                     for data in self.chatbot.ask(prompt_req):
-                    async for data in self.chatbot.ask_async(prompt_req):
-                        if self.streamOutputMode:
-                            print(data["message"][len(resp) :], end="", flush=True)
-                        resp = data["message"]
+                        async for data in self.chatbot.ask_async(prompt_req):
+                            if self.streamOutputMode:
+                                print(data["message"][len(resp) :], end="", flush=True)
+                                resp = data["message"]
                 if not self.streamOutputMode:
                     LOGGER.info(resp)
             except Exception as ex:

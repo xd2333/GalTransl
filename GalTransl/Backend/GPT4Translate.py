@@ -206,20 +206,20 @@ class CGPT4Translate:
                 if not self.streamOutputMode:
                     LOGGER.info(resp)
             except Exception as ex:
-                LOGGER.error(ex)
-                if "try again later" in str(ex) or "too many requests" in str(ex):
+                str_ex = str(ex).lower()
+                if "try again later" in str_ex or "too many requests" in str_ex:
                     LOGGER.info("-> 请求次数超限，5分钟后继续尝试")
                     time.sleep(300)
                     continue
-                if "expired" in str(ex):
+                if "expired" in str_ex:
                     LOGGER.info("-> access_token过期，请更换")
                     exit()
-                if "try reload" in str(ex):
+                if "try reload" in str_ex:
                     self.reset_conversation()
                     LOGGER.info("-> 报错重置会话")
                     continue
                 self._del_last_answer()
-                LOGGER.info("-> 报错:%s, 5秒后重试" % ex)
+                LOGGER.error(f"-> 报错:{str_ex}, 5秒后重试")
                 time.sleep(5)
                 continue
 

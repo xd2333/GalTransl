@@ -33,8 +33,8 @@ class CProxy:
 
 
 class CProjectConfig:
-    def __init__(self, projectPath: str) -> None:
-        self.projectConfig = loadConfigFile(path.join(projectPath, CONFIG_FILENAME))
+    def __init__(self, projectPath: str, config_name=CONFIG_FILENAME) -> None:
+        self.projectConfig = loadConfigFile(path.join(projectPath, config_name))
         self.projectDir: str = projectPath
         self.inputPath: str = str(
             path.abspath(path.join(projectPath, INPUT_FOLDERNAME))
@@ -46,7 +46,7 @@ class CProjectConfig:
             path.abspath(path.join(projectPath, CACHE_FOLDERNAME))
         )
         self.keyValues = dict()
-        for k,v in self.projectConfig["common"].items():
+        for k, v in self.projectConfig["common"].items():
             self.keyValues[k] = v
         self.keyValues["enableProxy"] = self.projectConfig["proxy"]["enableProxy"]
         LOGGER.debug(
@@ -99,7 +99,7 @@ class CProjectConfig:
             result.append(CTranslateProblem[i])
 
         return result
-    
+
     def getProblemAnalyzeArinashiDict(self) -> dict:
         return self.projectConfig["problemAnalyze"]["arinashiDict"]
 

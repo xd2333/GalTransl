@@ -88,12 +88,14 @@ class CGPT35Translate:
 
             self.chatbot = ChatbotV3(
                 api_key=rand_token.token,
-                engine="gpt-3.5-turbo-0613",
+                engine="gpt-3.5-turbo",
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=4096,
                 truncate_limit=3200,
-                temperature=0.4,
-                frequency_penalty=0.2,
+                temperature=0.7,
+                frequency_penalty=0.1,
+                presence_penalty=0.1,
+                top_p=0.2,
                 system_prompt=SYSTEM_PROMPT,
             )
         elif type == "unoffapi":

@@ -92,7 +92,10 @@ def get_transCache_from_json(
             continue
         # 重试失败的
         if retry_failed and "Failed translation" in cache_dict[tran.index]["pre_zh"]:
-            if cache_dict[tran.index]["proofread_zh"] == "":  # 且未校对
+            if (
+                cache_dict[tran.index]["proofread_zh"] == ""
+                or "Fail" in cache_dict[tran.index]["proofread_by"]
+            ):  # 且未校对
                 trans_list_unhit.append(tran)
                 continue
 

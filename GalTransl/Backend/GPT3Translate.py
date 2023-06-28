@@ -84,9 +84,6 @@ class CGPT35Translate:
         else:
             self.proxies = None
             LOGGER.warning("不使用代理")
-        # DO NOT COMMIT
-        assert self.proxyProvider
-        assert self.tokenProvider
         if type == "offapi":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
@@ -104,7 +101,9 @@ class CGPT35Translate:
                 system_prompt=SYSTEM_PROMPT,
                 api_address=token.domain + "/v1/chat/completions",
             )
-            self.chatbot.update_proxy(self.proxyProvider.getProxy().addr)
+            self.chatbot.update_proxy(
+                self.proxyProvider.getProxy().addr if self.proxyProvider else None
+            )
 
         elif type == "unoffapi":
             from GalTransl.Backend.revChatGPT.V1 import AsyncChatbot as ChatbotV1

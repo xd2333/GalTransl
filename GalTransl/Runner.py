@@ -12,7 +12,9 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     if proxyPool:
         await proxyPool.checkAvailablity()
     if translator != "newbing":
-        await OpenAITokenPool.checkTokenAvailablity(proxyPool.getProxy())
+        await OpenAITokenPool.checkTokenAvailablity(
+            proxyPool.getProxy() if proxyPool else None
+        )
 
     if translator == "gpt35":
         await doGPT3Translate(cfg, OpenAITokenPool, proxyPool)

@@ -30,3 +30,12 @@ TRANSLATOR_SUPPORTED = {
     "newbing": "NewBing大小姐",
     "caiyun": "彩云 -- 暂不可用",
 }
+LANG_SUPPORTED = {
+    "zh-cn": "Simplified Chinese",
+    "zh-tw": "Traditional Chinese",
+    "en": "English",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "ru": "Russian",
+    "fr": "French",
+}

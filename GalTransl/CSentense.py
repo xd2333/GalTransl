@@ -49,7 +49,7 @@ class CSentense:
         tmp_proofread_zh = self.proofread_zh.replace("\r\n", "\\r\\n")
         char_t = "\t"
         char_n = "\n"
-        return f"{char_n}---> {self.index}{char_n}> JP: {tmp_post_jp}{char_n}> CN: {tmp_post_zh if self.proofread_zh == '' else tmp_proofread_zh}"
+        return f"{char_n}---> {self.index}{char_n}> Src: {tmp_post_jp}{char_n}> Dst: {tmp_post_zh if self.proofread_zh == '' else tmp_proofread_zh}"
 
     def analyse_dialogue(self, dia_format: str = "#句子", mono_format: str = "#句子"):
         """对话分析，根据对话框判断是否为对话，暂时隐藏对话框，分别格式化diag与mono到不同的format

@@ -2,8 +2,10 @@
 # 通用（杂项）设置
 common:
   loggingLevel: info # 日志等级，可选 [debug/info/warning/error]
+  sourceLanguage: ja # 源语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
+  targetLanguage: zh-cn # 目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   retranslFail: false # 重翻NewBing拒绝翻译的句子。[True/False]
-  multiThread: false # 多线程，[True/False]（暂不可用）
+  multiThread: false # 多线程。[True/False]（暂不可用）
   gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果。[True/False]
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
   gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。[True/False]

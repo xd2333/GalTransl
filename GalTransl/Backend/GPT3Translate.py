@@ -96,6 +96,19 @@ class CGPT35Translate:
         else:
             self.target_lang = LANG_SUPPORTED[self.target_lang]
 
+        if val := config.getKey("gpt.translStyle"):
+            self.transl_style = val  # 翻译风格
+        else:
+            self.transl_style = "normal"
+
+        temperature, top_p = 0.5, 1.0
+        frequency_penalty, presence_penalty = 0.1, 0.0
+        if self.transl_style == "precise":
+            temperature, top_p = 0.7, 0.2
+            frequency_penalty, presence_penalty = 0.1, 0.1
+        elif self.transl_style == "normal":
+            pass
+
         if type == "offapi":
             from revChatGPT.V3 import Chatbot as ChatbotV3
 
@@ -108,10 +121,10 @@ class CGPT35Translate:
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=4096,
                 truncate_limit=3200,
-                temperature=0.7,
-                frequency_penalty=0.1,
-                presence_penalty=0.1,
-                top_p=0.2,
+                temperature=temperature,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+                top_p=top_p,
                 system_prompt=SYSTEM_PROMPT,
             )
         elif type == "unoffapi":

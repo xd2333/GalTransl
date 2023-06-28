@@ -239,6 +239,8 @@ class CGPT4Translate:
                         resp = data["message"]
                 if not self.streamOutputMode:
                     LOGGER.info(resp)
+                else:
+                    print("")
             except Exception as ex:
                 str_ex = str(ex).lower()
                 if "try again later" in str_ex or "too many requests" in str_ex:

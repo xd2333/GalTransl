@@ -165,11 +165,10 @@ class CBingGPT4Translate:
                         if not wrote_len:
                             if self.streamOutputMode:
                                 print(response, end="")
-                                sys.stdout.flush()
                         else:
                             if self.streamOutputMode:
                                 print(response[wrote_len:], end="")
-                                sys.stdout.flush()
+                        sys.stdout.flush()
                         wrote_len = len(response)
                     if wrote_len > len(response):
                         bing_reject = True
@@ -198,6 +197,8 @@ class CBingGPT4Translate:
             result_text = resp["item"]["messages"][1]["text"]
             if not self.streamOutputMode:
                 LOGGER.info(result_text)
+            else:
+                print("")
             result_text = result_text[result_text.find('{"id') :]
             # 修复丢冒号
             result_text = (

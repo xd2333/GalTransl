@@ -44,9 +44,9 @@ class CSentense:
         self.next_tran: CSentense = None  # 指向下一个tran
 
     def __repr__(self) -> str:
-        tmp_post_jp = self.post_jp.replace("\r\n", "\\r\\n")
-        tmp_post_zh = self.post_zh.replace("\r\n", "\\r\\n")
-        tmp_proofread_zh = self.proofread_zh.replace("\r\n", "\\r\\n")
+        tmp_post_jp = self.post_jp.replace("\r", "\\r").replace("\n", "\\n")
+        tmp_post_zh = self.post_zh.replace("\r", "\\r").replace("\n", "\\n")
+        tmp_proofread_zh = self.proofread_zh.replace("\r", "\\r").replace("\n", "\\n")
         char_t = "\t"
         char_n = "\n"
         return f"{char_n}---> {self.index}{char_n}> Src: {tmp_post_jp}{char_n}> Dst: {tmp_post_zh if self.proofread_zh == '' else tmp_proofread_zh}"

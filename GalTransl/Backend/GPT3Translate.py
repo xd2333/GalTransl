@@ -337,9 +337,9 @@ class CGPT35Translate:
             pass
 
     def _set_gpt_style(self, style_name: str):
-        if self._current_style == style_name:
-            return
         if self.type == "unoffapi":
+            return
+        if self._current_style == style_name:
             return
         self._current_style = style_name
         if self.transl_style == "auto":

@@ -92,20 +92,32 @@ class CGPT4Translate:
         self.record_confidence = config.getKey("gpt.recordConfidence")
         self.last_file_name = ""
         self.restore_context_mode = config.getKey("gpt.restoreContextMode")
+        # 源语言
         if val := config.getKey("sourceLanguage"):
             self.source_lang = val
         else:
             self.source_lang = "ja"
+        if self.source_lang not in LANG_SUPPORTED.keys():
+            raise ValueError("错误的源语言代码：" + self.source_lang)
+        else:
+            self.source_lang = LANG_SUPPORTED[self.source_lang]
+        # 目标语言
         if val := config.getKey("targetLanguage"):
             self.target_lang = val
         else:
             self.target_lang = "zh-cn"
+        if self.target_lang not in LANG_SUPPORTED.keys():
+            raise ValueError("错误的目标语言代码：" + self.target_lang)
+        else:
+            self.target_lang = LANG_SUPPORTED[self.target_lang]
+        # 挥霍token模式
         if val := config.getKey("gpt.fullContextMode"):
-            self.full_context_mode = val  # 挥霍token模式
+            self.full_context_mode = val
         else:
             self.full_context_mode = False
+        # 流式输出模式
         if val := config.getKey("gpt.streamOutputMode"):
-            self.streamOutputMode = val  # 流式输出模式
+            self.streamOutputMode = val
         else:
             self.streamOutputMode = False
         if val := initGPTToken(config):
@@ -121,15 +133,6 @@ class CGPT4Translate:
         else:
             self.proxies = None
             LOGGER.warning("不使用代理")
-
-        if self.source_lang not in LANG_SUPPORTED.keys():
-            raise ValueError("错误的源语言代码：" + self.source_lang)
-        else:
-            self.source_lang = LANG_SUPPORTED[self.source_lang]
-        if self.target_lang not in LANG_SUPPORTED.keys():
-            raise ValueError("错误的目标语言代码：" + self.target_lang)
-        else:
-            self.target_lang = LANG_SUPPORTED[self.target_lang]
         # 翻译风格
         if val := config.getKey("gpt.translStyle"):
             self.transl_style = val
@@ -449,9 +452,9 @@ class CGPT4Translate:
             pass
 
     def _set_gpt_style(self, style_name: str):
-        if self._current_style == style_name:
-            return
         if self.type == "unoffapi":
+            return
+        if self._current_style == style_name:
             return
         self._current_style = style_name
         if self.transl_style == "auto":

@@ -49,30 +49,45 @@ class CGPT35Translate:
     def __init__(self, config: CProjectConfig, type):
         self.type = type
         self.last_file_name = ""
+        # 源语言
         if val := config.getKey("sourceLanguage"):
             self.source_lang = val
         else:
             self.source_lang = "ja"
+        if self.source_lang not in LANG_SUPPORTED.keys():
+            raise ValueError("错误的源语言代码：" + self.source_lang)
+        else:
+            self.source_lang = LANG_SUPPORTED[self.source_lang]
+        # 目标语言
         if val := config.getKey("targetLanguage"):
             self.target_lang = val
         else:
             self.target_lang = "zh-cn"
+        if self.target_lang not in LANG_SUPPORTED.keys():
+            raise ValueError("错误的目标语言代码：" + self.target_lang)
+        else:
+            self.target_lang = LANG_SUPPORTED[self.target_lang]
+        # 换行符改善模式
         if val := config.getKey("gpt.lineBreaksImprovementMode"):
             self.line_breaks_improvement_mode = val
         else:
-            self.line_breaks_improvement_mode = False  # 换行符改善模式
+            self.line_breaks_improvement_mode = False
+        # 恢复上下文模式
         if val := config.getKey("gpt.restoreContextMode"):
             self.restore_context_mode = val
         else:
-            self.restore_context_mode = False  # 恢复上下文模式
+            self.restore_context_mode = False
+        # 挥霍token模式
         if val := config.getKey("gpt.fullContextMode"):
-            self.full_context_mode = val  # 挥霍token模式
+            self.full_context_mode = val
         else:
             self.full_context_mode = False
+        # 流式输出模式
         if val := config.getKey("gpt.streamOutputMode"):
-            self.streamOutputMode = val  # 流式输出模式
+            self.streamOutputMode = val
         else:
             self.streamOutputMode = False
+
         if val := initGPTToken(config):
             self.tokens: list[COpenAIToken] = []
             for i in val:
@@ -86,28 +101,12 @@ class CGPT35Translate:
         else:
             self.proxies = None
             LOGGER.warning("不使用代理")
-
-        if self.source_lang not in LANG_SUPPORTED.keys():
-            raise ValueError("错误的源语言代码：" + self.source_lang)
-        else:
-            self.source_lang = LANG_SUPPORTED[self.source_lang]
-        if self.target_lang not in LANG_SUPPORTED.keys():
-            raise ValueError("错误的目标语言代码：" + self.target_lang)
-        else:
-            self.target_lang = LANG_SUPPORTED[self.target_lang]
-
+        # 翻译风格
         if val := config.getKey("gpt.translStyle"):
-            self.transl_style = val  # 翻译风格
+            self.transl_style = val
         else:
             self.transl_style = "normal"
-
-        temperature, top_p = 0.5, 1.0
-        frequency_penalty, presence_penalty = 0.1, 0.0
-        if self.transl_style == "precise":
-            temperature, top_p = 0.7, 0.2
-            frequency_penalty, presence_penalty = 0.1, 0.1
-        elif self.transl_style == "normal":
-            pass
+        self._current_style = ""
 
         if type == "offapi":
             from revChatGPT.V3 import Chatbot as ChatbotV3
@@ -121,10 +120,6 @@ class CGPT35Translate:
                 proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
                 max_tokens=4096,
                 truncate_limit=3200,
-                temperature=temperature,
-                frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty,
-                top_p=top_p,
                 system_prompt=SYSTEM_PROMPT,
             )
         elif type == "unoffapi":
@@ -141,6 +136,10 @@ class CGPT35Translate:
             self.chatbot = ChatbotV1(config=gpt_config)
             self.chatbot.clear_conversations()
 
+        if self.transl_style == "auto":
+            self._set_gpt_style("precise")
+        else:
+            self._set_gpt_style(self.transl_style)
         pass
 
     def init(self) -> bool:
@@ -214,6 +213,8 @@ class CGPT35Translate:
                     self._del_last_answer()
                 elif self.type == "unoffapi":
                     self.reset_conversation()
+                if self.transl_style == "auto":
+                    self._set_gpt_style("normal")
                 continue
 
             if len(result_json) != len(input_list):  # 输出行数错误
@@ -222,6 +223,8 @@ class CGPT35Translate:
                     self._del_last_answer()
                 elif self.type == "unoffapi":
                     self.reset_conversation()
+                if self.transl_style == "auto":
+                    self._set_gpt_style("normal")
                 continue
 
             error_flag = False
@@ -266,6 +269,8 @@ class CGPT35Translate:
                     self._del_last_answer()
                 elif self.type == "unoffapi":
                     self.reset_conversation()
+                if self.transl_style == "auto":
+                    self._set_gpt_style("normal")
                 continue
 
             for i, result in enumerate(result_json):  # 正常输出
@@ -289,10 +294,11 @@ class CGPT35Translate:
                 if "conf" in result:
                     content[i].trans_conf = result["conf"]
 
+            if self.transl_style == "auto":
+                self._set_gpt_style("precise")
+
             break  # 输出正确，跳出循环
         return content
-
-        pass
 
     def reset_conversation(self):
         if self.type == "offapi":
@@ -329,6 +335,30 @@ class CGPT35Translate:
                 self.chatbot.conversation["default"].pop()
         elif self.type == "unoffapi":
             pass
+
+    def _set_gpt_style(self, style_name: str):
+        if self._current_style == style_name:
+            return
+        if self.type == "unoffapi":
+            return
+        self._current_style = style_name
+        if self.transl_style == "auto":
+            LOGGER.info(f"-> 自动切换至{style_name}参数预设")
+        else:
+            LOGGER.info(f"-> 使用{style_name}参数预设")
+        # normal default
+        temperature, top_p = 0.8, 1.0
+        frequency_penalty, presence_penalty = 0.1, 0.0
+        if style_name == "precise":
+            temperature, top_p = 0.7, 0.2
+            frequency_penalty, presence_penalty = 0.1, 0.1
+        elif style_name == "normal":
+            pass
+        if self.type == "offapi":
+            self.chatbot.temperature = temperature
+            self.chatbot.top_p = top_p
+            self.chatbot.frequency_penalty = frequency_penalty
+            self.chatbot.presence_penalty = presence_penalty
 
     def restore_context(self, trans_list_unhit: CTransList, num_pre_request: int):
         if self.type == "offapi":

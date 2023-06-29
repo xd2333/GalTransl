@@ -15,7 +15,7 @@ common:
   gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
   gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。[True/False]
   # GPT3.5/GPT4
-  gpt.translStyle: normal # (GPT3.5/4 官方API)GPT参数预设，precise下结果更精确与集中，normal接近网页版。[precise/normal]
+  gpt.translStyle: auto # (GPT3.5/4 官方API)GPT参数预设，precise下结果更精确与集中，normal接近网页版。[auto/precise/normal]
   gpt.degradeBackend: false # (GPT3.5/4 官方API)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
   gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启自动恢复上下文。[True/False]
   gpt.fullContextMode: false # (GPT3.5/4 官方API)尽可能多的保留前文，翻译逻辑性更好，消耗token约翻4倍。[True/False]

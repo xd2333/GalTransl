@@ -36,7 +36,7 @@ treat as monologue/narrator if no `name` key, should be translated from the char
 Your output start with "Transl:", 
 then write the whole result in one line with same json format, 
 follow the rules and steps, translate the input from [SourceLang] to [TargetLang] object by object,
-[NeedSRC?], fill the [TargetLang] translation result, 
+replace `src` with `dst`, fill the [TargetLang] translation result, 
 then stop, end without any explanations.
 [Glossary]
 Input:
@@ -44,15 +44,11 @@ Input:
 
 SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-3.5 architecture."
 
-WITH_SRC_PROMPT = "add `dst` after `src`"
-WITHOUT_SRC_PROMPT = "replace `src` with `dst`"
-
 
 class CGPT35Translate:
     def __init__(self, config: CProjectConfig, type):
         self.type = type
         self.last_file_name = ""
-        self.need_src = False
         if val := config.getKey("sourceLanguage"):
             self.source_lang = val
         else:
@@ -169,10 +165,6 @@ class CGPT35Translate:
         prompt_req = prompt_req.replace("[Glossary]", dict)
         prompt_req = prompt_req.replace("[SourceLang]", self.source_lang)
         prompt_req = prompt_req.replace("[TargetLang]", self.target_lang)
-        if self.need_src:
-            prompt_req = prompt_req.replace("[NeedSRC?]", WITH_SRC_PROMPT)
-        else:
-            prompt_req = prompt_req.replace("[NeedSRC?]", WITHOUT_SRC_PROMPT)
         while True:  # 一直循环，直到得到数据
             try:
                 LOGGER.info(f"->翻译输入：\n{dict}\n{input_json}\n")
@@ -230,9 +222,7 @@ class CGPT35Translate:
                     self._del_last_answer()
                 elif self.type == "unoffapi":
                     self.reset_conversation()
-                self.need_src = True  # 改善GPT35合并句子的尝试
                 continue
-            self.need_src = False
 
             error_flag = False
             key_name = "dst"

@@ -240,6 +240,16 @@ class CGPT35Translate:
                     LOGGER.error(f"->第{content[i].index}句空白")
                     error_flag = True
                     break
+                # 丢name
+                if "name" not in result and content[i].speaker != "":
+                    LOGGER.error(f"->第{content[i].index}句丢 name")
+                    error_flag = True
+                    break
+                # 多余name
+                if "name" in result and content[i].speaker == "":
+                    LOGGER.error(f"->第{content[i].index}句多 name")
+                    error_flag = True
+                    break
                 if "*" in result[key_name] and "*" not in content[i].post_jp:
                     LOGGER.warning(f"->第{content[i].index}句多余 * 符号：" + result[key_name])
                     result[key_name] = result[key_name].replace("*", "")

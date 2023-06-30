@@ -32,12 +32,13 @@ Req3: Always keep same use of punctuation, line breaks and symbols as the corres
 Req4: Your translation should be faithful, fluent, highly readable and in line with [TargetLang] reading habits.
 Req5: You should ensure the result is corresponds to the current original object and decoupled from other objects.
 # On Output:
-Your output start with "Transl:", then write the whole result in one line object by object with same json format. 
+Start your output with "Transl:".
+Write the whole output in same json format in one line object by object.
 In each object:
-copy the `id` and (if have `name`) of current object to the transl object directly,
-follow the `# Steps and Hints`, translate the `src` from [SourceLang] to [TargetLang],
-replace `src` with `dst`, fill the [TargetLang] translation result, 
-then stop, end without any explanations.
+1. Copy the `id` and (`name` if have) of current original object directly into the Transl object.
+2. Follow the `Steps and Requirements`, translate value of `src` from [SourceLang] to [TargetLang].
+3. Change `src` to `dst`, fill in the translation result.
+Then stop, end without any explanation.
 [Glossary]
 Input:
 [Input]"""

@@ -240,19 +240,20 @@ class CGPT4Translate:
                     print("")
             except Exception as ex:
                 str_ex = str(ex).lower()
+                LOGGER.error(f"-> {str_ex}")
                 if "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.info("-> 请求次数超限，5分钟后继续尝试")
+                    LOGGER.warning("-> 请求受限，5分钟后继续尝试")
                     time.sleep(300)
                     continue
                 if "expired" in str_ex:
-                    LOGGER.info("-> access_token过期，请更换")
+                    LOGGER.error("-> access_token过期，请更换")
                     exit()
                 if "try reload" in str_ex:
                     self.reset_conversation()
-                    LOGGER.info("-> 报错重置会话")
+                    LOGGER.error("-> 报错重置会话")
                     continue
                 self._del_last_answer()
-                LOGGER.error(f"-> 报错:{str_ex}, 5秒后重试")
+                LOGGER.error(f"-> 报错, 5秒后重试")
                 time.sleep(5)
                 continue
 
@@ -273,7 +274,7 @@ class CGPT4Translate:
                     i += 1
                 except:
                     if i == -1:
-                        LOGGER.info("->非json：\n" + line + "\n")
+                        LOGGER.error("-> 非json：\n" + line + "\n")
                         error_flag = True
                         continue
                     else:
@@ -286,21 +287,21 @@ class CGPT4Translate:
                     or type(line_json["id"]) != int
                     or i > len(trans_list) - 1
                 ):
-                    LOGGER.error(f"->输出不正常")
+                    LOGGER.error(f"-> 输出不正常")
                     error_flag = True
                     break
                 line_id = line_json["id"]
                 if line_id != trans_list[i].index:
-                    LOGGER.error(f"->id不对应")
+                    LOGGER.error(f"-> id不对应")
                     error_flag = True
                     break
                 if key_name not in line_json or type(line_json[key_name]) != str:
-                    LOGGER.error(f"->第{line_id}句不正常")
+                    LOGGER.error(f"-> 第{line_id}句不正常")
                     error_flag = True
                     break
                 # 本行输出不应为空
                 if trans_list[i].post_jp != "" and line_json[key_name] == "":
-                    LOGGER.error(f"->第{line_id}句空白")
+                    LOGGER.error(f"-> 第{line_id}句空白")
                     error_flag = True
                     break
                 if "/" in line_json[key_name]:
@@ -308,7 +309,7 @@ class CGPT4Translate:
                         "／" not in trans_list[i].post_jp
                         and "/" not in trans_list[i].post_jp
                     ):
-                        LOGGER.error(f"->第{line_id}句多余 / 符号：" + line_json[key_name])
+                        LOGGER.error(f"-> 第{line_id}句多余 / 符号：" + line_json[key_name])
                         error_flag = True
                         break
 

@@ -166,8 +166,8 @@ class CGPT35Translate:
         prompt_req = prompt_req.replace("[TargetLang]", self.target_lang)
         while True:  # 一直循环，直到得到数据
             try:
-                LOGGER.info(f"->翻译输入：\n{dict}\n{input_json}\n")
-                LOGGER.info("->输出：\n")
+                LOGGER.info(f"-> 翻译输入：\n{dict}\n{input_json}\n")
+                LOGGER.info("-> 输出：\n")
                 resp = ""
                 if self.type == "offapi":
                     if not self.full_context_mode:
@@ -187,19 +187,20 @@ class CGPT35Translate:
                     print("")
             except Exception as ex:
                 str_ex = str(ex).lower()
+                LOGGER.error(f"-> {str_ex}")
                 if "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.info("-> 请求次数超限，5分钟后继续尝试")
+                    LOGGER.warning("-> 请求受限，5分钟后继续尝试")
                     time.sleep(300)
                     continue
                 if "expired" in str_ex:
-                    LOGGER.info("-> access_token过期，请更换")
+                    LOGGER.error("-> access_token过期，请更换")
                     exit()
                 if "try reload" in str_ex:
                     self.reset_conversation()
-                    LOGGER.info("-> 报错重置会话")
+                    LOGGER.error("-> 报错重置会话")
                     continue
                 self._del_last_answer()
-                LOGGER.error(f"-> 报错:{str_ex}, 5秒后重试")
+                LOGGER.error(f"-> 报错, 5秒后重试")
                 time.sleep(5)
                 continue
 
@@ -208,7 +209,7 @@ class CGPT35Translate:
             try:
                 result_json = json.loads(result_text)  # 尝试解析json
             except:
-                LOGGER.info("->非json：\n" + result_text + "\n")
+                LOGGER.error("-> 非json：\n" + result_text + "\n")
                 if self.type == "offapi":
                     self._del_last_answer()
                 elif self.type == "unoffapi":
@@ -218,7 +219,7 @@ class CGPT35Translate:
                 continue
 
             if len(result_json) != len(input_list):  # 输出行数错误
-                LOGGER.info("->错误的输出行数：\n" + result_text + "\n")
+                LOGGER.error("-> 错误的输出行数：\n" + result_text + "\n")
                 if self.type == "offapi":
                     self._del_last_answer()
                 elif self.type == "unoffapi":
@@ -232,22 +233,22 @@ class CGPT35Translate:
             for i, result in enumerate(result_json):
                 # 本行输出不正常
                 if key_name not in result or type(result[key_name]) != str:
-                    LOGGER.error(f"->第{content[i].index}句不正常")
+                    LOGGER.error(f"-> 第{content[i].index}句不正常")
                     error_flag = True
                     break
                 # 本行输出不应为空
                 if content[i].post_jp != "" and result[key_name] == "":
-                    LOGGER.error(f"->第{content[i].index}句空白")
+                    LOGGER.error(f"-> 第{content[i].index}句空白")
                     error_flag = True
                     break
                 # 丢name
                 if "name" not in result and content[i].speaker != "":
-                    LOGGER.error(f"->第{content[i].index}句丢 name")
+                    LOGGER.error(f"-> 第{content[i].index}句丢 name")
                     error_flag = True
                     break
                 # 多余name
                 if "name" in result and content[i].speaker == "":
-                    LOGGER.error(f"->第{content[i].index}句多 name")
+                    LOGGER.error(f"-> 第{content[i].index}句多 name")
                     error_flag = True
                     break
                 if "*" in result[key_name] and "*" not in content[i].post_jp:
@@ -257,21 +258,21 @@ class CGPT35Translate:
                     # error_flag = True
                     # break
                 if "：" in result[key_name] and "：" not in content[i].post_jp:
-                    LOGGER.warning(f"->第{content[i].index}句多余 ： 符号：" + result[key_name])
+                    LOGGER.warning(f"-> 第{content[i].index}句多余 ： 符号：" + result[key_name])
                     self.reset_conversation()  # 重置会话替代重试
                     # error_flag = True
                     # break
                 if "/" in result[key_name]:
                     if "／" not in content[i].post_jp and "/" not in content[i].post_jp:
                         LOGGER.error(
-                            f"->第{content[i].index}句多余 / 符号：" + result[key_name]
+                            f"-> 第{content[i].index}句多余 / 符号：" + result[key_name]
                         )
                         error_flag = True
                         break
 
             if self.line_breaks_improvement_mode and len(input_list) > 3:
                 if "\\r\\n" in input_json and "\\r\\n" not in result_text:
-                    LOGGER.warning("->触发换行符改善模式")
+                    LOGGER.warning("-> 触发换行符改善模式")
                     error_flag = True
 
             if error_flag:

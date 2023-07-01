@@ -96,19 +96,11 @@ class CGPT35Translate:
         else:
             self.streamOutputMode = False
 
-        if val := initGPTToken(config):
-            self.tokens: list[COpenAIToken] = []
-            for i in val:
-                if not i.isGPT35Available:
-                    continue
-                self.tokens.append(i)
-
+        self.tokenProvider = token_pool
+        if config.getKey("internals.enableProxy") == True:
+            self.proxyProvider = proxy_pool
         else:
-            raise RuntimeError("无法获取 OpenAI API Token！")
-        if config.getKey("enableProxy") == True:
-            self.proxies = initProxyList(config)
-        else:
-            self.proxies = None
+            self.proxyProvider = None
             LOGGER.warning("不使用代理")
         # 翻译风格
         if val := config.getKey("gpt.translStyle"):

@@ -37,7 +37,7 @@ Write the whole output in same json format in one line object by object.
 In each object:
 1. Copy the `id` and (`name` if have) of current original object directly into the Transl object.
 2. Follow the `Steps and Requirements`, translate value of `src` from [SourceLang] to [TargetLang].
-3. Rename `src` to `dst`, fill in the translation result.
+3. Del `src` add `dst`, fill in your translation.
 Then stop, end without any explanation.
 [Glossary]
 Input:

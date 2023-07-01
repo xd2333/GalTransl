@@ -146,6 +146,12 @@ class CSentense:
         self.simple_fix_double_quotaion()
         self.remove_first_symbol(line_break_symbol)
         self.fix_last_symbol()
+        # 修复输出中的\r\n换行符
+        if "\r\n" in self.post_jp:
+            if "\r\n" not in self.post_zh and "\n" in self.post_zh:
+                self.post_zh = self.post_zh.replace("\n", "\r\n")
+            if self.post_zh.startswith("\r\n") and not self.post_jp.startswith("\r\n"):
+                self.post_zh = self.post_zh[2:]
 
     def simple_fix_double_quotaion(self):
         """

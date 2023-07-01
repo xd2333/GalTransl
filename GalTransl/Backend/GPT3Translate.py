@@ -37,7 +37,7 @@ Write the whole output in same json format in one line object by object.
 In each object:
 1. Copy the `id` and (`name` if have) of current original object directly into the Transl object.
 2. Follow the `Steps and Requirements`, translate value of `src` from [SourceLang] to [TargetLang].
-3. Change `src` to `dst`, fill in the translation result.
+3. Rename `src` to `dst`, fill in the translation result.
 Then stop, end without any explanation.
 [Glossary]
 Input:
@@ -211,22 +211,12 @@ class CGPT35Translate:
                 result_json = json.loads(result_text)  # 尝试解析json
             except:
                 LOGGER.error("-> 非json：\n" + result_text + "\n")
-                if self.type == "offapi":
-                    self._del_last_answer()
-                elif self.type == "unoffapi":
-                    self.reset_conversation()
-                if self.transl_style == "auto":
-                    self._set_gpt_style("normal")
+                self._handle_error()
                 continue
 
             if len(result_json) != len(input_list):  # 输出行数错误
                 LOGGER.error("-> 错误的输出行数：\n" + result_text + "\n")
-                if self.type == "offapi":
-                    self._del_last_answer()
-                elif self.type == "unoffapi":
-                    self.reset_conversation()
-                if self.transl_style == "auto":
-                    self._set_gpt_style("normal")
+                self._handle_error()
                 continue
 
             error_flag = False
@@ -259,7 +249,9 @@ class CGPT35Translate:
                     # error_flag = True
                     # break
                 if "：" in result[key_name] and "：" not in content[i].post_jp:
-                    LOGGER.warning(f"-> 第{content[i].index}句多余 ： 符号：" + result[key_name])
+                    LOGGER.warning(
+                        f"-> 第{content[i].index}句多余 ： 符号：" + result[key_name]
+                    )
                     self.reset_conversation()  # 重置会话替代重试
                     # error_flag = True
                     # break
@@ -277,24 +269,10 @@ class CGPT35Translate:
                     error_flag = True
 
             if error_flag:
-                if self.type == "offapi":
-                    self._del_last_answer()
-                elif self.type == "unoffapi":
-                    self.reset_conversation()
-                if self.transl_style == "auto":
-                    self._set_gpt_style("normal")
+                self._handle_error()
                 continue
 
             for i, result in enumerate(result_json):  # 正常输出
-                # 修复输出中的换行符
-                if "\r\n" in content[i].post_jp:
-                    if "\r\n" not in result[key_name] and "\n" in result[key_name]:
-                        result[key_name] = result[key_name].replace("\n", "\r\n")
-                    if result[key_name].startswith("\r\n") and not content[
-                        i
-                    ].post_jp.startswith("\r\n"):
-                        result[key_name] = result[key_name][2:]
-
                 if self.target_lang == "Simplified Chinese":
                     result[key_name] = zhconv.convert(result[key_name], "zh-cn")
                 elif self.target_lang == "Traditional Chinese":
@@ -302,15 +280,21 @@ class CGPT35Translate:
 
                 content[i].pre_zh = result[key_name]
                 content[i].post_zh = result[key_name]
-                content[i].trans_by = "ChatGPT"
-                if "conf" in result:
-                    content[i].trans_conf = result["conf"]
+                content[i].trans_by = "GPT-3.5"
 
             if self.transl_style == "auto":
                 self._set_gpt_style("precise")
 
             break  # 输出正确，跳出循环
         return content
+
+    def _handle_error(self):
+        if self.type == "offapi":
+            self._del_last_answer()
+        elif self.type == "unoffapi":
+            self.reset_conversation()
+        if self.transl_style == "auto":
+            self._set_gpt_style("normal")
 
     def reset_conversation(self):
         if self.type == "offapi":

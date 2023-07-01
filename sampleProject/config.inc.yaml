@@ -15,16 +15,16 @@ common:
   gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
   gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。[True/False]
   # GPT3.5/GPT4
-  gpt.translStyle: auto # (GPT3.5/4 官方API)GPT参数预设，precise下结果更精确与集中，normal接近网页版。[auto/precise/normal]
+  gpt.translStyle: auto # (GPT3.5/4 官方API)GPT参数预设，precise更精确normal更随机，auto自动切换。[auto/precise/normal]
   gpt.degradeBackend: false # (GPT3.5/4 官方API)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
-  gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启自动恢复上下文。[True/False]
-  gpt.fullContextMode: false # (GPT3.5/4 官方API)尽可能多的保留前文，翻译逻辑性更好，消耗token约翻4倍。[True/False]
+  gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启时恢复上一轮的前文。[True/False]
+  gpt.fullContextMode: false # (GPT3.5/4 官方API)保留更多前文。开启提升效果，关闭节约数倍token消耗。[True/False]
   gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，减少丢换行符情况，但可能导致循环重试。[True/False]
 # 代理设置
 proxy:
   enableProxy: false # 是否启用代理。[True/False]
   proxies:
-    - address: socks5://127.0.0.1:10818
+    - address: http://127.0.0.1:7890
       # username: foo
       # password: bar
 # 字典

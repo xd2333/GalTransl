@@ -336,12 +336,7 @@ class CGPT4Translate:
                     result_trans_list.append(trans_list[i])
 
             if error_flag:
-                if self.type == "offapi":
-                    self._del_last_answer()
-                elif self.type == "unoffapi":
-                    self.reset_conversation()
-                if self.transl_style == "auto":
-                    self._set_gpt_style("normal")
+                self._handle_error()
                 continue
 
             if self.transl_style == "auto":
@@ -416,6 +411,14 @@ class CGPT4Translate:
             )
 
         return trans_result_list
+
+    def _handle_error(self):
+        if self.type == "offapi":
+            self._del_last_answer()
+        elif self.type == "unoffapi":
+            self.reset_conversation()
+        if self.transl_style == "auto":
+            self._set_gpt_style("normal")
 
     def reset_conversation(self):
         if self.type == "offapi":

@@ -135,7 +135,7 @@ async def doGPT3Translate(
             LOGGER.info("%s 文件夹不存在，让我们创建它...", dir_path)
             mkdir(dir_path)
 
-    semaphore = Semaphore(projectConfig.getKey("coroutinePerProject"))
+    semaphore = Semaphore(projectConfig.getKey("workersPerProject"))
     tasks = [
         doGPT3TranslateSingleFile(
             semaphore,
@@ -269,7 +269,7 @@ async def doGPT4Translate(
         if not isPathExists(dir_path):
             mkdir(dir_path)
 
-    semaphore = Semaphore(projectConfig.getKey("coroutinePerProject"))
+    semaphore = Semaphore(projectConfig.getKey("workersPerProject"))
     tasks = [
         doGPT4TranslateSingleFile(
             semaphore,
@@ -410,7 +410,7 @@ async def doNewBingTranslate(
         if not isPathExists(dir_path):
             mkdir(dir_path)
 
-    semaphore = Semaphore(projectConfig.getKey("coroutinePerProject"))
+    semaphore = Semaphore(projectConfig.getKey("workersPerProject"))
     tasks = [
         doNewBingTranslateSingleFile(
             semaphore,

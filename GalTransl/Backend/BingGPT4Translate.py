@@ -191,7 +191,7 @@ class CBingGPT4Translate:
                     self.throttled_cookie_list.append(self.current_cookie_file)
                     self.cookiefile_list.remove(self.current_cookie_file)
                     await self._change_cookie()
-                    time.sleep(self.sleep_time)
+                    await asyncio.sleep(self.sleep_time)
                     continue
                 elif "InvalidRequest" in str(ex):
                     await self.chatbot.reset()
@@ -296,7 +296,7 @@ class CBingGPT4Translate:
                     result_trans_list.append(trans_list[i])
 
             if error_flag:
-                time.sleep(2)
+                await asyncio.sleep(2)
                 await self.chatbot.reset()
                 continue
             if i + 1 != len(trans_list):
@@ -428,5 +428,5 @@ class CBingGPT4Translate:
                 break
             except Exception as e:
                 LOGGER.info(f"换cookie失败：{e}")
-                time.sleep(1)
+                await asyncio.sleep(1)
                 continue

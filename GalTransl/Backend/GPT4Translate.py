@@ -255,7 +255,7 @@ class CGPT4Translate:
                 LOGGER.error(f"-> {str_ex}")
                 if "try again later" in str_ex or "too many requests" in str_ex:
                     LOGGER.warning("-> 请求受限，5分钟后继续尝试")
-                    time.sleep(300)
+                    await asyncio.sleep(300)
                     continue
                 if "expired" in str_ex:
                     LOGGER.error("-> access_token过期，请更换")

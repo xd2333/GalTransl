@@ -34,8 +34,8 @@ class CProxy:
 
 
 class CProjectConfig:
-    def __init__(self, projectPath: str) -> None:
-        self.projectConfig = loadConfigFile(path.join(projectPath, CONFIG_FILENAME))
+    def __init__(self, projectPath: str, config_name=CONFIG_FILENAME) -> None:
+        self.projectConfig = loadConfigFile(path.join(projectPath, config_name))
         self.projectDir: str = projectPath
         self.inputPath: str = str(
             path.abspath(path.join(projectPath, INPUT_FOLDERNAME))
@@ -102,7 +102,7 @@ class CProjectConfig:
             result.append(CTranslateProblem[i])
 
         return result
-    
+
     def getProblemAnalyzeArinashiDict(self) -> dict:
         return self.projectConfig["problemAnalyze"]["arinashiDict"]
 

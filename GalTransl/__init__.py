@@ -14,7 +14,7 @@ PROGRAM_SPLASH = """
   \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|                                           
 """
 
-GALTRANSL_VERSION = "2.2.0"
+GALTRANSL_VERSION = "2.3.0"
 AUTHOR = "cx2333"
 CONTRIBUTORS = "ryank231231, Isotr0py"
 
@@ -29,6 +29,15 @@ TRANSLATOR_SUPPORTED = {
     "chatgpt-gpt4": "GPT4 模拟网页操作模式",
     "newbing": "NewBing大小姐",
     "caiyun": "彩云 -- 暂不可用",
+}
+LANG_SUPPORTED = {
+    "zh-cn": "Simplified Chinese",
+    "zh-tw": "Traditional Chinese",
+    "en": "English",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "ru": "Russian",
+    "fr": "French",
 }
 DEBUG_LEVEL = {
     "debug": logging.DEBUG,

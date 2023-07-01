@@ -223,14 +223,14 @@ reference = "mirrors"
 
 [[package]]
 name = "bingimagecreator"
-version = "0.4.2"
+version = "0.4.4"
 description = "High quality image generation by Microsoft. Reverse engineered API."
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "BingImageCreator-0.4.2-py3-none-any.whl", hash = "sha256:31e7982f0e3b80b88c11b68c95e52a20d2c389bec135be7fbffb67e23c91336d"},
-    {file = "BingImageCreator-0.4.2.tar.gz", hash = "sha256:661208be8b432311094a54f9d5c62d67ac578515fe3c4ba781205e507051835f"},
+    {file = "BingImageCreator-0.4.4-py3-none-any.whl", hash = "sha256:322312c6b59af1210faa0ec2fbc2429b53add60d3a0af2da7f1ae793844521b5"},
+    {file = "BingImageCreator-0.4.4.tar.gz", hash = "sha256:3e66b0f6df6d9082ed3991f06ef1c52b327b9ecb762d2cfa0c36beb26dbbdf55"},
 ]
 
 [package.dependencies]
@@ -480,19 +480,19 @@ reference = "mirrors"
 
 [[package]]
 name = "edgegpt"
-version = "0.11.6"
+version = "0.11.8"
 description = "Reverse engineered Edge Chat API"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "EdgeGPT-0.11.6-py3-none-any.whl", hash = "sha256:9926f5b7f4aed3cb1e613a4da01a16897b09f5ec9b64a49825a588c1510f8df9"},
-    {file = "EdgeGPT-0.11.6.tar.gz", hash = "sha256:83421558966a4efe1743ecca8d1de5164988297d01541d21f248e6049e1284b9"},
+    {file = "EdgeGPT-0.11.8-py3-none-any.whl", hash = "sha256:9d6c34cd4216dfcb3d70d7fd7ecf1437ca8c44131e4f4625d1e7d2a4213042ad"},
+    {file = "EdgeGPT-0.11.8.tar.gz", hash = "sha256:c2ddb1c0ce2c56deb0a28bd23bca58ba99305fd7bca8ae2b3f8e91df39fb53bd"},
 ]
 
 [package.dependencies]
 aiohttp = "*"
-BingImageCreator = ">=0.3.0"
+BingImageCreator = ">=0.4.4"
 certifi = "*"
 httpx = {version = ">=0.24.0", extras = ["socks"]}
 prompt-toolkit = "*"
@@ -1661,4 +1661,4 @@ reference = "mirrors"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "237c632d0c81b8c7e69dd49500d2b7ff237d1def577ca7f76bdb759816f867fc"
+content-hash = "9a846e7d409a03e1e1f23dce5a9c8f392ab3db4f6771b8c1fcd19a3e3aa1f081"

@@ -343,11 +343,11 @@ async def doNewBingTranslateSingleFile(
                 if success:
                     break
 
-            # 4、翻译后处理
-            for i, tran in enumerate(trans_list):
-                tran.some_normal_fix()
-                tran.recover_dialogue_symbol()  # 恢复对话框
-                tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
+        # 4、翻译后处理
+        for i, tran in enumerate(trans_list):
+            tran.some_normal_fix()
+            tran.recover_dialogue_symbol()  # 恢复对话框
+            tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
 
     # 用于保存problems
     arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()

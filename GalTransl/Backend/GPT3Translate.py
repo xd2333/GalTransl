@@ -285,6 +285,8 @@ class CGPT35Translate:
             if self.transl_style == "auto":
                 self._set_gpt_style("precise")
 
+            self.retry_count = 0
+
             break  # 输出正确，跳出循环
         return content
 
@@ -295,8 +297,7 @@ class CGPT35Translate:
         if self.transl_style == "auto":
             self._set_gpt_style("normal")
         # 3次重试则重置会话
-        if self.retry_count > 3:
-            self.retry_count = 0
+        if self.retry_count % 3 == 0:
             self.reset_conversation()
             LOGGER.warning("-> 3次出错重置会话")
             return

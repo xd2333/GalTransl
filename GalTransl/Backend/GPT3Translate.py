@@ -286,7 +286,7 @@ class CGPT35Translate:
                 content[i].post_zh = result[key_name]
                 content[i].trans_by = "GPT-3.5"
 
-            if self.transl_style == "auto":
+            if self.transl_style == "auto" and not warn_flag:
                 self._set_gpt_style("precise")
 
             self.retry_count = 0
@@ -365,7 +365,7 @@ class CGPT35Translate:
         frequency_penalty, presence_penalty = 0.1, 0.0
         if style_name == "precise":
             temperature, top_p = 0.7, 0.2
-            frequency_penalty, presence_penalty = 0.1, 0.1
+            frequency_penalty, presence_penalty = 0.3, 0.1
         elif style_name == "normal":
             pass
         if self.type == "offapi":

@@ -242,7 +242,11 @@ class CGPT35Translate:
                     break
                 # 本行输出有多余的 /
                 if "/" in result[key_name]:
-                    if "／" not in content[i].post_jp and "/" not in content[i].post_jp:
+                    if (
+                        "／" not in content[i].post_jp
+                        and "/" not in content[i].post_jp
+                        and "・" not in content[i].post_jp
+                    ):
                         error_message = f"第{content[i].index}句多余 / 符号"
                         error_flag = True
                         break

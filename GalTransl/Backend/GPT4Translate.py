@@ -31,7 +31,7 @@ The monologue should be translated from the character's self-perspective, omitti
 Your output start with "Transl:\\n", 
 write the whole result jsonlines in a code block(```jsonline), 
 in each line:
-copy the `id` and `name`(if have) directly,
+copy the `id` [NamePrompt3]directly,
 del `src`, add `dst`, follow the steps+rules, fill in your [TargetLang] translation result, 
 [confidence]
 then stop, without any other explanations or notes.
@@ -64,7 +64,7 @@ Properly adjust the word order and polish the wording of the inline sentence to 
 Your output start with "Rivision: ", 
 then write a short basic summary like `Rivised id <id>, for <goals and rules>; id <id2>,...`.
 after that, write the whole result jsonlines in a code block(```jsonline), in each line:
-copy the `id` and `name`(if have) directly, remove origin `src` and `dst`, 
+copy the `id` [NamePrompt3]directly, remove origin `src` and `dst`, 
 follow the rules and goals, add `newdst` and fill your [TargetLang] proofreading result, 
 each object in one line without any explanation or comments, then end.
 [Glossary]
@@ -72,6 +72,8 @@ Input:
 [Input]"""
 
 SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture."
+
+NAME_PROMPT3 = "and `name`(if have) "
 
 
 class CGPT4Translate:
@@ -212,7 +214,10 @@ class CGPT4Translate:
             prompt_req = prompt_req.replace("\n[confidence]\n", CONFIDENCE_PROMPT)
         else:
             prompt_req = prompt_req.replace("\n[confidence]\n", "")
-
+        if '"name"' in input_json:
+            prompt_req = prompt_req.replace("[NamePrompt3]", NAME_PROMPT3)
+        else:
+            prompt_req = prompt_req.replace("[NamePrompt3]", "")
         while True:  # 一直循环，直到得到数据
             try:
                 # LOGGER.info("->输入：\n" +  prompt_req+ "\n")

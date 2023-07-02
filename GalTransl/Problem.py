@@ -51,7 +51,7 @@ def find_problems(
                 if "（" not in find_from_str and ")" not in find_from_str:
                     problem_list.append("本有括号")
 
-            if "：" not in tran.pre_jp:
+            if "：" not in tran.pre_jp and ":" not in tran.pre_jp:
                 if "：" in find_from_str:
                     problem_list.append("本无冒号")
             elif "：" in tran.pre_jp:

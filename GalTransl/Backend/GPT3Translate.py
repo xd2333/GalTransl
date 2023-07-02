@@ -34,7 +34,7 @@ Req5: You should ensure the result is corresponds to the current original object
 # On Output:
 Your output start with "Transl:", then write the whole result in one line json format same as the input. 
 In each object:
-1. From current input object, copy the value of `id` directly into the Transl object. [NamePrompt3]
+1. From current input object, copy the value of `id` [NamePrompt3]directly into the output object.
 2. Follow the `Steps and Requirements` step by step to translate the value of `src` from [SourceLang] to [TargetLang].
 3. Del `src`, use `dst` instead, fill in your translation.
 then stop, end without any explanations.
@@ -44,7 +44,7 @@ Input:
 
 SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-3.5 architecture."
 
-NAME_PROMPT3 = "If key-`name` exist, copy it too."
+NAME_PROMPT3 = "and `name`(only if have) "
 
 
 class CGPT35Translate:

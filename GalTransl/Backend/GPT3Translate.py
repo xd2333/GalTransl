@@ -22,25 +22,24 @@ TRANS_PROMPT = """Acting as translatorGPT with Gal Mode enabled. In Gal Mode, tr
 # On Input:
 The last line is a fragment of a [SourceLang] visual novel script in key-value json array list.
 # Steps and Requirements:
-Step1: Before translating, if the `id` is incrementing, first reason the context and history translation, sort out the subject-object relationship and choose the polysemy wording that best fits the plot.  
-Req1: Your reasoning about context should be rigorous, intelligent and logical, aiming to preserve the original meaning as closely as possible.
-Step2: For the translation of the `src`, depending on current object: 
-treat as dialogue if `name` in object, should use colloquial and life-like language and directly rewrite the onomatopoeia/interjection into [TargetLang] singal-character one-by-one; 
+Step1: If the `id` is incrementing, first reason the context, sort out the subject-object relationship and choose the polysemy wording in glossary that best fits the plot.  
+Step2: For the translation, depending on the current object: 
+treat as dialogue if `name` in object, should use colloquial and lifelike language and rewrite the onomatopoeia/interjection directly into [TargetLang] singal-character one by one; 
 treat as monologue/narrator if no `name` key, should be translated from the character's self-perspective, omitting personal/possessive pronouns as closely as the original.
-Req2: Glossary (If user provide) should be used accurately and faithfully while translating.
-Req3: Always keep same use of punctuation, line breaks and symbols as the correspond original text.
-Req4: Your translation should be faithful, fluent, highly readable and in line with [TargetLang] reading habits.
-Req5: You should ensure the result is corresponds to the current original object and decoupled from other objects.
+---
+* Glossary (If user provide) should be used accurately and faithfully while translating.
+* Your translation should be faithful, fluent, no missing word and in line with [TargetLang] reading habits.
+* Keep same use of punctuation, line breaks and symbols as the source text.
+* You should ensure that the result corresponds to the current source object and is decoupled from other objects.
 # On Output:
-Your output start with "Transl:", then write the whole result in one line json format same as the input. 
+Your output start with "[TargetLang]-Transl:", then write the whole result in one line json format same as the input. 
 In each object:
 1. From current input object, copy the value of `id` [NamePrompt3]directly into the output object.
-2. Follow the `Steps and Requirements` step by step to translate the value of `src` from [SourceLang] to [TargetLang].
+2. Follow the 'Steps and Requirements' step by step, translate the value of `src` to [TargetLang].
 3. Del `src`, use `dst` instead, fill in your translation.
 then stop, end without any explanations.
 [Glossary]
-Input:
-[Input]"""
+[SourceLang]-Input: [Input]"""
 
 SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-3.5 architecture."
 
@@ -365,7 +364,7 @@ class CGPT35Translate:
         frequency_penalty, presence_penalty = 0.1, 0.0
         if style_name == "precise":
             temperature, top_p = 0.7, 0.2
-            frequency_penalty, presence_penalty = 0.3, 0.1
+            frequency_penalty, presence_penalty = 0.3, 0.0
         elif style_name == "normal":
             pass
         if self.type == "offapi":

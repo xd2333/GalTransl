@@ -190,6 +190,8 @@ class CBingGPT4Translate:
                 elif "InvalidRequest" in str(ex):
                     await self.chatbot.reset()
                     continue
+                elif "CAPTCHA" in str(ex):
+                    LOGGER.warning("-> 验证码拦截，需要去网页Newbing随便问一句，点击验证码，然后重新复制cookie")
                 LOGGER.info("Error:%s, Please wait 30 seconds" % ex)
                 traceback.print_exc()
                 time.sleep(5)

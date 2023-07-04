@@ -67,6 +67,7 @@ class CSentense:
         while (
             first_symbol in "「『"
             and last_symbol in "」』"
+            and self.post_jp != ""
             and ord(last_symbol) - ord(first_symbol) == 1  # 是同一对
         ):
             self.is_dialogue = True

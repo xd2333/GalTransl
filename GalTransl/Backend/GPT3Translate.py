@@ -305,7 +305,8 @@ class CGPT35Translate:
             return
         # 10次重试则中止
         if self.retry_count > 10:
-            raise Exception(f"-> 循环重试超过10次，已中止：{error_msg}")
+            LOGGER.error(f"-> 循环重试超过10次，已中止：{error_msg}")
+            exit(-1)
         # 其他情况
         if self.type == "offapi":
             self._del_last_answer()

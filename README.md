@@ -1,4 +1,10 @@
-# GalTransl
+
+<div align=center><img width="150" height="150" src="./img/logo.png"/></div>
+
+<div align='center' ><font size='10'>GalTransl</font></div>
+
+---
+
   GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具包，用于制作内嵌式翻译补丁。   
    
   GalTransl的核心是一组由我(cx2333)构建的gal自动化翻译工具，它解决了使用ChatGPT自动化翻译GalGame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合利用，打通了制作补丁的整个流程，一定程度的降低了上手门槛，从而让对此感兴趣的朋友有机会以较低的技术要求，构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  

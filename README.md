@@ -3,6 +3,8 @@
 
 <h1><p align='center' >GalTransl</p></h1>
 
+![GitHub release (with filter)](https://img.shields.io/github/v/release/XD2333/GalTransl) ![GitHub](https://img.shields.io/github/license/XD2333/GalTransl) ![GitHub Repo stars](https://img.shields.io/github/stars/XD2333/GalTransl)
+
   GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具包，用于制作内嵌式翻译补丁。   
    
   GalTransl的核心是一组由我(cx2333)构建的gal自动化翻译工具，它解决了使用ChatGPT自动化翻译GalGame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合利用，打通了制作补丁的整个流程，一定程度的降低了上手门槛，从而让对此感兴趣的朋友有机会以较低的技术要求，构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  
@@ -17,15 +19,14 @@
   7. 结合其他项目支持多引擎脚本一键解包与注入，提供完整教程降低上手难度   
 
 ## 前言
-* 最早做这个工具的初衷是在两年前发现大部分机翻补丁的质量太影响观感（人名都翻不对），于是断断续续的结合彩云小译开始写这个工具，期间还推倒重做了一次（~~源码弄丢~~），用python重写了这个项目。在去年年底ChatGPT出现后开始研究将GPT引入Gal翻译，并逐步形成了这套体系。   
 
-* 开源是因为下半年要转去忙自己的事了，以后可能也没什么时间搞这些了（~~开源了以后你们做，我玩2333~~）。另外项目整体已经有一定的完成度，拿得出手了。   
+* 代码贡献：感谢ryank231231、Isotr0py，完善了我的杂鱼代码。
+  
+* 最早做这个工具的初衷是在两年前发现大部分机翻补丁的质量太影响观感（人名都翻不对），于是断断续续的结合彩云小译开始写这个工具，期间还推倒重做了一次（~~源码弄丢~~），用python重写了这个项目。在去年年底ChatGPT出现后开始研究将GPT引入Gal翻译，并逐步形成了这套体系。   
    
-* 支持我：只要你愿意为大家无偿分享做的补丁就是支持我了，能提一下是用GalTransl翻译的就更好了233。（PS. 分享补丁时请注明GPT翻译）   
+* 支持我：点个Star~（无偿分享补丁就是支持我了，能提一下是用GalTransl翻译的就更好了。PS. 分享补丁时请注明GPT翻译   
 
 * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群）   
-
-* 代码贡献：感谢ryank231231、Isotr0py，完善了我的杂鱼代码。   
 
   **Readme还有一些图没贴**
 
@@ -48,7 +49,7 @@
 * [环境准备](https://github.com/XD2333/GalTransl#环境准备)：环境与软件的安装   
 * [上手教程](https://github.com/XD2333/GalTransl#上手教程)：全流程介绍如何制作一个机翻补丁，只想看怎么使用本工具的话，可以只看第2章   
 * [翻译引擎介绍](https://github.com/XD2333/GalTransl#翻译引擎介绍)：本篇介绍各个翻译引擎的优缺点与推荐的组合   
-* [翻译引擎调用](https://github.com/XD2333/GalTransl#翻译引擎调用配置)：本篇详细介绍各个翻译引擎API的调用与配置方式。   
+* [配置文件与翻译引擎设置](https://github.com/XD2333/GalTransl#配置文件与翻译引擎设置)：本篇详细介绍各个翻译引擎API的调用与配置方式。   
 * [GalTransl核心功能介绍](https://github.com/XD2333/GalTransl#galtransl核心功能介绍)：介绍GPT字典、缓存、普通字典、找问题等功能。  
 
 ## 环境准备
@@ -430,7 +431,7 @@ $str20	$str20	player's codename, boy
 
 首先，总结一些要点：   
 1. 当你想重翻某句时，打开对应的翻译缓存文件，删掉该句的pre_zh整行(**不要留空行**)   
-2. 当你想重翻某文件时，直接删对应的翻译缓存文件。   
+2. 当你想整段重翻时，直接删对应的数个object块，重翻某文件时，直接删对应的翻译缓存文件。   
 3. 当GalTransl正在翻译时，不要修改正在翻译的文件的缓存，改了也会被覆写回去。   
 4. json_cn结果文件 = 翻译缓存内的pre_zh/proofread_zh + 译后字典替换 + 恢复对话框   
 5. 当新的post_jp与缓存内的post_jp不一致时，会触发重翻，一般发生在添加了新的译前字典时
@@ -526,32 +527,63 @@ arinashi_dict是一个可以自定义规则的找问题字典，配置格式为
 
 </details> 
 
-## 翻译引擎调用配置
+## 配置文件与翻译引擎设置
 
 <details>
 
 <summary>  
 本篇介绍各个翻译引擎API的调用配置。
 </summary>  
-
-
+   
+   
 * **基础配置**   
 ```yaml
+---
 # 通用（杂项）设置
 common:
   loggingLevel: info # 日志等级，可选 [debug/info/warning/error]
-  retranslFail: false # 重翻NewBing拒绝翻译的句子。[True/False]
-  multiThread: false # 多线程，[True/False]（暂不可用）
-  gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果。[True/False]
+  multiThread: false # 多线程。[True/False]（暂不可用）
+  # 通用设置
+  sourceLanguage: ja # 源语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
+  targetLanguage: zh-cn # 目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
+  retranslFail: false # 启动后重翻NewBing拒绝翻译的句子。[True/False]
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
+  gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果。[True/False]
+  # NewBing/GPT4
   gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。[True/False]
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
-  gpt.degradeBackend: false # (GPT3.5/4 官方API)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
-  gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启自动恢复上下文。[True/False]
-  gpt.fullContextMode: false # (GPT3.5/4 官方API)尽可能多的保留前文，翻译逻辑性更好，消耗token约翻4倍。[True/False]
-  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，减少丢换行符情况，但可能导致循环重试。[True/False]
   gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
   gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。[True/False]
+  # GPT3.5/GPT4
+  gpt.translStyle: auto # (GPT3.5/4 官方API)GPT参数预设，precise更精确normal更随机，auto自动切换。[auto/precise/normal]
+  gpt.degradeBackend: false # (GPT3.5/4 官方API)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
+  gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启时恢复上一轮的前文。[True/False]
+  gpt.fullContextMode: false # (GPT3.5/4 官方API)保留更多前文。开启提升效果，关闭节约数倍token消耗。[True/False]
+  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，减少丢换行符情况，但可能导致循环重试。[True/False]
+# 代理设置
+proxy:
+  enableProxy: false # 是否启用代理。[True/False]
+  proxies:
+    - address: http://127.0.0.1:7890
+      # username: foo
+      # password: bar
+# 字典
+dictionary:
+  defaultDictFolder: Dict # 通用字典文件夹，相对于程序目录
+  # 预处理字典
+  preDict:
+    - 00通用字典_译前.txt
+    - 01H字典_矫正_译前.txt  # 用于口齿不清的矫正
+    - (project_dir)项目字典_译前.txt # (project_dir)代表字典在项目文件夹
+  # GPT 字典
+  gpt.dict:
+    - GPT字典.txt
+    - (project_dir)项目GPT字典.txt
+  # 后处理字典
+  postDict:
+    - 00通用字典_符号_译后.txt # 符号矫正
+    - 00通用字典_译后.txt
+    - (project_dir)项目字典_译后.txt
 ```
 
 

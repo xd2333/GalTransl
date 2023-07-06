@@ -1,9 +1,7 @@
 
 <div align=center><img width="150" height="150" src="./img/logo.png"/></div>
 
-<div align='center' ><font size='10'>GalTransl</font></div>
-
----
+<h1><p align='center' >GalTransl</p></h1>
 
   GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具包，用于制作内嵌式翻译补丁。   
    

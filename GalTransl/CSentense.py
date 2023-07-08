@@ -175,7 +175,7 @@ class CSentense:
         """
         针对一些最后一个符号丢失的问题进行补回
         """
-        if not self.pre_jp.endswith("\r\n") and self.post_zh.endswith("\r\n"):
+        if not self.post_jp.endswith("\r\n") and self.post_zh.endswith("\r\n"):
             self.post_zh = self.post_zh[:-2]
         if self.post_jp[-1:] == "♪" and self.post_zh[-1:] != "♪":
             self.post_zh += "♪"

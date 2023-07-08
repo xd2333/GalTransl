@@ -110,7 +110,7 @@ class CBingGPT4Translate:
         self.last_file_name = ""
         asyncio.run(self._change_cookie())
 
-    async def translate(self, trans_list: CTransList, dict="", proofread=False):
+    async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT
         input_list = []
         for i, trans in enumerate(trans_list):
@@ -143,14 +143,14 @@ class CBingGPT4Translate:
             input_json += json.dumps(obj, ensure_ascii=False) + "\n"
 
         prompt_req = prompt_req.replace("[Input]", input_json)
-        prompt_req = prompt_req.replace("[Glossary]", dict)
+        prompt_req = prompt_req.replace("[Glossary]", gptdict)
         prompt_req = prompt_req.replace("[SourceLang]", self.source_lang)
         prompt_req = prompt_req.replace("[TargetLang]", self.target_lang)
         if '"name"' in input_json:
             prompt_req = prompt_req.replace("[NamePrompt3]", NAME_PROMPT3)
         else:
             prompt_req = prompt_req.replace("[NamePrompt3]", "")
-        LOGGER.info(f"->{'翻译输入' if not proofread else '校对输入'}：{dict}\n{input_json}\n")
+        LOGGER.info(f"->{'翻译输入' if not proofread else '校对输入'}：{gptdict}\n{input_json}\n")
         while True:  # 一直循环，直到得到数据
             try:
                 self.request_count += 1

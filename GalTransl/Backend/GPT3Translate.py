@@ -149,7 +149,7 @@ class CGPT35Translate:
         """
         pass
 
-    async def asyncTranslate(self, content: CTransList, dict="") -> CTransList:
+    async def asyncTranslate(self, content: CTransList, gptdict="") -> CTransList:
         """
         translate with async requests
         """
@@ -162,7 +162,7 @@ class CGPT35Translate:
         input_json = json.dumps(input_list, ensure_ascii=False)
         prompt_req = TRANS_PROMPT
         prompt_req = prompt_req.replace("[Input]", input_json)
-        prompt_req = prompt_req.replace("[Glossary]", dict)
+        prompt_req = prompt_req.replace("[Glossary]", gptdict)
         prompt_req = prompt_req.replace("[SourceLang]", self.source_lang)
         prompt_req = prompt_req.replace("[TargetLang]", self.target_lang)
         if '"name"' in input_json:
@@ -171,7 +171,7 @@ class CGPT35Translate:
             prompt_req = prompt_req.replace("[NamePrompt3]", "")
         while True:  # 一直循环，直到得到数据
             try:
-                LOGGER.info(f"-> 翻译输入：\n{dict}\n{input_json}\n")
+                LOGGER.info(f"-> 翻译输入：\n{gptdict}\n{input_json}\n")
                 LOGGER.info("-> 输出：\n")
                 resp = ""
                 if self.type == "offapi":

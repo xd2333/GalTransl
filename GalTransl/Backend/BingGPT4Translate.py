@@ -150,7 +150,9 @@ class CBingGPT4Translate:
             prompt_req = prompt_req.replace("[NamePrompt3]", NAME_PROMPT3)
         else:
             prompt_req = prompt_req.replace("[NamePrompt3]", "")
-        LOGGER.info(f"->{'翻译输入' if not proofread else '校对输入'}：{gptdict}\n{input_json}\n")
+        LOGGER.info(
+            f"->{'翻译输入' if not proofread else '校对输入'}：{gptdict}\n{input_json}\n"
+        )
         while True:  # 一直循环，直到得到数据
             try:
                 self.request_count += 1
@@ -331,6 +333,7 @@ class CBingGPT4Translate:
         chatgpt_dict: CGptDict = None,
         retry_failed: bool = False,
         proofread: bool = False,
+        retran_key: str = "",
     ) -> CTransList:
         """批量翻译
 
@@ -347,7 +350,11 @@ class CBingGPT4Translate:
         """
 
         _, trans_list_unhit = get_transCache_from_json(
-            trans_list, cache_file_path, retry_failed=retry_failed, proofread=proofread
+            trans_list,
+            cache_file_path,
+            retry_failed=retry_failed,
+            proofread=proofread,
+            retran_key=retran_key,
         )
         if len(trans_list_unhit) == 0:
             return []

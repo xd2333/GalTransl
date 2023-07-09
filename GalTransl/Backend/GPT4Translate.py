@@ -360,9 +360,15 @@ class CGPT4Translate:
         retry_failed: bool = False,
         chatgpt_dict: CGptDict = None,
         proofread: bool = False,
+        retran_key: str = "",
     ) -> CTransList:
+        
         _, trans_list_unhit = get_transCache_from_json(
-            trans_list, cache_file_path, retry_failed=retry_failed, proofread=proofread
+            trans_list,
+            cache_file_path,
+            retry_failed=retry_failed,
+            proofread=proofread,
+            retran_key=retran_key,
         )
 
         # 校对模式多喂上一行

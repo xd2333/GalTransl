@@ -51,7 +51,8 @@ def doGPT3TranslateSingleFile(
         trans_list,
         projectConfig.getKey("gpt.numPerRequestTranslate"),
         retry_failed=projectConfig.getKey("retranslFail"),
-        chatgpt_dict=gpt_dic,
+        gptdict=gpt_dic,
+        retran_key=projectConfig.getKey("retranslKey"),
     )
 
     # 4、翻译后处理
@@ -179,6 +180,7 @@ def doGPT4Translate(
             projectConfig.getKey("gpt.numPerRequestTranslate"),
             retry_failed=projectConfig.getKey("retranslFail"),
             chatgpt_dict=gpt_dic,
+            retran_key=projectConfig.getKey("retranslKey"),
         )
         if projectConfig.getKey("gpt.enableProofRead"):
             gptapi.batch_translate(
@@ -189,6 +191,7 @@ def doGPT4Translate(
                 retry_failed=projectConfig.getKey("retranslFail"),
                 chatgpt_dict=gpt_dic,
                 proofread=True,
+                retran_key=projectConfig.getKey("retranslKey"),
             )
 
         # 4、翻译后处理
@@ -281,6 +284,7 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
                     projectConfig.getKey("gpt.numPerRequestTranslate"),
                     retry_failed=projectConfig.getKey("retranslFail"),
                     chatgpt_dict=gpt_dic,
+                    retran_key=projectConfig.getKey("retranslKey"),
                 )
                 if projectConfig.getKey("gpt.enableProofRead"):
                     gptapi.batch_translate(
@@ -291,6 +295,7 @@ def doNewBingTranslate(projectConfig: CProjectConfig, multiThreading=False) -> b
                         retry_failed=projectConfig.getKey("retranslFail"),
                         chatgpt_dict=gpt_dic,
                         proofread=True,
+                        retran_key=projectConfig.getKey("retranslKey"),
                     )
                 success = True
             except TypeError:  # https://github.com/acheong08/EdgeGPT/issues/376

@@ -412,15 +412,20 @@ class CGPT35Translate:
     def batch_translate(
         self,
         filename,
-        cache_file_path,
+        cache_path,
         trans_list: CTransList,
-        num_pre_request: int,
+        num_pre_req: int,
         retry_failed: bool = False,
-        chatgpt_dict: CGptDict = None,
+        gptdict: CGptDict = None,
         proofread: bool = False,
+        retran_key: str = "",
     ) -> CTransList:
+        
         _, trans_list_unhit = get_transCache_from_json(
-            trans_list, cache_file_path, retry_failed=retry_failed
+            trans_list,
+            cache_path,
+            retry_failed=retry_failed,
+            retran_key=retran_key,
         )
         if len(trans_list_unhit) == 0:
             return []
@@ -435,7 +440,7 @@ class CGPT35Translate:
             and self.restore_context_mode
             and len(self.chatbot.conversation["default"]) == 1
         ):
-            self.restore_context(trans_list_unhit, num_pre_request)
+            self.restore_context(trans_list_unhit, num_pre_req)
 
         i = 0
         trans_result_list = []
@@ -443,23 +448,23 @@ class CGPT35Translate:
         while i < len_trans_list:
             time.sleep(5)
             trans_list_split = (
-                trans_list_unhit[i : i + num_pre_request]
-                if (i + num_pre_request < len_trans_list)
+                trans_list_unhit[i : i + num_pre_req]
+                if (i + num_pre_req < len_trans_list)
                 else trans_list_unhit[i:]
             )
             dic_prompt = ""
-            if chatgpt_dict != None:
-                dic_prompt = chatgpt_dict.gen_prompt(trans_list_split)
+            if gptdict != None:
+                dic_prompt = gptdict.gen_prompt(trans_list_split)
             trans_result = asyncio.run(
                 self.asyncTranslate(trans_list_split, dic_prompt)
             )
-            i += num_pre_request
+            i += num_pre_req
             result_output = ""
             for trans in trans_result:
                 result_output = result_output + repr(trans)
             LOGGER.info(result_output)
             trans_result_list += trans_result
-            save_transCache_to_json(trans_list, cache_file_path)
+            save_transCache_to_json(trans_list, cache_path)
             LOGGER.info(
                 f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}"
             )

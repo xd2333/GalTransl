@@ -7,6 +7,7 @@ common:
   sourceLanguage: ja # 源语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   targetLanguage: zh-cn # 目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   retranslFail: false # 启动后重翻NewBing拒绝翻译的句子。[True/False]
+  retranslKey: "" # 当某句的Problem或pre_zh中包含设置的关键词，则主动重翻，例如"残留日文"
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
   gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果。[True/False]
   # NewBing/GPT4

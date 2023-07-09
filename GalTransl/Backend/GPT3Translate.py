@@ -42,7 +42,7 @@ then stop, end without any explanations.
 
 SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-3.5 architecture."
 
-NAME_PROMPT3 = "and `name`(only if have) "
+NAME_PROMPT3 = "and (optional `name` only if have) "
 
 
 class CGPT35Translate:
@@ -363,7 +363,7 @@ class CGPT35Translate:
         temperature, top_p = 1.0, 1.0
         frequency_penalty, presence_penalty = 0.2, 0.0
         if style_name == "precise":
-            temperature, top_p = 1.0, 0.3
+            temperature, top_p = 1.0, 0.4
             frequency_penalty, presence_penalty = 0.3, 0.0
         elif style_name == "normal":
             pass

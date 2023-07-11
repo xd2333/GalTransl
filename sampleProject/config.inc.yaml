@@ -13,7 +13,7 @@ common:
   # NewBing/GPT4
   gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。[True/False]
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
-  gpt.recordConfidence: false # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
+  gpt.recordConfidence: false # (NewBing/GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
   gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。[True/False]
   # GPT3.5/GPT4
   gpt.translStyle: auto # (GPT3.5/4 官方API)GPT参数预设，precise更精确normal更随机，auto自动切换。[auto/precise/normal]

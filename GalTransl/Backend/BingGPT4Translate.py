@@ -29,12 +29,15 @@ Ensure that the content of different objects are decoupled.Then move to the next
 Your output start with "Transl:", 
 write the whole result jsonlines in a code block(```jsonline),
 in each line:
-copy the `id` [NamePrompt3]directly, remove `src` and add `dst` for translation result, add `"conf": <0-1.00>` for assessing translation confidence,
-if conf <= 0.94, add `"doub": <list>` to store doubtful content, if found unknown proper noun, add `"unkn": <list>` to store.
+copy the `id` [NamePrompt3]directly, remove `src` and add `dst` for translation result, [ConfRecord]
 each object in one line without any explanation or comments, then end.
 [Glossary]
 Input:
 [Input]"""
+
+CONF_PROMPT="""add `"conf": <0-1.00>` for assessing translation confidence,
+if conf <= 0.94, add `"doub": <list>` to store doubtful content, if found unknown proper noun, add `"unkn": <list>` to store.
+"""
 
 PROOFREAD_PROMPT = """Generate content for proofreading the input text and output text as required.#no_search
 # On Input
@@ -70,6 +73,11 @@ NAME_PROMPT3 = "and `name`(if have) "
 
 class CBingGPT4Translate:
     def __init__(self, config: CProjectConfig, cookiefile_list: list[str]):
+        # 记录确信度
+        if val := config.getKey("gpt.recordConfidence"):
+            self.record_confidence = val
+        else:
+            self.record_confidence = False
         if val := config.getKey("sourceLanguage"):
             self.source_lang = val
         else:
@@ -108,7 +116,7 @@ class CBingGPT4Translate:
         self.request_count = 0
         self.sleep_time = 0
         self.last_file_name = ""
-        asyncio.run(self._change_cookie())
+        self._change_cookie()
 
     async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT
@@ -146,6 +154,10 @@ class CBingGPT4Translate:
         prompt_req = prompt_req.replace("[Glossary]", gptdict)
         prompt_req = prompt_req.replace("[SourceLang]", self.source_lang)
         prompt_req = prompt_req.replace("[TargetLang]", self.target_lang)
+        if self.record_confidence:
+            prompt_req = prompt_req.replace("[ConfRecord]", CONF_PROMPT)
+        else:
+            prompt_req = prompt_req.replace("[ConfRecord]", "")
         if '"name"' in input_json:
             prompt_req = prompt_req.replace("[NamePrompt3]", NAME_PROMPT3)
         else:
@@ -186,7 +198,7 @@ class CBingGPT4Translate:
                     LOGGER.info("->Request is throttled.")
                     self.throttled_cookie_list.append(self.current_cookie_file)
                     self.cookiefile_list.remove(self.current_cookie_file)
-                    await self._change_cookie()
+                    self._change_cookie()
                     time.sleep(self.sleep_time)
                     continue
                 elif "InvalidRequest" in str(ex):
@@ -296,7 +308,7 @@ class CBingGPT4Translate:
             if i + 1 != len(trans_list):
                 if bing_reject:
                     LOGGER.warning("->NewBing大小姐拒绝了本次请求🙏\n")
-                    await self._change_cookie()
+                    self._change_cookie()
                 # force_NewBing_hs_mode下newbig第一句就拒绝了，为第一句标记为失败
                 if self.force_NewBing_hs_mode and bing_reject and i == -1:
                     if not proofread:
@@ -419,11 +431,11 @@ class CBingGPT4Translate:
         cookies = json.loads(open(self.current_cookie_file, encoding="utf-8").read())
         return cookies
 
-    async def _change_cookie(self):
+    def _change_cookie(self):
         while True:
             try:
-                self.chatbot = await Chatbot.create(
-                    cookies=self.get_random_cookie(), proxy=self.proxy
+                self.chatbot = Chatbot(
+                    proxy=self.proxy, cookies=self.get_random_cookie()
                 )
                 break
             except Exception as e:

@@ -67,6 +67,7 @@ class CSentense:
         while (
             first_symbol in "「『"
             and last_symbol in "」』"
+            and self.post_jp != ""
             and ord(last_symbol) - ord(first_symbol) == 1  # 是同一对
         ):
             self.is_dialogue = True
@@ -146,6 +147,12 @@ class CSentense:
         self.simple_fix_double_quotaion()
         self.remove_first_symbol(line_break_symbol)
         self.fix_last_symbol()
+        # 修复输出中的\r\n换行符
+        if "\r\n" in self.post_jp:
+            if "\r\n" not in self.post_zh and "\n" in self.post_zh:
+                self.post_zh = self.post_zh.replace("\n", "\r\n")
+            if self.post_zh.startswith("\r\n") and not self.post_jp.startswith("\r\n"):
+                self.post_zh = self.post_zh[2:]
 
     def simple_fix_double_quotaion(self):
         """
@@ -168,7 +175,7 @@ class CSentense:
         """
         针对一些最后一个符号丢失的问题进行补回
         """
-        if not self.pre_jp.endswith("\r\n") and self.post_zh.endswith("\r\n"):
+        if not self.post_jp.endswith("\r\n") and self.post_zh.endswith("\r\n"):
             self.post_zh = self.post_zh[:-2]
         if self.post_jp[-1:] == "♪" and self.post_zh[-1:] != "♪":
             self.post_zh += "♪"

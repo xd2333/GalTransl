@@ -54,7 +54,11 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, post_save=F
 
 
 def get_transCache_from_json(
-    trans_list: CTransList, cache_file_path, retry_failed=False, proofread=False
+    trans_list: CTransList,
+    cache_file_path,
+    retry_failed=False,
+    proofread=False,
+    retran_key="",
 ):
     """
     此函数从 JSON 文件中检索翻译缓存，并相应地更新翻译列表。
@@ -103,6 +107,16 @@ def get_transCache_from_json(
                 cache_dict[tran.index]["proofread_zh"] == ""
                 or "Fail" in cache_dict[tran.index]["proofread_by"]
             ):  # 且未校对
+                trans_list_unhit.append(tran)
+                continue
+
+        # retran_key在pre_jp中
+        if retran_key  and retran_key in cache_dict[tran.index]["pre_jp"]:
+            trans_list_unhit.append(tran)
+            continue
+        # retran_key在problem中
+        if retran_key and "problem" in cache_dict[tran.index]:
+            if retran_key in cache_dict[tran.index]["problem"]:
                 trans_list_unhit.append(tran)
                 continue
 

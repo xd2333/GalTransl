@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "galtransl"
-version = "1.0.1"
+version = "2.4.0"
 description = "GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具包，用于制作内嵌式翻译补丁。"
 authors = ["cx2333"]
 license = "GNU GPLv3"
@@ -8,19 +8,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-edgegpt = "^0.11"
+edgegpt = "^0.10.16"
 requests = "^2.31.0"
-revchatgpt = "^6.0.0"
+revchatgpt = "^6.8.1"
 ttkbootstrap = "^1.10.1"
+zhconv = "^1.4.3"
 pyyaml = "^6.0"
-OpenCC = "^1.1.0"
 
-
-[[tool.poetry.source]]
-name = "mirrors"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
-default = true
-secondary = false
 
 [build-system]
 requires = ["poetry-core"]

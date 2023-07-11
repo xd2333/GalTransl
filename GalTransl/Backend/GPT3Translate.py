@@ -26,7 +26,7 @@ The last line is a [SourceLang] visual novel script fragment in key-value json a
 treat as dialogue if `name` in object, should use colloquial and lifelike language and rewrite the onomatopoeia/interjection directly into [TargetLang] singal-character one by one; 
 treat as monologue/narrator if no `name` key, should be translated from the character's self-perspective, omitting personal/possessive pronouns as closely as the original.
 * Wording should in line with [TargetLang]'s reading habits and fits the plot.
-* Punctuation line breaks and symbols should be retained as much as possible.
+* Punctuation, line breaks and symbols should be retained as much as possible.
 * Translation should be faithful, fluent and no missing word.
 * Result should corresponds to the current source object's text.
 # On Output

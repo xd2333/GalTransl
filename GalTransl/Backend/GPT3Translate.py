@@ -120,7 +120,7 @@ class CGPT35Translate:
                 engine="gpt-3.5-turbo",
                 proxy=self.proxyProvider.getProxy().addr
                 if self.proxyProvider
-                else None,
+                else None, # type: ignore
                 max_tokens=4096,
                 temperature=0.4,
                 truncate_limit=3200,
@@ -129,7 +129,7 @@ class CGPT35Translate:
                 api_address=token.domain + "/v1/chat/completions",
             )
             self.chatbot.update_proxy(
-                self.proxyProvider.getProxy().addr if self.proxyProvider else None
+                self.proxyProvider.getProxy().addr if self.proxyProvider else None # type: ignore
             )
 
         elif type == "unoffapi":
@@ -190,7 +190,7 @@ class CGPT35Translate:
             try:
                 # change token
                 if type == "offapi":
-                    self.chatbot.set_api_key(self.tokenProvider.getToken(True, False))
+                    self.chatbot.set_api_key(self.tokenProvider.getToken(True, False).token)
                 LOGGER.info(f"-> 翻译输入：\n{gptdict}\n{input_json}\n")
                 LOGGER.info("-> 输出：\n")
                 resp = ""

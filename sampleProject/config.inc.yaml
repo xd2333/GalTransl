@@ -2,7 +2,7 @@
 # 通用（杂项）设置
 common:
   loggingLevel: info # 日志等级，可选 [debug/info/warning/error]
-  workersPerProject: 1 # 为 1 时等于单线程
+  workersPerProject: 1 # workers 数量，为 1 时等于单线程
   # 通用设置
   sourceLanguage: ja # 源语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   targetLanguage: zh-cn # 目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]

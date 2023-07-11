@@ -243,7 +243,7 @@ class CGPT4Translate:
             try:
                 # change token
                 if type == "offapi":
-                    self.chatbot.set_api_key(self.tokenProvider.getToken(False, True))
+                    self.chatbot.set_api_key(self.tokenProvider.getToken(False, True).token)
                 # LOGGER.info("->输入：\n" +  prompt_req+ "\n")
                 LOGGER.info(
                     f"->{'翻译输入' if not proofread else '校对输入'}：{gptdict}\n{input_json}\n"

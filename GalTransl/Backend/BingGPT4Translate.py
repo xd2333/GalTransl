@@ -124,7 +124,7 @@ class CBingGPT4Translate:
         elif self.target_lang == "Traditional Chinese":
             self.opencc = OpenCC("s2t.json")
 
-    async def translate(self, trans_list: CTransList, dict="", proofread=False):
+    async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
         await self._change_cookie()
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT
         input_list = []

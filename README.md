@@ -2,8 +2,8 @@
 <div align=center><img width="150" height="150" src="./img/logo.png"/></div>
 
 <h1><p align='center' >GalTransl</p></h1>
-
-![GitHub release (with filter)](https://img.shields.io/github/v/release/XD2333/GalTransl) ![GitHub](https://img.shields.io/github/license/XD2333/GalTransl) ![GitHub Repo stars](https://img.shields.io/github/stars/XD2333/GalTransl)
+<div align=center><img src="https://img.shields.io/github/v/release/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/license/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/stars/XD2333/GalTransl"/></div>
+<p align='center' >支持GPT3.5/4/Newbing的Galgame自动化翻译解决方案</p>
 
   GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具包，用于制作内嵌式翻译补丁。   
    
@@ -81,8 +81,16 @@
   神一样的文本编辑器。[下载](https://www.ghxi.com/emeditor.html)   
   
   * GARbro   
-  神一样的解包工具。[下载](https://ghproxy.com/https://github.com/morkt/GARbro/releases/download/v1.5.44/GARbro-v1.5.44.2904.rar)   
+  神一样的解包工具。[下载](https://ghproxy.com/https://github.com/morkt/GARbro/releases/download/v1.5.44/GARbro-v1.5.44.2904.rar)
 
+## 实用工具
+| 名称 | 说明 |
+| --- | --- |
+| GalTransl_DumpInjector | 文本工具-VNTextPatch gui |
+| KirikiriTools | Krkr、krkrz 提取、注入工具 |
+| UniversalInjectorFramework | 通用注入框架-sjis隧道、sjis替换模式 |
+| VNTextProxy | 注入框架-sjis隧道模式 |
+| dbTXT2Json_jp | 文本工具-双行文本与json_jp互转脚本 |
 ## 上手教程
 做一个gal内嵌翻译补丁的大致流程是：   
 1. 识别引擎 -> 解包资源包拿到脚本 -> 接2.   

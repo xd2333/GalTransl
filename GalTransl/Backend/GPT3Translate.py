@@ -152,7 +152,11 @@ class CGPT35Translate:
         else:
             self._set_gpt_style(self.transl_style)
 
-        self.opencc = OpenCC()
+        if self.target_lang == "Simplified Chinese":
+            self.opencc = OpenCC("t2s.json")
+        elif self.target_lang == "Traditional Chinese":
+            self.opencc = OpenCC("s2t.json")
+            
         pass
 
     def init(self) -> bool:
@@ -312,11 +316,7 @@ class CGPT35Translate:
                     ].post_jp.startswith("\r\n"):
                         result[key_name] = result[key_name][2:]
 
-                if self.target_lang == "Simplified Chinese":
-                    result[key_name] = self.opencc.convert(result[key_name])
-                elif self.target_lang == "Traditional Chinese":
-                    assert(False)
-                    result[key_name] = self.opencc.convert(result[key_name])
+                result[key_name] = self.opencc.convert(result[key_name])
 
                 content[i].pre_zh = result[key_name]
                 content[i].post_zh = result[key_name]

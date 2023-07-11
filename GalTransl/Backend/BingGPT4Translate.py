@@ -113,7 +113,11 @@ class CBingGPT4Translate:
         self.request_count = 0
         self.sleep_time = 0
         self.last_file_name = ""
-        self.opencc = OpenCC()
+
+        if self.target_lang == "Simplified Chinese":
+            self.opencc = OpenCC("t2s.json")
+        elif self.target_lang == "Traditional Chinese":
+            self.opencc = OpenCC("s2t.json")
 
     async def translate(self, trans_list: CTransList, dict="", proofread=False):
         await self._change_cookie()
@@ -272,11 +276,7 @@ class CBingGPT4Translate:
                         error_flag = True
                         break
 
-                if self.target_lang == "Simplified Chinese":
-                    line_json[key_name] = self.opencc.convert(line_json[key_name])
-                elif self.target_lang == "Traditional Chinese":
-                    assert(False)   # TODO
-                    line_json[key_name] = self.opencc.convert(line_json[key_name])
+                line_json[key_name] = self.opencc.convert(line_json[key_name])
                     
                 if not proofread:
                     trans_list[i].pre_zh = line_json[key_name]

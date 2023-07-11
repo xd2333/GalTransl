@@ -155,7 +155,11 @@ class CGPT4Translate:
                 engine="gpt-4",
                 api_address=token.domain + "/v1/chat/completions",
             )
-            self.chatbot.update_proxy(None)  # DO NOT COMMIT
+            self.chatbot.update_proxy(
+                self.proxyProvider.getProxy().addr
+                if hasattr(self, "proxyProvider")
+                else None
+            )
         elif type == "unoffapi":
             from GalTransl.Backend.revChatGPT.V1 import Chatbot as ChatbotV1
 
@@ -177,7 +181,12 @@ class CGPT4Translate:
         else:
             self._set_gpt_style(self.transl_style)
 
-        self.opencc = OpenCC()
+        if self.target_lang == "Simplified Chinese":
+            self.opencc = OpenCC("t2s.json")
+        elif self.target_lang == "Traditional Chinese":
+            self.opencc = OpenCC("s2t.json")
+
+        pass
 
     async def translate(self, trans_list: CTransList, dict="", proofread=False):
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT
@@ -325,11 +334,7 @@ class CGPT4Translate:
                         error_flag = True
                         break
 
-                if self.target_lang == "Simplified Chinese":
-                    line_json[key_name] = self.opencc.convert(line_json[key_name])
-                elif self.target_lang == "Traditional Chinese":
-                    assert(False)
-                    line_json[key_name] = self.opencc.convert(line_json[key_name])
+                line_json[key_name] = self.opencc.convert(line_json[key_name])
 
                 if not proofread:
                     trans_list[i].pre_zh = line_json[key_name]

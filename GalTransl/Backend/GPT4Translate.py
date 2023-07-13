@@ -278,6 +278,7 @@ class CGPT4Translate:
             result_trans_list = []
             key_name = "dst" if not proofread else "newdst"
             error_flag = False
+            error_message = ""
             for line in result_text.split("\n"):
                 try:
                     line_json = json.loads(line)  # 尝试解析json

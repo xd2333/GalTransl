@@ -299,16 +299,16 @@ class CGPT4Translate:
                     or type(line_json["id"]) != int
                     or i > len(trans_list) - 1
                 ):
-                    error_message = f"第{trans_list[i].index}句不正常"
+                    error_message = f"{line}句不无法解析"
                     error_flag = True
                     break
                 line_id = line_json["id"]
                 if line_id != trans_list[i].index:
-                    error_message = f"-> id不对应"
+                    error_message = f"-> 输出{line_id}句id未对应"
                     error_flag = True
                     break
                 if key_name not in line_json or type(line_json[key_name]) != str:
-                    error_message = f"第{trans_list[i].index}句不正常"
+                    error_message = f"第{trans_list[i].index}句找不到{key_name}"
                     error_flag = True
                     break
                 # 本行输出不应为空

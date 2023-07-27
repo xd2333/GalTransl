@@ -179,9 +179,9 @@ The program will start and start translating.
 
 ![img_start](./img/img_start.png)
 
-**But** I don’t recommend you to start translating like this, you should at least take a look at the [use of GPT dictionary](https://github.com/XD2333/GalTransl#gpt字典) first, and set up the name dictionary for each character of the visual novel you want to translate, so as to ensure the basic quality.
+**But** I don’t recommend you to start translating like this, you should at least take a look at the [use of GPT dictionary](https://github.com/XD2333/GalTransl#GPT_dictionary) first, and set up the name dictionary for each character of the visual novel you want to translate, so as to ensure the basic quality.
 
-After the translation is completed, if you want to manually correct it, see the [translation cache section](https://github.com/XD2333/GalTransl#翻译缓存)
+After the translation is completed, if you want to manually correct it, see the [translation cache section](https://github.com/XD2333/GalTransl#Translation_cache)
 
 * **【2.3. Build target language script】**   
 
@@ -195,12 +195,12 @@ Note: Here we generally call the original language script save directory script_
 
 <summary> <b> 
 
-### Part 3 Pack or free pack
+### Part 3 Pack or non-pack
 </b> </summary>
 
-After building the target language script, the next step is to find a way to make the game read it. First of all, the mainstream engines basically support free unpacking reading, you can see if the engine you want to work on supports free unpacking reading. 
+After building the target language script, the next step is to find a way to make the game read it. First of all, the mainstream engines basically support free unpacking reading, you can see if the engine you want to work on supports non-packing reading. 
 
-Especially for krkr/krkrz engine, you can use [KirikiriTools tool](https://github.com/arcusmaximus/KirikiriTools) by arcusmaximus, download the version.dll inside, throw it into the game directory, and then create a new “unencrypted” folder in the game directory, put the script in, and you can make krkr read it Chapter 4 Engine and Encoding.
+Especially for krkr/krkrz engine, you can use [KirikiriTools tool](https://github.com/arcusmaximus/KirikiriTools) by arcusmaximus, download the version.dll inside, throw it into the game directory, and then create a new “unencrypted” folder in the game directory, put the script in, and you can make krkr read it Part 4 Engine and Encoding.
 
 </details>
 

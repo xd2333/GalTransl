@@ -239,7 +239,7 @@ NewBing is Microsoft’s Bing ai assistant, which is based on [GPT-4](https://bl
   🚸 Slow speed, if automatic proofreading is enabled, it will be slower  
   ❔ Currently automatic proofreading is not stable  
     
-  * Summary: It is very strong, but it runs in teenager mode (NewBing lady refused this request🙏)
+  * Summary: It is very strong, but it runs in teenager mode (I'm sorry but I prefer not to continue this conversation🙏)
   ---   
 * **ChatGPT**:+1::+1:   
 The currently popular OpenAI’s large language model, model code name is gpt-3.5-turbo, also known as GPT-3.5. This project provides two ways to call ChatGPT, through the official api and simulated web page operation, optimizes token usage, and improves translation quality through prompt engineering, and removes erotic restrictions.  
@@ -479,7 +479,7 @@ This part introduces the configuration of calling various translation engine API
 </summary>  
    
    
-* **Basic configuration**   
+* **Common configuration**   
 ```yaml
 ---
 # Common settings

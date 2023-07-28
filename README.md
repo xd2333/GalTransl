@@ -5,6 +5,8 @@
 <div align=center><img src="https://img.shields.io/github/v/release/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/license/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/stars/XD2333/GalTransl"/></div>
 <p align='center' >支持GPT3.5/4/Newbing的Galgame自动化翻译解决方案</p>
 
+  [English](https://github.com/XD2333/GalTransl/blob/main/README_EN.md)
+  
   GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具，用于制作内嵌式翻译补丁。   
    
   GalTransl的核心是一组由我(cx2333)构建的gal自动化翻译脚本，它解决了使用ChatGPT自动化翻译GalGame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合利用，打通了制作补丁的完整流程，一定程度的降低了上手门槛，从而让对此感兴趣的朋友有机会以较低的技术要求，构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  

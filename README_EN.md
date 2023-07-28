@@ -318,7 +318,7 @@ These are a few dictionary entries that are used to define characters:
 
 ---   
    
-* Learn how to use GPT dictionary to feed new words through the example below, the format of each line is also `Source Language[Tab]target language[Tab]Explanation(optional)`, note that the connector in the middle is **TAB** 
+* Learn how to use GPT dictionary to feed new words through the example below, the format of each line is also `original text[Tab]translation[Tab]description(optional)`, note that the connector in the middle is **TAB** 
 ```
 大家さん  landlord
 あたし	I/ic	use 'ic' when being cute
@@ -398,23 +398,38 @@ Below is a typical example of translation cache:
     },
 ```
 Explain the meaning of each field:
-* Basic parameters:   
-`index`  index serial number
-`name`  name   
-`pre_jp`  original script  
-`post_jp`  processed script. Generally speaking, post_jp = pre_jp remove dialogue box + pre-translation dictionary replacement.
-`pre_zh`  translated script
-`proofread_zh`  proofread script
-There is no post_zh, post_zh is in json_cn.   
 
-* Extended parameters:  
-`trans_by`  translation engine/translator 
-`proofread_by`  proofreading engine/proofreader 
-`trans_conf`  translation confidence, only NewBing, GPT4 support, the fourth sentence 0.94 means that NewBing has 94% confidence in the accuracy of this sentence.
-`doub_content`  doubtful content, only NewBing, GPT4 support, representing the place where the translation engine thinks the translation may be inaccurate.
-`unknown_proper_noun`  unknown proper noun, only NewBing, GPT4 support, convenient for later manual correction problem store problem.
-`problem`  See below for automatic error finding.
-`post_zh_preview`  post_zh_preview for previewing json_cn, but modifying it will not apply to json_cn, you need to modify `pre_jp/proofread_zh`.
+* Basic parameters:
+ 
+  `index`  index serial number
+  
+  `name`  name
+  
+  `pre_jp`  original script
+  
+  `post_jp`  processed script. Generally speaking, post_jp = pre_jp remove dialogue box + pre-translation dictionary replacement.
+  
+  `pre_zh`  translated script
+  
+  `proofread_zh`  proofread script
+
+There is no post_zh, post_zh is in json_cn.
+
+* Extended parameters:
+  
+  `trans_by`  translation engine/translator 
+  
+  `proofread_by`  proofreading engine/proofreader 
+  
+  `trans_conf`  translation confidence, only NewBing, GPT4 support, the fourth sentence 0.94 means that NewBing has 94% confidence in the accuracy of this sentence.
+  
+  `doub_content`  doubtful content, only NewBing, GPT4 support, representing the place where the translation engine thinks the translation may be inaccurate.
+  
+  `unknown_proper_noun`  unknown proper noun, only NewBing, GPT4 support, convenient for later manual correction problem store problem.
+  
+  `problem`  See below for automatic error finding.
+  
+  `post_zh_preview`  post_zh_preview for previewing json_cn, but modifying it will not apply to json_cn, you need to modify `pre_jp/proofread_zh`.
 
 * After determining the content that needs to be modified, directly modify the `pre_zh` or `proofread_zh` of the corresponding sentence, and then rerun the program to generate a new json_cn.
 

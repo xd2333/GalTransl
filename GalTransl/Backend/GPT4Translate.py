@@ -122,6 +122,11 @@ class CGPT4Translate:
             self.full_context_mode = val
         else:
             self.full_context_mode = False
+        # 跳过重试
+        if val := config.getKey("skipRetry"):
+            self.skipRetry = val
+        else:
+            self.skipRetry = False
         # 流式输出模式
         if val := config.getKey("gpt.streamOutputMode"):
             self.streamOutputMode = val
@@ -264,6 +269,9 @@ class CGPT4Translate:
                     continue
                 self._del_last_answer()
                 LOGGER.error(f"-> 报错, 5秒后重试")
+                # print stacktrace
+                import traceback
+                traceback.print_exc()
                 time.sleep(5)
                 continue
 
@@ -348,12 +356,27 @@ class CGPT4Translate:
                     result_trans_list.append(trans_list[i])
 
             if error_flag:
-                self._handle_error(error_message)
-                continue
-
-            if self.transl_style == "auto":
-                self._set_gpt_style("precise")
-            self.retry_count = 0
+                if self.skipRetry:
+                    self.reset_conversation()
+                    LOGGER.warning("-> 解析出错但跳过本轮翻译")
+                    while i + 1 < len(trans_list):
+                        i = i + 1
+                        if not proofread:
+                            trans_list[i].pre_zh = "Failed translation"
+                            trans_list[i].post_zh = "Failed translation"
+                            trans_list[i].trans_by = "GPT-4(Failed)"
+                        else:
+                            trans_list[i].proofread_zh = trans_list[i].pre_zh
+                            trans_list[i].post_zh = trans_list[i].pre_zh
+                            trans_list[i].proofread_by = "GPT-4(Failed)"
+                        result_trans_list.append(trans_list[i])
+                else:
+                    self._handle_error(error_message)
+                    continue
+            else:
+                if self.transl_style == "auto":
+                    self._set_gpt_style("precise")
+                self.retry_count = 0
 
             return i + 1, result_trans_list
 

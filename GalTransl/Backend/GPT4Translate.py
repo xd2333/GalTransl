@@ -165,7 +165,7 @@ class CGPT4Translate:
             )
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr
-                if hasattr(self, "proxyProvider")
+                if self.proxyProvider
                 else None
             )
         elif type == "unoffapi":

@@ -10,7 +10,7 @@ from GalTransl import (
     TRANSLATOR_SUPPORTED,
 )
 from GalTransl.ConfigHelper import CProjectConfig
-from GalTransl.Runner import run_galtransl
+from GalTransl.__main__ import worker
 
 print(PROGRAM_SPLASH)
 print(f"GalTransl version: {GALTRANSL_VERSION}")
@@ -33,5 +33,4 @@ while True:
 os.system("")  # 解决cmd的ANSI转义bug
 translator = BulletMenu("翻译器：", TRANSLATOR_SUPPORTED).run()
 
-cfg = CProjectConfig(project_dir, config_file_name)
-run_galtransl(cfg, translator)
+worker(project_dir, translator, show_banner = False)

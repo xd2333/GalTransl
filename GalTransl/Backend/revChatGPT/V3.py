@@ -56,6 +56,7 @@ class Chatbot:
         top_p: float = 1.0,
         presence_penalty: float = 0.0,
         frequency_penalty: float = 0.0,
+        response_format: str = "",
         reply_count: int = 1,
         truncate_limit: int = None,
         system_prompt: str = "You are ChatGPT, a large language model trained by OpenAI. Respond conversationally",
@@ -78,6 +79,7 @@ class Chatbot:
         self.top_p: float = top_p
         self.presence_penalty: float = presence_penalty
         self.frequency_penalty: float = frequency_penalty
+        self.response_format: str = response_format
         self.reply_count: int = reply_count
         self.timeout: float = timeout
         self.session = requests.Session()
@@ -129,10 +131,12 @@ class Chatbot:
         if self.engine not in [
             "gpt-3.5-turbo",
             "gpt-3.5-turbo-0301",
+            "gpt-3.5-turbo-1106",
             "gpt-4",
             "gpt-4-0314",
             "gpt-4-32k",
             "gpt-4-32k-0314",
+            "gpt-4-1106-preview",
         ]:
             raise NotImplementedError(f"Unsupported engine {self.engine}")
 
@@ -190,6 +194,10 @@ class Chatbot:
                 "frequency_penalty": kwargs.get(
                     "frequency_penalty",
                     self.frequency_penalty,
+                ),
+                "response_format": kwargs.get(
+                    "response_format",
+                    self.response_format,
                 ),
                 "n": kwargs.get("n", self.reply_count),
                 "user": role,

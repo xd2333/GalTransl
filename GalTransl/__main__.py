@@ -13,6 +13,32 @@ from GalTransl import (
 )
 
 
+def worker(project_dir: str, translator: str, show_banner = True):
+    if show_banner:
+        print(PROGRAM_SPLASH)
+        print(f"GalTransl Core version: {GALTRANSL_VERSION}")
+        print(f"Author: {AUTHOR}")
+        print(f"Contributors: {CONTRIBUTORS}")
+
+    cfg = CProjectConfig(project_dir)
+
+    loop = get_event_loop()
+    try:
+        run(run_galtransl(cfg, translator))
+    except KeyboardInterrupt:
+        LOGGER.info("正在等待现有请求返回...")
+        loop.stop()
+        LOGGER.info("Goodbye.")
+    except RuntimeError as ex:
+        LOGGER.error("程序遇到问题，即将退出（诊断信息：%s）", ex)
+    except BaseException as ex:
+        print(ex)
+        traceback.print_exception(type(ex), ex, ex.__traceback__)
+    finally:
+        loop.close()
+        return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser("GalTransl")
     parser.add_argument("--project_dir", "-p", help="project folder", required=True)
@@ -39,23 +65,7 @@ def main() -> int:
     print(f"Author: {AUTHOR}")
     print(f"Contributors: {CONTRIBUTORS}")
 
-    cfg = CProjectConfig(args.project_dir)
-
-    loop = get_event_loop()
-    try:
-        run(run_galtransl(cfg, args.translator))
-    except KeyboardInterrupt:
-        LOGGER.info("正在等待现有请求返回...")
-        loop.stop()
-        LOGGER.info("Goodbye.")
-    except RuntimeError as ex:
-        LOGGER.error("程序遇到问题，即将退出（诊断信息：%s）", ex)
-    except BaseException as ex:
-        print(ex)
-        traceback.print_exception(type(ex), ex, ex.__traceback__)
-    finally:
-        loop.close()
-        return 0
+    return worker(args.project_dir, args.translator)
 
 
 if __name__ == "__main__":

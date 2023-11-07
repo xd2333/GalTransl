@@ -198,7 +198,7 @@ class Chatbot:
                 "response_format": kwargs.get(
                     "response_format",
                     self.response_format,
-                )
+                ),
                 "n": kwargs.get("n", self.reply_count),
                 "user": role,
                 "max_tokens": self.get_max_tokens(convo_id=convo_id),

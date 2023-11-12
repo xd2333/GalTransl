@@ -17,7 +17,7 @@ print(f"GalTransl version: {GALTRANSL_VERSION}")
 print(f"Author: {AUTHOR}")
 print(f"Contributors: {CONTRIBUTORS}\n")
 
-INPUT_PROMPT = "请输入或拖入包含config.yaml的项目文件夹，或任意文件名的项目配置文件："
+INPUT_PROMPT = "请输入/拖入项目文件夹，或项目文件夹内的yaml配置文件："
 
 while True:
     project_dir = os.path.abspath(input(INPUT_PROMPT))
@@ -33,4 +33,4 @@ while True:
 os.system("")  # 解决cmd的ANSI转义bug
 translator = BulletMenu("翻译器：", TRANSLATOR_SUPPORTED).run()
 
-worker(project_dir, translator, show_banner = False)
+worker(project_dir, config_file_name, translator, show_banner=False)

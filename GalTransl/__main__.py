@@ -13,14 +13,14 @@ from GalTransl import (
 )
 
 
-def worker(project_dir: str, translator: str, show_banner = True):
+def worker(project_dir: str, config_file_name: str, translator: str, show_banner=True):
     if show_banner:
         print(PROGRAM_SPLASH)
         print(f"GalTransl Core version: {GALTRANSL_VERSION}")
         print(f"Author: {AUTHOR}")
         print(f"Contributors: {CONTRIBUTORS}")
 
-    cfg = CProjectConfig(project_dir)
+    cfg = CProjectConfig(project_dir, config_file_name)
 
     loop = get_event_loop()
     try:

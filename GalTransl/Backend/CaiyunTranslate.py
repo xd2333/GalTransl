@@ -2,6 +2,7 @@ import hashlib
 import json
 import random
 import time
+from asyncio import sleep
 
 import requests
 
@@ -39,7 +40,7 @@ class CaiyunTransl:
 
         return page_id, request_id, url
 
-    def caiyun_translate(self, trans_list: CTransList):
+    async def caiyun_translate(self, trans_list: CTransList):
         """
         调用彩云API翻译
         """
@@ -67,10 +68,10 @@ class CaiyunTransl:
                     break
                 else:
                     print("request error code:" + str(resp.status_code))
-                    time.sleep(3)
+                    await sleep(3)
             except:
                 print("Connect Error, Please wait 3 seconds")
-                time.sleep(3)
+                await sleep(3)
 
         result_json = json.loads(resp.text)
 
@@ -81,7 +82,7 @@ class CaiyunTransl:
 
         return trans_list
 
-    def batch_translate(
+    async def batch_translate(
         self, filename, trans_list: CTransList, num_pre_request: int
     ) -> CTransList:
         """调用彩云批量翻译这个transList
@@ -99,7 +100,7 @@ class CaiyunTransl:
         trans_result_list = []
         len_trans_list = len(trans_list)
         while i < len_trans_list:
-            time.sleep(1)
+            await sleep(1)
             trans_result = (
                 self.caiyun_translate(trans_list[i : i + num_pre_request])
                 if (i + num_pre_request < len_trans_list)

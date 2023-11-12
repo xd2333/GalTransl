@@ -39,3 +39,9 @@ LANG_SUPPORTED = {
     "ru": "Russian",
     "fr": "French",
 }
+DEBUG_LEVEL = {
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+}

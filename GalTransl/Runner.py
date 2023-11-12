@@ -1,21 +1,31 @@
 import time
-from GalTransl.ConfigHelper import CProjectConfig
+from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
+from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl.Frontend.GPT import doGPT3Translate, doGPT4Translate, doNewBingTranslate
 from GalTransl import LOGGER
 
 
-def run_galtransl(cfg: CProjectConfig, translator: str):
+async def run_galtransl(cfg: CProjectConfig, translator: str):
     start_time = time.time()
+    proxyPool = CProxyPool(cfg) if cfg.getKey("internals.enableProxy") else None
+    OpenAITokenPool = COpenAITokenPool(cfg)
+    if proxyPool:
+        await proxyPool.checkAvailablity()
+    if translator != "newbing":
+        await OpenAITokenPool.checkTokenAvailablity(
+            proxyPool.getProxy() if proxyPool else None
+        )
+
     if translator == "gpt35":
-        doGPT3Translate(cfg)
+        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool)
     elif translator == "gpt4":
-        doGPT4Translate(cfg)
+        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool)
     elif translator == "chatgpt-gpt35":
-        doGPT3Translate(cfg, type="unoffapi")
+        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="unoffapi")
     elif translator == "chatgpt-gpt4":
-        doGPT4Translate(cfg, type="unoffapi")
+        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, type="unoffapi")
     elif translator == "newbing":
-        doNewBingTranslate(cfg)
+        await doNewBingTranslate(cfg, proxyPool)
     elif translator == "caiyun":
         raise RuntimeError("Work in progress!")
     end_time = time.time()

@@ -1,12 +1,14 @@
-import json, time, asyncio, zhconv, os
+import json, time, asyncio, os, traceback
+from opencc import OpenCC
+from typing import Optional
+from GalTransl.COpenAI import COpenAITokenPool
+from GalTransl.ConfigHelper import CProxyPool
 from GalTransl import LOGGER, LANG_SUPPORTED
 from sys import exit
 from GalTransl.ConfigHelper import (
     CProjectConfig,
-    initGPTToken,
-    initProxyList,
-    randSelectInList,
 )
+from random import choice
 from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
@@ -78,7 +80,13 @@ NAME_PROMPT3 = "and `name`(if have) "
 
 class CGPT4Translate:
     # init
-    def __init__(self, config: CProjectConfig, type):
+    def __init__(
+        self,
+        config: CProjectConfig,
+        type: str,
+        proxy_pool: Optional[CProxyPool],
+        token_pool: COpenAITokenPool,
+    ):
         """
         根据提供的类型、配置、API 密钥和代理设置初始化 Chatbot 对象。
 
@@ -132,18 +140,11 @@ class CGPT4Translate:
             self.streamOutputMode = val
         else:
             self.streamOutputMode = False
-        if val := initGPTToken(config):
-            self.tokens = []
-            for i in val:
-                if not i.isGPT4Available:
-                    continue
-                self.tokens.append(i)
+        self.tokenProvider = token_pool
+        if config.getKey("internals.enableProxy") == True:
+            self.proxyProvider = proxy_pool
         else:
-            raise RuntimeError("无法获取 OpenAI API Token！")
-        if config.getKey("enableProxy") == True:
-            self.proxies = initProxyList(config)
-        else:
-            self.proxies = None
+            self.proxyProvider = None
             LOGGER.warning("不使用代理")
         # 翻译风格
         if val := config.getKey("gpt.translStyle"):
@@ -153,27 +154,35 @@ class CGPT4Translate:
         self._current_style = ""
 
         if type == "offapi":
-            from revChatGPT.V3 import Chatbot as ChatbotV3
+            from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
-            rand_token = randSelectInList(self.tokens)
-            os.environ["API_URL"] = rand_token.domain
-
+            token = self.tokenProvider.getToken(False, True)
             self.chatbot = ChatbotV3(
-                api_key=randSelectInList(self.tokens).token,
-                proxy=randSelectInList(self.proxies)["addr"] if self.proxies else None,
+                api_key=token.token,
+                proxy=self.proxyProvider.getProxy().addr
+                if self.proxyProvider
+                else None,
+                temperature=0.4,
+                frequency_penalty=0.2,
                 system_prompt=SYSTEM_PROMPT,
                 engine="gpt-4",
+                api_address=token.domain + "/v1/chat/completions",
+            )
+            self.chatbot.update_proxy(
+                self.proxyProvider.getProxy().addr
+                if self.proxyProvider
+                else None
             )
         elif type == "unoffapi":
-            from revChatGPT.V1 import Chatbot as ChatbotV1
+            from GalTransl.Backend.revChatGPT.V1 import Chatbot as ChatbotV1
 
             gpt_config = {
                 "model": "gpt-4",
                 "paid": True,
-                "access_token": randSelectInList(
+                "access_token": choice(
                     config.getBackendConfigSection("ChatGPT")["access_tokens"]
                 )["access_token"],
-                "proxy": randSelectInList(self.proxies)["addr"] if self.proxies else "",
+                "proxy": self.proxyProvider.getProxy().addr if self.proxies else None,
             }
             if gpt_config["proxy"] == "":
                 del gpt_config["proxy"]
@@ -184,6 +193,13 @@ class CGPT4Translate:
             self._set_gpt_style("precise")
         else:
             self._set_gpt_style(self.transl_style)
+
+        if self.target_lang == "Simplified Chinese":
+            self.opencc = OpenCC("t2s.json")
+        elif self.target_lang == "Traditional Chinese":
+            self.opencc = OpenCC("s2t.json")
+
+        pass
 
     async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT
@@ -230,6 +246,9 @@ class CGPT4Translate:
             prompt_req = prompt_req.replace("[NamePrompt3]", "")
         while True:  # 一直循环，直到得到数据
             try:
+                # change token
+                if type == "offapi":
+                    self.chatbot.set_api_key(self.tokenProvider.getToken(False, True).token)
                 # LOGGER.info("->输入：\n" +  prompt_req+ "\n")
                 LOGGER.info(
                     f"->{'翻译输入' if not proofread else '校对输入'}：{gptdict}\n{input_json}\n"
@@ -239,13 +258,14 @@ class CGPT4Translate:
                 if self.type == "offapi":
                     if not self.full_context_mode:
                         self._del_previous_message()
-                    for data in self.chatbot.ask_stream(prompt_req):
+                    async for data in self.chatbot.ask_stream_async(prompt_req):
                         if self.streamOutputMode:
                             print(data, end="", flush=True)
                         resp += data
+                    print(data, end="\n")
 
                 if self.type == "unoffapi":
-                    for data in self.chatbot.ask(prompt_req):
+                    async for data in self.chatbot.ask_async(prompt_req):
                         if self.streamOutputMode:
                             print(data["message"][len(resp) :], end="", flush=True)
                         resp = data["message"]
@@ -253,12 +273,14 @@ class CGPT4Translate:
                     LOGGER.info(resp)
                 else:
                     print("")
+            except asyncio.CancelledError:
+                raise
             except Exception as ex:
                 str_ex = str(ex).lower()
                 LOGGER.error(f"-> {str_ex}")
                 if "try again later" in str_ex or "too many requests" in str_ex:
                     LOGGER.warning("-> 请求受限，5分钟后继续尝试")
-                    time.sleep(300)
+                    await asyncio.sleep(300)
                     continue
                 if "expired" in str_ex:
                     LOGGER.error("-> access_token过期，请更换")
@@ -268,11 +290,8 @@ class CGPT4Translate:
                     LOGGER.error("-> 报错重置会话")
                     continue
                 self._del_last_answer()
-                LOGGER.error(f"-> 报错, 5秒后重试")
-                # print stacktrace
-                import traceback
-                traceback.print_exc()
-                time.sleep(5)
+                LOGGER.info("-> 报错:%s, 5秒后重试" % ex)
+                await asyncio.sleep(5)
                 continue
 
             result_text = resp[resp.find('{"id') :]
@@ -333,10 +352,7 @@ class CGPT4Translate:
                         error_flag = True
                         break
 
-                if self.target_lang == "Simplified Chinese":
-                    line_json[key_name] = zhconv.convert(line_json[key_name], "zh-cn")
-                elif self.target_lang == "Traditional Chinese":
-                    line_json[key_name] = zhconv.convert(line_json[key_name], "zh-tw")
+                line_json[key_name] = self.opencc.convert(line_json[key_name])
 
                 if not proofread:
                     trans_list[i].pre_zh = line_json[key_name]
@@ -380,7 +396,7 @@ class CGPT4Translate:
 
             return i + 1, result_trans_list
 
-    def batch_translate(
+    async def batch_translate(
         self,
         filename,
         cache_file_path,
@@ -423,7 +439,7 @@ class CGPT4Translate:
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
         while i < len_trans_list:
-            time.sleep(5)
+            await asyncio.sleep(5)
             trans_list_split = (
                 trans_list_unhit[i : i + num_pre_request]
                 if (i + num_pre_request < len_trans_list)
@@ -436,8 +452,8 @@ class CGPT4Translate:
                 else ""
             )
 
-            num, trans_result = asyncio.run(
-                self.translate(trans_list_split, dic_prompt, proofread=proofread)
+            num, trans_result = await self.translate(
+                trans_list_split, dic_prompt, proofread=proofread
             )
 
             if num > 0:
@@ -449,7 +465,7 @@ class CGPT4Translate:
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path)
             LOGGER.info(
-                f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}"
+                f"{filename}: {str(len(trans_result_list))}/{str(len_trans_list)}"
             )
 
         return trans_result_list

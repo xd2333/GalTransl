@@ -8,13 +8,14 @@ from GalTransl import (
     OUTPUT_FOLDERNAME,
     CACHE_FOLDERNAME,
 )
-from GalTransl.COpenAI import COpenAIToken
+
+# from GalTransl.COpenAI import COpenAIToken
 from GalTransl.Problem import CTranslateProblem
 from asyncio import gather
-from httpx import AsyncClient
+from httpx import AsyncClient, TimeoutException
 from time import time
 from typing import Optional
-from random import randint
+from random import choice
 from yaml import safe_load
 from os import path, sep
 
@@ -48,7 +49,9 @@ class CProjectConfig:
         self.keyValues = dict()
         for k, v in self.projectConfig["common"].items():
             self.keyValues[k] = v
-        self.keyValues["enableProxy"] = self.projectConfig["proxy"]["enableProxy"]
+        self.keyValues["internals.enableProxy"] = self.projectConfig["proxy"][
+            "enableProxy"
+        ]
         LOGGER.debug(
             "inputPath: %s, outputPath: %s, cachePath: %s,keyValues: %s",
             self.inputPath,
@@ -106,26 +109,31 @@ class CProjectConfig:
 
 class CProxyPool:
     def __init__(self, config: CProjectConfig) -> None:
-        self.proxies: list[CProxy] = []
+        self.proxies: list[tuple[bool, CProxy]] = []
         for i in config.getProxyConfigSection():
             self.proxies.append(
-                CProxy(i["address"], i.get("username", i.get("password")))
+                (False, CProxy(i["address"], i.get("username", i.get("password"))))
             )
-            pass
-        pass
 
     async def _availablityChecker(
         self, proxy: CProxy, test_address="http://www.gstatic.com/generate_204"
     ) -> tuple[bool, CProxy]:
         try:
             st = time()
+            LOGGER.debug("start testing proxy %s", proxy.addr)
             async with AsyncClient(proxies={"http://": proxy.addr}) as client:
                 response = await client.get(test_address)
                 if response.status_code != 204:
+                    LOGGER.debug("tested proxy %s failed (%s)", proxy.addr, response)
                     return False, proxy
                 else:
                     return True, proxy
+        except TimeoutException:
+            LOGGER.debug("we got exception in testing proxy %s", proxy.addr)
+            return False, proxy
         except:
+            LOGGER.debug("we got exception in testing proxy %s", proxy.addr)
+            raise
             return False, proxy
         finally:
             et = time()
@@ -134,61 +142,28 @@ class CProxyPool:
 
     async def checkAvailablity(self) -> None:
         fs = []
-        for proxy in self.proxies:
+        for _, proxy in self.proxies:
             fs.append(self._availablityChecker(proxy))
         result: list[tuple[bool, CProxy]] = await gather(*fs)
+        newList: list[tuple[bool, CProxy]] = []
         for proxyStatus, proxy in result:
             if proxyStatus != True:
                 LOGGER.info("removed proxy %s, because it's not available", proxy.addr)
-                self.proxies.remove(proxy)
-            pass
+            else:
+                newList.append((True, proxy))
+        self.proxies = newList
 
-
-def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
-    """
-    处理 GPT Token 设置项
-    """
-    result: list[dict] = []
-    degradeBackend: bool = False
-    endpointDomain: str = "https://api.openai.com"
-
-    if val := config.getKey("gpt.degradeBackend"):
-        degradeBackend = val
-
-    for tokenEntry in config.getBackendConfigSection("GPT35").get("tokens"):
-        result.append(
-            COpenAIToken(
-                tokenEntry["token"],
-                tokenEntry["endpoint"]
-                if tokenEntry["endpoint"]
-                else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
-                True,
-                False,
-            )
-        )
-        pass
-    for tokenEntry in config.getBackendConfigSection("GPT4").get("tokens"):
-        result.append(
-            COpenAIToken(
-                tokenEntry["token"],
-                tokenEntry["endpoint"]
-                if tokenEntry["endpoint"]
-                else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
-                True if degradeBackend else False,
-                True,
-            )
-        )
-        pass
-
-    return result
-
-
-def randSelectInList(lst: list[dict]) -> dict:
-    """
-    随机选择一项（token或代理）
-    """
-    idx = randint(0, len(lst) - 1)
-    return lst[idx]
+    def getProxy(self) -> CProxy:
+        rounds: int = 0
+        while True:
+            if rounds > 10:
+                raise RuntimeError("CProxyPool::getProxy: 迭代次数过多！")
+            available, proxy = choice(self.proxies)
+            if not available:
+                rounds += 1
+                continue
+            else:
+                return proxy
 
 
 def initProxyList(config: CProjectConfig) -> Optional[list[dict]]:

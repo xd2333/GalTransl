@@ -4,12 +4,13 @@ import sys
 import time
 import asyncio
 import traceback
-import zhconv
 from sys import exit
 
+from opencc import OpenCC
+from typing import Optional
 from EdgeGPT.EdgeGPT import Chatbot, ConversationStyle
 from GalTransl import LOGGER, LANG_SUPPORTED
-from GalTransl.ConfigHelper import CProjectConfig, initProxyList, randSelectInList
+from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.CSentense import CTransList, CSentense
 from GalTransl.Dictionary import CGptDict
@@ -72,12 +73,12 @@ NAME_PROMPT3 = "and `name`(if have) "
 
 
 class CBingGPT4Translate:
-    def __init__(self, config: CProjectConfig, cookiefile_list: list[str]):
-        # 记录确信度
-        if val := config.getKey("gpt.recordConfidence"):
-            self.record_confidence = val
-        else:
-            self.record_confidence = False
+    def __init__(
+        self,
+        config: CProjectConfig,
+        cookiefile_list: list[str],
+        proxyPool: Optional[CProxyPool],
+    ):
         if val := config.getKey("sourceLanguage"):
             self.source_lang = val
         else:
@@ -86,10 +87,11 @@ class CBingGPT4Translate:
             self.target_lang = val
         else:
             self.target_lang = "zh-cn"
+        
         if config.getKey("enableProxy") == True:
-            self.proxies = initProxyList(config)
+            self.proxies = proxyPool
         else:
-            self.proxies = None
+            self.proxyProvider = None
             LOGGER.warning("不使用代理")
         if val := config.getKey("gpt.forceNewBingHs"):
             self.force_NewBing_hs_mode = val
@@ -117,13 +119,18 @@ class CBingGPT4Translate:
         self.cookiefile_list = cookiefile_list
         self.current_cookie_file = ""
         self.throttled_cookie_list = []
-        self.proxy = randSelectInList(self.proxies)["addr"] if self.proxies else None
+        self.proxy = self.proxyProvider.getProxy().addr if self.proxyProvider else None
         self.request_count = 0
         self.sleep_time = 0
         self.last_file_name = ""
-        self._change_cookie()
+
+        if self.target_lang == "Simplified Chinese":
+            self.opencc = OpenCC("t2s.json")
+        elif self.target_lang == "Traditional Chinese":
+            self.opencc = OpenCC("s2t.json")
 
     async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
+        await self._change_cookie()
         prompt_req = TRANS_PROMPT if not proofread else PROOFREAD_PROMPT
         input_list = []
         for i, trans in enumerate(trans_list):
@@ -198,13 +205,17 @@ class CBingGPT4Translate:
                     if wrote_len > len(response):
                         bing_reject = True
                     resp = response
+            except asyncio.CancelledError:
+                raise
             except Exception as ex:
+                print(ex)
+                traceback.print_exc()
                 if "Request is throttled." in str(ex):
                     LOGGER.info("->Request is throttled.")
                     self.throttled_cookie_list.append(self.current_cookie_file)
                     self.cookiefile_list.remove(self.current_cookie_file)
-                    self._change_cookie()
-                    time.sleep(self.sleep_time)
+                    await self._change_cookie()
+                    await asyncio.sleep(self.sleep_time)
                     continue
                 elif "InvalidRequest" in str(ex):
                     await self.chatbot.reset()
@@ -213,7 +224,7 @@ class CBingGPT4Translate:
                     LOGGER.warning("-> 验证码拦截，需要去网页Newbing随便问一句，点击验证码，然后重新复制cookie")
                 LOGGER.info("Error:%s, Please wait 30 seconds" % ex)
                 traceback.print_exc()
-                time.sleep(5)
+                await asyncio.sleep(5)
                 continue
 
             if "New topic" in str(resp):
@@ -247,8 +258,12 @@ class CBingGPT4Translate:
                     i += 1
                 except:
                     if bing_reject and self.force_NewBing_hs_mode and i == -1:
+                        LOGGER.warning(
+                            "->NewBing大小姐拒绝了本次请求🙏 (forceNewBingHs enabled)\n"
+                        )
                         break
                     else:
+                        LOGGER.warning("NB输出格式异常")
                         continue
                 error_flag = False
                 # 本行输出不正常
@@ -283,11 +298,8 @@ class CBingGPT4Translate:
                         error_flag = True
                         break
 
-                if self.target_lang == "Simplified Chinese":
-                    line_json[key_name] = zhconv.convert(line_json[key_name], "zh-cn")
-                elif self.target_lang == "Traditional Chinese":
-                    line_json[key_name] = zhconv.convert(line_json[key_name], "zh-tw")
-
+                line_json[key_name] = self.opencc.convert(line_json[key_name])
+                    
                 if not proofread:
                     trans_list[i].pre_zh = line_json[key_name]
                     trans_list[i].post_zh = line_json[key_name]
@@ -321,10 +333,9 @@ class CBingGPT4Translate:
                             trans_list[i].proofread_by = "NewBing(Failed)"
                         result_trans_list.append(trans_list[i])
                 else:
-                    time.sleep(2)
+                    await asyncio.sleep(2)
                     await self.chatbot.reset()
                     continue
-
             if i + 1 != len(trans_list):
                 if bing_reject:
                     LOGGER.warning("->NewBing大小姐拒绝了本次请求🙏\n")
@@ -356,7 +367,7 @@ class CBingGPT4Translate:
 
             return i + 1, result_trans_list
 
-    def batch_translate(
+    async def batch_translate(
         self,
         filename,
         cache_file_path,
@@ -380,7 +391,7 @@ class CBingGPT4Translate:
         Returns:
             CTransList: _description_
         """
-
+        await self._change_cookie()
         _, trans_list_unhit = get_transCache_from_json(
             trans_list,
             cache_file_path,
@@ -399,7 +410,7 @@ class CBingGPT4Translate:
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
         while i < len_trans_list:
-            time.sleep(1)
+            await asyncio.sleep(1)
             trans_list_split = (
                 trans_list_unhit[i : i + num_pre_request]
                 if (i + num_pre_request < len_trans_list)
@@ -412,8 +423,8 @@ class CBingGPT4Translate:
             else:
                 dic_prompt = ""
 
-            num, trans_result = asyncio.run(
-                self.translate(trans_list_split, dic_prompt, proofread=proofread)
+            num, trans_result = await self.translate(
+                trans_list_split, dic_prompt, proofread=proofread
             )
             if num > 0:
                 i += num
@@ -430,7 +441,7 @@ class CBingGPT4Translate:
         return trans_result_list
 
     def reset_conversation(self):
-        time.sleep(2)
+        # await asyncio.sleep(2)
         self.chatbot.reset_conversation()
 
     def remove_extra_pronouns(self, text):
@@ -451,7 +462,7 @@ class CBingGPT4Translate:
         cookies = json.loads(open(self.current_cookie_file, encoding="utf-8").read())
         return cookies
 
-    def _change_cookie(self):
+    async def _change_cookie(self):
         while True:
             try:
                 self.chatbot = Chatbot(
@@ -460,5 +471,5 @@ class CBingGPT4Translate:
                 break
             except Exception as e:
                 LOGGER.info(f"换cookie失败：{e}")
-                time.sleep(1)
+                await asyncio.sleep(1)
                 continue

@@ -2,7 +2,7 @@
 # 通用（杂项）设置
 common:
   loggingLevel: info # 日志等级，可选 [debug/info/warning/error]
-  multiThread: false # 多线程。[True/False]（暂不可用）
+  workersPerProject: 1 # workers 数量，为 1 时等于单线程
   # 通用设置
   sourceLanguage: ja # 源语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   targetLanguage: zh-cn # 目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
@@ -35,7 +35,7 @@ dictionary:
   # 预处理字典
   preDict:
     - 00通用字典_译前.txt
-    - 01H字典_矫正_译前.txt  # 用于口齿不清的矫正
+    - 01H字典_矫正_译前.txt # 用于口齿不清的矫正
     - (project_dir)项目字典_译前.txt # (project_dir)代表字典在项目文件夹
   # GPT 字典
   gpt.dict:
@@ -50,7 +50,7 @@ dictionary:
 backendSpecific:
   GPT35: # GPT3.5 官方 API
     tokens: # 令牌列表
-        # 你的api key
+      # 你的api key
       - token: sk-xxxxxxxx
         # OPENAI API请求的域名，使用转发或第三方API时修改
         endpoint: https://api.openai.com

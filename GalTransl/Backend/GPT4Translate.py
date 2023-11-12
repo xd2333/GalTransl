@@ -130,6 +130,11 @@ class CGPT4Translate:
             self.full_context_mode = val
         else:
             self.full_context_mode = False
+        # 跳过重试
+        if val := config.getKey("skipRetry"):
+            self.skipRetry = val
+        else:
+            self.skipRetry = False
         # 流式输出模式
         if val := config.getKey("gpt.streamOutputMode"):
             self.streamOutputMode = val
@@ -300,6 +305,7 @@ class CGPT4Translate:
             result_trans_list = []
             key_name = "dst" if not proofread else "newdst"
             error_flag = False
+            error_message = ""
             for line in result_text.split("\n"):
                 try:
                     line_json = json.loads(line)  # 尝试解析json
@@ -320,16 +326,16 @@ class CGPT4Translate:
                     or type(line_json["id"]) != int
                     or i > len(trans_list) - 1
                 ):
-                    error_message = f"第{trans_list[i].index}句不正常"
+                    error_message = f"{line}句不无法解析"
                     error_flag = True
                     break
                 line_id = line_json["id"]
                 if line_id != trans_list[i].index:
-                    error_message = f"-> id不对应"
+                    error_message = f"-> 输出{line_id}句id未对应"
                     error_flag = True
                     break
                 if key_name not in line_json or type(line_json[key_name]) != str:
-                    error_message = f"第{trans_list[i].index}句不正常"
+                    error_message = f"第{trans_list[i].index}句找不到{key_name}"
                     error_flag = True
                     break
                 # 本行输出不应为空
@@ -366,12 +372,27 @@ class CGPT4Translate:
                     result_trans_list.append(trans_list[i])
 
             if error_flag:
-                self._handle_error(error_message)
-                continue
-
-            if self.transl_style == "auto":
-                self._set_gpt_style("precise")
-            self.retry_count = 0
+                if self.skipRetry:
+                    self.reset_conversation()
+                    LOGGER.warning("-> 解析出错但跳过本轮翻译")
+                    while i + 1 < len(trans_list):
+                        i = i + 1
+                        if not proofread:
+                            trans_list[i].pre_zh = "Failed translation"
+                            trans_list[i].post_zh = "Failed translation"
+                            trans_list[i].trans_by = "GPT-4(Failed)"
+                        else:
+                            trans_list[i].proofread_zh = trans_list[i].pre_zh
+                            trans_list[i].post_zh = trans_list[i].pre_zh
+                            trans_list[i].proofread_by = "GPT-4(Failed)"
+                        result_trans_list.append(trans_list[i])
+                else:
+                    self._handle_error(error_message)
+                    continue
+            else:
+                if self.transl_style == "auto":
+                    self._set_gpt_style("precise")
+                self.retry_count = 0
 
             return i + 1, result_trans_list
 

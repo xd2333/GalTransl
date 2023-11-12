@@ -5,26 +5,26 @@
 <div align=center><img src="https://img.shields.io/github/v/release/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/license/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/stars/XD2333/GalTransl"/></div>
 <p align='center' >支持GPT3.5/4/Newbing的Galgame自动化翻译解决方案</p>
 
-  GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具包，用于制作内嵌式翻译补丁。   
+  [English](https://github.com/XD2333/GalTransl/blob/main/README_EN.md)
+  
+  GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具，用于制作内嵌式翻译补丁。   
    
-  GalTransl的核心是一组由我(cx2333)构建的gal自动化翻译工具，它解决了使用ChatGPT自动化翻译GalGame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合利用，打通了制作补丁的整个流程，一定程度的降低了上手门槛，从而让对此感兴趣的朋友有机会以较低的技术要求，构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  
+  GalTransl的核心是一组由我(cx2333)构建的gal自动化翻译脚本，它解决了使用ChatGPT自动化翻译GalGame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合利用，打通了制作补丁的完整流程，一定程度的降低了上手门槛，从而让对此感兴趣的朋友有机会以较低的技术要求，构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  
 
   * 特性：   
   1. 支持**ChatGPT、Newbing、GPT-4**、彩云四种翻译引擎，并通过提示工程大幅提高了GPT引擎翻译质量   
   2. NewBing基于GPT-4并且**免费**；ChatGPT与GPT-4支持官方API与模拟网页操作模式，一定程度节省费用   
-  3. 首创NewBing、GPT-4下支持自动**记录翻译确信度、存疑句、未知专有名词**，方便手工修正，并支持**自动化校润**   
-  4. 首创**GPT字典系统**，让GPT了解人设，准确翻译人名、人称代词与生词   
+  3. 首创**GPT字典系统**，让GPT了解人设，准确翻译人名、人称代词与生词   
+  4. 首创NewBing、GPT-4下支持自动**记录翻译确信度、存疑句、未知专有名词**，方便手工修正，并支持**自动化校润**(还不稳定)   
   5. 通过译前、译后字典与条件字典实现灵活的自动化字典系统   
   6. 实时保存缓存、自动断点续翻   
   7. 结合其他项目支持多引擎脚本一键解包与注入，提供完整教程降低上手难度   
 
 ## 前言
 
-* 代码贡献：感谢ryank231231、Isotr0py，完善了我的杂鱼代码。
-  
-* 最早做这个工具的初衷是在两年前发现大部分机翻补丁的质量太影响观感（人名都翻不对），于是断断续续的结合彩云小译开始写这个工具，期间还推倒重做了一次（~~源码弄丢~~），用python重写了这个项目。在去年年底ChatGPT出现后开始研究将GPT引入Gal翻译，并逐步形成了这套体系。   
+* 代码贡献：感谢ryank231231、Isotr0py，完善了我的杂鱼代码。 
    
-* 支持我：点个Star~（无偿分享补丁就是支持我了，能提一下是用GalTransl翻译的就更好了。PS. 分享补丁时请注明GPT翻译   
+* 支持我：点个Star~（无偿分享补丁就是支持我了，能提一下是用GalTransl翻译的就更好了。PS. 分享补丁时请注明GPT翻译）   
 
 * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群）   
 
@@ -37,7 +37,7 @@
 翻译：主线-NewBing，hs-GPT3.5   
 
 * 《炎孕女仆学院/もっと！孕ませ！炎のおっぱい異世界 おっぱいメイド学園！》 [链接](https://www.2dfan.com/downloads/16362)   
-基本**代表纯GPT3.5能达到的质量标准**（角色太多了人名字典写了快50行🤣）   
+基本**代表纯GPT3.5能达到的质量标准**   
 翻译：全程GPT3.5   
 
 * 《甜蜜女友2+/アマカノ2+》 [链接](https://www.2dfan.com/downloads/16596)   
@@ -86,11 +86,12 @@
 ## 实用工具
 | 名称 | 说明 |
 | --- | --- |
-| GalTransl_DumpInjector | 文本工具-VNTextPatch gui |
-| KirikiriTools | Krkr、krkrz 提取、注入工具 |
-| UniversalInjectorFramework | 通用注入框架-sjis隧道、sjis替换模式 |
-| VNTextProxy | 注入框架-sjis隧道模式 |
-| dbTXT2Json_jp | 文本工具-双行文本与json_jp互转脚本 |
+| GalTransl_DumpInjector | 文本工具：VNTextPatch gui |
+| dbTXT2Json_jp | 文本工具：通用双行文本与json_jp互转脚本 |
+| KirikiriTools | 引擎工具：Krkr、krkrz 提取、注入工具 |
+| UniversalInjectorFramework | 引擎工具：sjis隧道、sjis替换模式通用注入框架 |
+| VNTextProxy | 引擎工具：sjis隧道模式通用注入框架 |
+
 ## 上手教程
 做一个gal内嵌翻译补丁的大致流程是：   
 1. 识别引擎 -> 解包资源包拿到脚本 -> 接2.   
@@ -341,12 +342,12 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
 
 | 质量 | 效率 | 组合 |
 | --- | --- | --- |
-| 还行 | 尚可 | 全程GPT-3.5 |
-| 较好 | 较慢 | 主线NewBing + 特殊GPT-3.5 |
-| 更好 | 更慢 | 主线NewBing + 特殊GPT-3.5 + 主线NewBing二次润色 |
-| 最好 | 最慢 | 主线NewBing + 特殊GPT-4 + 主线NewBing二次润色 + 特殊GPT-4二次润色(或不做) |
+| 还行 | 尚可 | 全程 GPT-3.5 |
+| 较好 | 较慢 | 主线 GPT4/NewBing + hs GPT-3.5 |
+| 更好 | 更慢 | 主线 GPT4/NewBing + hs GPT-4 |
+| 最好 | 最慢 | 主线 NewBing + hs GPT-4 + (人工修正) |
    
-从上到下效率递减，质量递增。注意，以上所有的“质量”，指的是机翻质量，可以结合人工修transl_cache进一步提高质量（见transl_cache章节）。    
+从上到下效率递减，质量递增。注意，以上所有的“质量”，指的是机翻质量，可以结合人工修缓存进一步提高质量（见翻译缓存章节）。    
 
 </details>
 
@@ -372,14 +373,14 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
 フラン	芙兰	name, lady, teacher
 笠間	笠间	笠間 陽菜乃’s lastname, girl
 陽菜乃	阳菜乃	笠間 陽菜乃's firstname, girl
-真亜紗	真亚纱	name, lady, 萌依's mom
+张三	张三	player's name, boy
 $str20	$str20	player's codename, boy
 ```
 这几条字典都是定义角色用的：   
 * 第一条可以理解为我想告诉GPT：“假名フラン的翻译是芙兰，这是人名，是位女士，是老师”。这样GPT在翻译フラン先生的时候就会翻译成芙兰老师而不会是芙兰医生。   
 * 二三条是同一个人的日本姓和名，经测试姓名必须拆成两行写，不然GPT3.5会不认识。
-* 第四条在最后的属性中说明了一个人物关系：萌依's mom，但人物关系似乎并无太大写的必要，除非剧情中这两个人经常一起出现。   
-* 第五条是男主在脚本中使用占位符而不是名字时的写法。**注意即使日文和中文相同，也要再重复一遍**   
+* 第四条是主角的推荐写法。**注意即使日文和中文相同，也要再重复一遍**   
+* 第五条是男主在脚本中使用占位符而不是名字时的写法。   
 
 ---   
    
@@ -388,8 +389,9 @@ $str20	$str20	player's codename, boy
 大家さん  房东
 あたし	我/人家	use '人家' when being cute
 ```
-* 当你发现GPT不太认识这个词，例如“大家さん”时，并且你发现这个词含义比较唯一，那么就可以像这样加进通用GPT字典里，以后遇到这个词就会自动喂进去。   
-* 第二行的中文写了一个多义词“我/人家”，并且在解释中写了“当扮可爱时用人家”。GPT3.5没那么聪明，但GPT4基本可以按解释来灵活运用。   
+* 当你发现GPT不太认识这个词，例如“大家さん”时，并且这个词含义比较唯一，那么就可以像这样加进通用GPT字典里，解释不是必要的。   
+* 第二行的中文写了一个多义词“我/人家”，并且在解释中写了“当扮可爱时用人家”。GPT3.5没那么聪明，但GPT4基本可以按解释来灵活运用。
+* 想让GPT更瑟？自己加字典（   
 
 在程序目录中，`Dict`文件夹内有"通用GPT字典.txt"，在`sampleProject`文件夹内会有"项目GPT字典.txt"，一般人名定义写进项目字典，通用提高翻译质量的词汇写进通用字典。   
 不用担心字典过大会带来副作用，只有当本次发送给GPT的人名和句子中有这个词，这个词的解释才会被送进本轮的对话中。也不要什么词都往里加，~~什么都往里加只会害了你~~，推荐只写**各角色的设定**和**总是会翻错的词**。 
@@ -613,7 +615,8 @@ cookiePath下可以将多个文件按例子往下写，当一个账号到达上�
 > 开启校润模式：   
 配置`  gpt.enableProofRead: true`，翻译完一个json后会开始对这个json自动化再润色   
 
-> 针对newbing经常吞内容，一个推荐的技巧是先设置`gpt.numPerRequestTranslate`为9或12，翻译一遍后，设置`retranslFail`为True，设置`gpt.numPerRequestTranslate`为3，再跑一遍。另外，如果脚本有将hs分开，可以单独为hs建一个项目文件夹翻，翻完合并json_jp和transl_cache。
+> 针对newbing拒绝翻译的情况，一个推荐的技巧是先设置`gpt.numPerRequestTranslate`为9或12，翻译一遍后，设置`retranslFail`为True，设置`gpt.numPerRequestTranslate`为3，再跑一遍，剩下的就是newbing死活都不会翻译的了，换引擎吧。
+> 另外，如果脚本有将hs分开，可以单独为hs建一个项目文件夹翻，翻完合并json_jp和transl_cache。
 
 * **ChatGPT**   
 官方API调用方式见上手教程   

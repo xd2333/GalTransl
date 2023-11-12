@@ -86,6 +86,11 @@ class CGPT35Translate:
             self.restore_context_mode = val
         else:
             self.restore_context_mode = False
+        # 跳过重试
+        if val := config.getKey("skipRetry"):
+            self.skipRetry = val
+        else:
+            self.skipRetry = False
         # 挥霍token模式
         if val := config.getKey("gpt.fullContextMode"):
             self.full_context_mode = val
@@ -292,6 +297,16 @@ class CGPT35Translate:
                     error_flag = True
 
             if error_flag or warn_flag:
+                if self.skipRetry:
+                    self.reset_conversation()
+                    LOGGER.warning("-> 解析出错但跳过本轮翻译")
+                    i = -1
+                    while i + 1 < len(content):
+                        i = i + 1
+                        content[i].pre_zh = "Failed translation"
+                        content[i].post_zh = "Failed translation"
+                        content[i].trans_by = "GPT-3.5(Failed)"
+                    return content
                 self._handle_error(error_message)
                 if error_flag:
                     continue

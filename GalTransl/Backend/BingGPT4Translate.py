@@ -97,6 +97,11 @@ class CBingGPT4Translate:
             self.force_NewBing_hs_mode = val
         else:
             self.force_NewBing_hs_mode = False
+        # 跳过重试
+        if val := config.getKey("skipRetry"):
+            self.skipRetry = val
+        else:
+            self.skipRetry = False
         if val := config.getKey("gpt.streamOutputMode"):
             self.streamOutputMode = val  # 流式输出模式
         else:
@@ -313,9 +318,24 @@ class CBingGPT4Translate:
                     result_trans_list.append(trans_list[i])
 
             if error_flag:
-                await asyncio.sleep(2)
-                await self.chatbot.reset()
-                continue
+                if self.skipRetry:
+                    self.reset_conversation()
+                    LOGGER.warning("-> 解析出错但跳过本轮翻译")
+                    while i + 1 < len(trans_list):
+                        i = i + 1
+                        if not proofread:
+                            trans_list[i].pre_zh = "Failed translation"
+                            trans_list[i].post_zh = "Failed translation"
+                            trans_list[i].trans_by = "NewBing(Failed)"
+                        else:
+                            trans_list[i].proofread_zh = trans_list[i].pre_zh
+                            trans_list[i].post_zh = trans_list[i].pre_zh
+                            trans_list[i].proofread_by = "NewBing(Failed)"
+                        result_trans_list.append(trans_list[i])
+                else:
+                    await asyncio.sleep(2)
+                    await self.chatbot.reset()
+                    continue
             if i + 1 != len(trans_list):
                 if bing_reject:
                     LOGGER.warning("->NewBing大小姐拒绝了本次请求🙏\n")

@@ -18,8 +18,12 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
 
     if translator == "gpt35":
         await doGPT3Translate(cfg, OpenAITokenPool, proxyPool)
+    elif translator == "gpt35-1106":
+        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="gpt35-1106")
     elif translator == "gpt4":
         await doGPT4Translate(cfg, OpenAITokenPool, proxyPool)
+    elif translator == "gpt4-turbo":
+        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, type="gpt4-turbo")
     elif translator == "chatgpt-gpt35":
         await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="unoffapi")
     elif translator == "chatgpt-gpt4":

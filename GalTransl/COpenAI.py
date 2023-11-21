@@ -40,30 +40,33 @@ def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
     if val := config.getKey("gpt.degradeBackend"):
         degradeBackend = val
 
-    for tokenEntry in config.getBackendConfigSection("GPT35").get("tokens"):
-        result.append(
-            COpenAIToken(
-                tokenEntry["token"],
-                tokenEntry["endpoint"]
-                if tokenEntry.get("endpoint")
-                else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
-                True,
-                False,
+    if gpt35_tokens := config.getBackendConfigSection("GPT35").get("tokens"):
+        for tokenEntry in gpt35_tokens:
+            result.append(
+                COpenAIToken(
+                    tokenEntry["token"],
+                    tokenEntry["endpoint"]
+                    if tokenEntry.get("endpoint")
+                    else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
+                    True,
+                    False,
+                )
             )
-        )
-        pass
-    for tokenEntry in config.getBackendConfigSection("GPT4").get("tokens"):
-        result.append(
-            COpenAIToken(
-                tokenEntry["token"],
-                tokenEntry["endpoint"]
-                if tokenEntry.get("endpoint")
-                else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
-                True if degradeBackend else False,
-                True,
+            pass
+
+    if gpt4_tokens := config.getBackendConfigSection("GPT4").get("tokens"):
+        for tokenEntry in gpt4_tokens:
+            result.append(
+                COpenAIToken(
+                    tokenEntry["token"],
+                    tokenEntry["endpoint"]
+                    if tokenEntry.get("endpoint")
+                    else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
+                    True if degradeBackend else False,
+                    True,
+                )
             )
-        )
-        pass
+            pass
 
     return result
 
@@ -113,9 +116,9 @@ class COpenAITokenPool:
                         isGPT3Available = False
                         isGPT4Available = False
                         for model in modelResponse.json()["data"]:
-                            if model["id"] == "gpt-4":
+                            if "gpt-4" in model["id"]:
                                 isGPT4Available = True
-                            elif model["id"] == "gpt-3.5-turbo":
+                            elif "gpt-3.5-turbo" in model["id"]:
                                 isGPT3Available = True
                         return True, isGPT3Available, isGPT4Available, token
         except:

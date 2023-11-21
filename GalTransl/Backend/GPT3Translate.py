@@ -115,7 +115,7 @@ class CGPT35Translate:
             self.transl_style = "normal"
         self._current_style = ""
 
-        if type == "offapi":
+        if type == "gpt35":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             token = self.tokenProvider.getToken(True, False)
@@ -136,7 +136,6 @@ class CGPT35Translate:
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None # type: ignore
             )
-
         elif type == "unoffapi":
             from GalTransl.Backend.revChatGPT.V1 import AsyncChatbot as ChatbotV1
 
@@ -194,12 +193,12 @@ class CGPT35Translate:
         while True:  # 一直循环，直到得到数据
             try:
                 # change token
-                if type == "offapi":
+                if type != "unoffapi":
                     self.chatbot.set_api_key(self.tokenProvider.getToken(True, False).token)
                 LOGGER.info(f"-> 翻译输入：\n{gptdict}\n{input_json}\n")
                 LOGGER.info("-> 输出：\n")
                 resp = ""
-                if self.type == "offapi":
+                if self.type != "unoffapi":
                     if not self.full_context_mode:
                         self._del_previous_message()
                     async for data in self.chatbot.ask_stream_async(prompt_req):
@@ -351,20 +350,20 @@ class CGPT35Translate:
             LOGGER.error(f"-> 循环重试超过10次，已中止：{error_msg}")
             exit(-1)
         # 其他情况
-        if self.type == "offapi":
+        if self.type != "unoffapi":
             self._del_last_answer()
         elif self.type == "unoffapi":
             self.reset_conversation()
 
     def reset_conversation(self):
-        if self.type == "offapi":
+        if self.type != "unoffapi":
             self.chatbot.reset()
-        if self.type == "unoffapi":
+        elif self.type == "unoffapi":
             self.chatbot.reset_chat()
 
     def _del_previous_message(self) -> None:
         """删除历史消息，只保留最后一次的翻译结果，节约tokens"""
-        if self.type == "offapi":
+        if self.type != "unoffapi":
             last_assistant_message = None
             for message in self.chatbot.conversation["default"]:
                 if message["role"] == "assistant":
@@ -379,7 +378,7 @@ class CGPT35Translate:
             pass
 
     def _del_last_answer(self):
-        if self.type == "offapi":
+        if self.type != "unoffapi":
             # 删除上次输出
             if self.chatbot.conversation["default"][-1]["role"] == "assistant":
                 self.chatbot.conversation["default"].pop()
@@ -409,14 +408,14 @@ class CGPT35Translate:
             frequency_penalty, presence_penalty = 0.3, 0.0
         elif style_name == "normal":
             pass
-        if self.type == "offapi":
+        if self.type != "unoffapi":
             self.chatbot.temperature = temperature
             self.chatbot.top_p = top_p
             self.chatbot.frequency_penalty = frequency_penalty
             self.chatbot.presence_penalty = presence_penalty
 
     def restore_context(self, trans_list_unhit: CTransList, num_pre_request: int):
-        if self.type == "offapi":
+        if self.type != "unoffapi":
             if len(trans_list_unhit) == 0 or trans_list_unhit[0].prev_tran == None:
                 return
             tmp_context = []
@@ -478,7 +477,7 @@ class CGPT35Translate:
             self.last_file_name = filename
             LOGGER.info(f"-> 开始翻译文件：{filename}")
         if (
-            self.type == "offapi"
+            self.type != "unoffapi"
             and self.restore_context_mode
             and len(self.chatbot.conversation["default"]) == 1
         ):

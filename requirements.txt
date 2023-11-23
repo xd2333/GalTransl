@@ -1,0 +1,6 @@
+EdgeGPT
+httpx
+PyYAML==6.0
+Requests
+revChatGPT
+zhconv==1.4.3

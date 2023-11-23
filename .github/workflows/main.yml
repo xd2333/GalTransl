@@ -1,0 +1,61 @@
+name: autoPack
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+
+      - name: Install requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
+      
+      - name: Build EXE
+        run: pyinstaller -F ./run_GalTransl.py
+      - name: Zip dist folder
+        run: |
+          Copy-Item -Path "Dict" -Destination "dist\Dict" -Recurse -Force
+          Copy-Item -Path "sampleProject" -Destination "dist\sampleProject" -Recurse -Force
+          Copy-Item -Path "useful_tools" -Destination "dist\useful_tools" -Recurse -Force
+          Compress-Archive -Path "dist" -DestinationPath "galTransl.zip"
+      - name: Delete release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        with:
+          tag_name: Beta
+          delete_release: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
+        with:
+          tag_name: Beta
+          release_name: galTransl pack
+          draft: false
+          prerelease: true
+
+      - name: Upload file
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.G_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./galTransl.zip
+          asset_name: galTransl.zip
+          asset_content_type: application/octet-stream

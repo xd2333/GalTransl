@@ -19,7 +19,12 @@ from GalTransl.Backend.Prompts import (
     GPT4_SYSTEM_PROMPT,
     GPT4_PROOFREAD_PROMPT,
 )
-from GalTransl.Backend.Prompts import GPT4Turbo_SYSTEM_PROMPT, GPT4Turbo_TRANS_PROMPT
+from GalTransl.Backend.Prompts import (
+    GPT4Turbo_SYSTEM_PROMPT,
+    GPT4Turbo_TRANS_PROMPT,
+    GPT4Turbo_CONF_PROMPT,
+    GPT4Turbo_PROOFREAD_PROMPT,
+)
 
 NAME_PROMPT3 = "and `name`(if have) "
 
@@ -123,6 +128,8 @@ class CGPT4Translate:
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             token = self.tokenProvider.getToken(False, True)
+
+            system_prompt = GPT4Turbo_SYSTEM_PROMPT
             self.chatbot = ChatbotV3(
                 api_key=token.token,
                 proxy=self.proxyProvider.getProxy().addr
@@ -130,11 +137,13 @@ class CGPT4Translate:
                 else None,
                 temperature=0.4,
                 frequency_penalty=0.2,
-                system_prompt=GPT4Turbo_SYSTEM_PROMPT,
+                system_prompt=system_prompt,
                 engine="gpt-4-1106-preview",
                 api_address=token.domain + "/v1/chat/completions",
+                # response_format="json",
             )
             self.chatbot.trans_prompt = GPT4Turbo_TRANS_PROMPT
+            self.chatbot.proofread_prompt = GPT4Turbo_PROOFREAD_PROMPT
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None
             )
@@ -196,7 +205,7 @@ class CGPT4Translate:
         input_json = "\n".join(
             [json.dumps(obj, ensure_ascii=False) for obj in input_list]
         )
-        
+
         prompt_req = (
             self.chatbot.trans_prompt
             if not proofread
@@ -221,7 +230,7 @@ class CGPT4Translate:
                     self.chatbot.set_api_key(
                         self.tokenProvider.getToken(False, True).token
                     )
-                # LOGGER.info("->输入：\n" +  prompt_req+ "\n")
+                LOGGER.info("->输入：\n" + prompt_req + "\n")
                 LOGGER.info(
                     f"->{'翻译输入' if not proofread else '校对输入'}：{gptdict}\n{input_json}\n"
                 )
@@ -240,7 +249,7 @@ class CGPT4Translate:
                         if self.streamOutputMode:
                             print(data["message"][len(resp) :], end="", flush=True)
                         resp = data["message"]
-                        
+
                 if not self.streamOutputMode:
                     LOGGER.info(resp)
                 else:

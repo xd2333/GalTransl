@@ -16,8 +16,8 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
             proxyPool.getProxy() if proxyPool else None
         )
 
-    if translator == "gpt35":
-        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="gpt35")
+    if translator == "gpt35-0613":
+        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="gpt35-0613")
     elif translator == "gpt35-1106":
         await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="gpt35-1106")
     elif translator == "gpt4":

@@ -23,10 +23,10 @@ INPUT_FOLDERNAME = "json_jp"
 OUTPUT_FOLDERNAME = "json_cn"
 CACHE_FOLDERNAME = "transl_cache"
 TRANSLATOR_SUPPORTED = {
-    "gpt35": "GPT3.5 API模式 0613模型",
-    "gpt35-1106": "GPT3.5 API模式 1106模型",
+    "gpt35-0613": "GPT3.5-Turbo API模式 0613模型",
+    "gpt35-1106": "GPT3.5-Turbo API模式 1106模型",
     "gpt4": "GPT4 API模式",
-    "gpt4-turbo": "GPT4 API模式 gpt4-turbo模型",
+    "gpt4-turbo": "GPT4-Turbo API模式",
     "newbing": "NewBing大小姐",
     "chatgpt-gpt35": "GPT3.5 模拟网页模式 -- 暂不可用",
     "chatgpt-gpt4": "GPT4 模拟网页模式 -- 暂不可用",

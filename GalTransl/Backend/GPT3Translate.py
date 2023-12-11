@@ -18,7 +18,7 @@ from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Backend.revChatGPT.typings import APIConnectionError
 from httpx import ProtocolError
 from GalTransl import LOGGER, LANG_SUPPORTED
-from Prompts import (
+from GalTransl.Backend.Prompts import (
     GPT35_0613_NAME_PROMPT3,
     GPT35_0613_TRANS_PROMPT,
     GPT35_0613_SYSTEM_PROMPT,

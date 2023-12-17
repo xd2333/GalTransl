@@ -96,7 +96,7 @@ class CGPT35Translate:
             self.transl_style = "normal"
         self._current_style = ""
 
-        self.init_chatbot(type=type, config=config)
+        self.init_chatbot(type=type, config=config) # 模型选择
 
         if self.transl_style == "auto":
             self._set_gpt_style("precise")
@@ -124,7 +124,7 @@ class CGPT35Translate:
             # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
             self.chatbot = ChatbotV3(
                 api_key=token.token,
-                engine="gpt-3.5-turbo",
+                engine="gpt-3.5-turbo-0613",
                 proxy=self.proxyProvider.getProxy().addr
                 if self.proxyProvider
                 else None,  # type: ignore
@@ -140,7 +140,7 @@ class CGPT35Translate:
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
             )
-        if type == "gpt35-1106":
+        elif type == "gpt35-1106":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             token = self.tokenProvider.getToken(True, False)

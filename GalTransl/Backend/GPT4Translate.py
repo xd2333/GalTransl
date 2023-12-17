@@ -104,6 +104,21 @@ class CGPT4Translate:
             self.transl_style = "normal"
         self._current_style = ""
 
+        self.init_chatbot(type=type, config=config) # 模型选择
+        
+        if self.transl_style == "auto":
+            self._set_gpt_style("precise")
+        else:
+            self._set_gpt_style(self.transl_style)
+
+        if self.target_lang == "Simplified Chinese":
+            self.opencc = OpenCC("t2s.json")
+        elif self.target_lang == "Traditional Chinese":
+            self.opencc = OpenCC("s2t.json")
+
+        pass
+    
+    def init_chatbot(self, type, config):
         if type == "gpt4":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
@@ -163,18 +178,6 @@ class CGPT4Translate:
             self.chatbot = ChatbotV1(config=gpt_config)
             self.chatbot.trans_prompt = GPT4_TRANS_PROMPT
             self.chatbot.clear_conversations()
-
-        if self.transl_style == "auto":
-            self._set_gpt_style("precise")
-        else:
-            self._set_gpt_style(self.transl_style)
-
-        if self.target_lang == "Simplified Chinese":
-            self.opencc = OpenCC("t2s.json")
-        elif self.target_lang == "Traditional Chinese":
-            self.opencc = OpenCC("s2t.json")
-
-        pass
 
     async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
         input_list = []

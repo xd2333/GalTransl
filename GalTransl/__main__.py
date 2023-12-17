@@ -65,7 +65,7 @@ def main() -> int:
     print(f"Author: {AUTHOR}")
     print(f"Contributors: {CONTRIBUTORS}")
 
-    return worker(args.project_dir, args.translator)
+    return worker(args.project_dir, "config.yaml", args.translator)
 
 
 if __name__ == "__main__":

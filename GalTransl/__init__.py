@@ -14,9 +14,9 @@ PROGRAM_SPLASH = """
   \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|                                           
 """
 
-GALTRANSL_VERSION = "2.5.0"
+GALTRANSL_VERSION = "3.0.0"
 AUTHOR = "cx2333"
-CONTRIBUTORS = "ryank231231, Isotr0py"
+CONTRIBUTORS = "ryank231231, Isotr0py, Noriverwater"
 
 CONFIG_FILENAME = "config.yaml"
 INPUT_FOLDERNAME = "json_jp"

@@ -1,27 +1,27 @@
 ---
 # 通用（杂项）设置
 common:
-  loggingLevel: info # 日志等级，可选 [debug/info/warning/error]
-  workersPerProject: 1 # workers 数量，为 1 时等于单线程
+  loggingLevel: info # 日志等级（未实现） [debug/info/warning/error]
+  workersPerProject: 1 # 同时翻译的文件数量，为 1 时等于单线程
   # 通用设置
   sourceLanguage: ja # 源语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   targetLanguage: zh-cn # 目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   skipRetry: false # 开启则解析结果出错时跳过循环重试，直接用"Fail Translation"占位。[True/False]
   retranslFail: false # 重启时重翻所有"Fail Translation"的句子。[True/False]
-  retranslKey: "" # 重启时主动重翻在Problem或pre_jp中包含填写的关键字的句子，例如"残留日文"
+  retranslKey: "" # 重启时主动重翻在Problem或pre_jp中包含此关键字的句子，例如"残留日文"
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
-  gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果。[True/False]
+  gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果（多线程下无效）[True/False]
   # NewBing/GPT4
   gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。[True/False]
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
   gpt.recordConfidence: false # (NewBing/GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
-  gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。[True/False]
+  gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。（考虑废弃）[True/False]
   # GPT3.5/GPT4
   gpt.translStyle: auto # (GPT3.5/4 官方API)GPT参数预设，precise更精确normal更随机，auto自动切换。[auto/precise/normal]
   gpt.degradeBackend: false # (GPT3.5/4 官方API)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
   gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启时恢复上一轮的译文前文。[True/False]
   gpt.fullContextMode: false # (GPT3.5/4 官方API)保留更多前文。开启提升效果，关闭节约数倍token消耗。[True/False]
-  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，部分减少丢换行符情况，但可能导致循环重试。[True/False]
+  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，部分减少丢换行符情况，但可能导致循环重试。（考虑废弃）[True/False]
 # 代理设置
 proxy:
   enableProxy: false # 是否启用代理。[True/False]
@@ -51,20 +51,19 @@ backendSpecific:
   GPT35: # GPT3.5 官方 API
     tokens: # 令牌列表
       # 你的api key
-      - token: sk-xxxxxxxx
-        # OPENAI API请求的域名，使用转发或第三方API时修改
-        endpoint: https://api.openai.com
-      - token: sk-yyyyyyyy
+      - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        endpoint: https://api.openai.com # OPENAI API请求的域名，使用转发或第三方API时修改
+      - token: sk-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
         endpoint: ""
     defaultEndpoint: https://api.openai.com # 默认 API 端点，一般不修改
   GPT4: # GPT4 官方 API
     tokens:
-      - token: sk-xxxxxxxx
+      - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         endpoint: ""
-      - token: sk-yyyyyyyy
+      - token: sk-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
         endpoint: ""
     defaultEndpoint: https://api.openai.com
-  ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API，模拟网页操作模式
+  ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API，模拟网页操作模式（考虑废弃）
     access_tokens: # 访问https://chat.openai.com/api/auth/session，提取accessToken
       - access_token: xxx
     accounts: # 暂不支持

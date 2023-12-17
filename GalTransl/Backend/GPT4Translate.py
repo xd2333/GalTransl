@@ -91,6 +91,10 @@ class CGPT4Translate:
             self.streamOutputMode = val
         else:
             self.streamOutputMode = False
+        if val := config.getKey("workersPerProject"):  # 多线程关闭流式输出
+            if val > 1:
+                self.streamOutputMode = False
+                
         self.tokenProvider = token_pool
         if config.getKey("internals.enableProxy") == True:
             self.proxyProvider = proxy_pool

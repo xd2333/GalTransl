@@ -82,6 +82,9 @@ class CGPT35Translate:
             self.streamOutputMode = val
         else:
             self.streamOutputMode = False
+        if val := config.getKey("workersPerProject"):  # 多线程关闭流式输出
+            if val > 1:
+                self.streamOutputMode = False
 
         self.tokenProvider = token_pool
         if config.getKey("internals.enableProxy") == True:
@@ -96,7 +99,7 @@ class CGPT35Translate:
             self.transl_style = "normal"
         self._current_style = ""
 
-        self.init_chatbot(type=type, config=config) # 模型选择
+        self.init_chatbot(type=type, config=config)  # 模型选择
 
         if self.transl_style == "auto":
             self._set_gpt_style("precise")

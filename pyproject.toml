@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-edgegpt = "0.10.16"
+re_edge_gpt = "^0.0.20"
 requests = "^2.31.0"
 revchatgpt = "^6.8.1"
 ttkbootstrap = "^1.10.1"

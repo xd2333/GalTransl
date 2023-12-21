@@ -34,8 +34,8 @@ dictionary:
   defaultDictFolder: Dict # 通用字典文件夹，相对于程序目录
   # 预处理字典
   preDict:
-    - 00通用字典_译前.txt
     - 01H字典_矫正_译前.txt # 用于口齿不清的矫正
+    - 00通用字典_译前.txt
     - (project_dir)项目字典_译前.txt # (project_dir)代表字典在项目文件夹
   # GPT 字典
   gpt.dict:

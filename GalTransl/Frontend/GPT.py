@@ -25,6 +25,8 @@ from GalTransl.ConfigHelper import CProjectConfig, initDictList, CProxyPool
 from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl import LOGGER
 
+# TODO 这里重复代码太多了，可以考虑重构一下
+
 
 async def doGPT3TranslateSingleFile(
     semaphore: Semaphore,
@@ -86,7 +88,7 @@ async def doGPT3TranslateSingleFile(
         trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
     )
     et = time()
-    LOGGER.info(f"文件 {file_name} 翻译完成，用时 {st-st}s.")
+    LOGGER.info(f"文件 {file_name} 翻译完成，用时 {et-st}s.")
 
 
 async def doGPT3Translate(
@@ -225,7 +227,7 @@ async def doGPT4TranslateSingleFile(
         trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
     )
     et = time()
-    LOGGER.info(f"文件 {file_name} 翻译完成，用时 {st-st}s.")
+    LOGGER.info(f"文件 {file_name} 翻译完成，用时 {et-st}s.")
 
 
 async def doGPT4Translate(

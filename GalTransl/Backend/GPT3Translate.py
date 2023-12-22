@@ -16,6 +16,7 @@ from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Backend.revChatGPT.typings import APIConnectionError
+from GalTransl.StringUtils import extract_code_blocks
 from httpx import ProtocolError
 from GalTransl import LOGGER, LANG_SUPPORTED
 from GalTransl.Backend.Prompts import (
@@ -249,7 +250,14 @@ class CGPT35Translate:
                 await asyncio.sleep(5)
                 continue
 
-            result_text = resp[resp.find("[{") : resp.rfind("}]") + 2].strip()
+            if "```json" in resp:
+                lang_list, code_list = extract_code_blocks(resp)
+                if len(lang_list) > 0 and len(code_list) > 0:
+                    result_text = code_list[0]
+                else:
+                    result_text = ""
+            else:
+                result_text = resp[resp.find("[{") : resp.rfind("}]") + 2].strip()
 
             try:
                 result_json = json.loads(result_text)  # 尝试解析json

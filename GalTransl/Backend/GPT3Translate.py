@@ -255,9 +255,11 @@ class CGPT35Translate:
                 if len(lang_list) > 0 and len(code_list) > 0:
                     result_text = code_list[0]
                 else:
-                    result_text = ""
-            else:
+                    result_text = resp
+            elif "[{" in resp:
                 result_text = resp[resp.find("[{") : resp.rfind("}]") + 2].strip()
+            else:
+                result_text = resp
 
             try:
                 result_json = json.loads(result_text)  # 尝试解析json

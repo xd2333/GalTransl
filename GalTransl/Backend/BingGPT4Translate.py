@@ -249,7 +249,8 @@ class CBingGPT4Translate:
                         error_flag = True
                         break
 
-                line_json[key_name] = self.opencc.convert(line_json[key_name])
+                if "Chinese" in self.target_lang:  # 统一简繁体
+                    line_json[key_name] = self.opencc.convert(line_json[key_name])
 
                 if not proofread:
                     trans_list[i].pre_zh = line_json[key_name]

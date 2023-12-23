@@ -344,7 +344,8 @@ class CGPT35Translate:
                     ].post_jp.startswith("\r\n"):
                         result[key_name] = result[key_name][2:]
 
-                result[key_name] = self.opencc.convert(result[key_name])
+                if "Chinese" in self.target_lang:  # 统一简繁体
+                    result[key_name] = self.opencc.convert(result[key_name])
 
                 content[i].pre_zh = result[key_name]
                 content[i].post_zh = result[key_name]

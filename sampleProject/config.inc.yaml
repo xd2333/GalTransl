@@ -73,6 +73,8 @@ backendSpecific:
     cookiePath:
       - newbing_cookies/cookie1.json # 你的 cookies 文件，相对于项目目录
       - newbing_cookies/cookie2.json # 你的 cookies 文件2
+  Sakura:
+    endpoint: http://127.0.0.1:8080
 # 问题分析机制配置
 problemAnalyze:
   GPT35: # GPT35 / ChatGPT

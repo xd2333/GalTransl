@@ -28,6 +28,7 @@ TRANSLATOR_SUPPORTED = {
     "gpt4": "GPT4 API模式",
     "gpt4-turbo": "GPT4-Turbo API模式",
     "newbing": "NewBing大小姐",
+    "Sakura":"Sakura离线翻译 Sakura-13B-Galgame v0.9模型",
     "chatgpt-gpt35": "GPT3.5 模拟网页模式 -- 暂不可用",
     "chatgpt-gpt4": "GPT4 模拟网页模式 -- 暂不可用",
     "caiyun": "彩云 -- 暂不可用",

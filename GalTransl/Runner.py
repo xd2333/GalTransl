@@ -1,7 +1,12 @@
 import time
 from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.COpenAI import COpenAITokenPool
-from GalTransl.Frontend.GPT import doGPT3Translate, doGPT4Translate, doNewBingTranslate
+from GalTransl.Frontend.GPT import (
+    doGPT3Translate,
+    doGPT4Translate,
+    doNewBingTranslate,
+    doSakuraTranslate,
+)
 from GalTransl import LOGGER
 
 
@@ -30,6 +35,8 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, type="unoffapi")
     elif translator == "newbing":
         await doNewBingTranslate(cfg, proxyPool)
+    elif translator == "Sakura":
+        await doSakuraTranslate(cfg, proxyPool, type="Sakura0.9")
     elif translator == "caiyun":
         raise RuntimeError("Work in progress!")
     end_time = time.time()

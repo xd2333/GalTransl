@@ -53,8 +53,14 @@ class CBingGPT4Translate:
             self.skipRetry = val
         else:
             self.skipRetry = False
+        # 记录确信度
+        if val := config.getKey("gpt.recordConfidence"):
+            self.record_confidence = val
+        else:
+            self.record_confidence = False
+        # 流式输出模式
         if val := config.getKey("gpt.streamOutputMode"):
-            self.streamOutputMode = val  # 流式输出模式
+            self.streamOutputMode = val  
         else:
             self.streamOutputMode = False
 
@@ -81,7 +87,6 @@ class CBingGPT4Translate:
             self.opencc = OpenCC("s2t.json")
 
     async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
-        await self._change_cookie()
         prompt_req = NewBing_TRANS_PROMPT if not proofread else NewBing_PROOFREAD_PROMPT
         input_list = []
         for i, trans in enumerate(trans_list):

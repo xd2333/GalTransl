@@ -138,6 +138,7 @@ class CGPT35Translate:
                 frequency_penalty=0.2,
                 system_prompt=GPT35_0613_SYSTEM_PROMPT,
                 api_address=token.domain + "/v1/chat/completions",
+                timeout=30,
             )
             self.chatbot.trans_prompt = GPT35_0613_TRANS_PROMPT
             self.chatbot.name_prompt = GPT35_0613_NAME_PROMPT3
@@ -161,6 +162,7 @@ class CGPT35Translate:
                 frequency_penalty=0.2,
                 system_prompt=GPT35_1106_SYSTEM_PROMPT,
                 api_address=token.domain + "/v1/chat/completions",
+                timeout=30,
             )
             self.chatbot.trans_prompt = GPT35_1106_TRANS_PROMPT
             self.chatbot.name_prompt = GPT35_1106_NAME_PROMPT3

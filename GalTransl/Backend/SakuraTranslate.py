@@ -68,6 +68,7 @@ class CSakuraTranslate:
                 system_prompt=Sakura_SYSTEM_PROMPT,
                 engine="gpt-3.5-turbo",
                 api_address=endpoint + "/v1/chat/completions",
+                timeout=60,
             )
 
             self.chatbot.trans_prompt = Sakura_TRANS_PROMPT

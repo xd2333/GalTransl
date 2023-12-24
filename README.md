@@ -9,11 +9,11 @@
   
   GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具，用于制作内嵌式翻译补丁。   
    
-  GalTransl的核心是一组由我(cx2333)构建的gal自动化翻译脚本，它解决了使用ChatGPT自动化翻译GalGame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合利用，打通了制作补丁的完整流程，一定程度的降低了上手门槛，从而让对此感兴趣的朋友有机会以较低的技术要求，构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  
+  GalTransl的核心是一组由我(cx2333)构建的自动化翻译脚本，它解决了使用ChatGPT自动化翻译GalGame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合，打通了制作补丁的完整流程，一定程度降低了上手门槛。对此感兴趣的朋友可以更容易的构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  
 
   * 特性：   
-  1. 支持**ChatGPT、Newbing、GPT-4**、彩云四种翻译引擎，并通过提示工程大幅提高了GPT引擎翻译质量   
-  2. NewBing基于GPT-4并且**免费**；ChatGPT与GPT-4支持官方API与模拟网页操作模式，一定程度节省费用   
+  1. 支持**ChatGPT、Newbing、GPT-4、Sakura**等翻译引擎，并通过提示工程大幅提高了GPT引擎翻译质量   
+  2. NewBing基于GPT-4并且**免费**；ChatGPT与GPT-4支持官方API与~~模拟网页操作模式~~（目前失效），一定程度节省费用   
   3. 首创**GPT字典系统**，让GPT了解人设，准确翻译人名、人称代词与生词   
   4. 首创NewBing、GPT-4下支持自动**记录翻译确信度、存疑句、未知专有名词**，方便手工修正，并支持**自动化校润**(还不稳定)   
   5. 通过译前、译后字典与条件字典实现灵活的自动化字典系统   
@@ -24,7 +24,7 @@
 
 * 代码贡献：感谢ryank231231、Isotr0py，完善了我的杂鱼代码。 
    
-* 支持我：点个Star~（无偿分享补丁就是支持我了，能提一下是用GalTransl翻译的就更好了。PS. 分享补丁时请注明GPT翻译）   
+* 支持我：点个Star~（PS. 分享补丁时请注明GPT翻译，能提一下是用GalTransl翻译的就更好了）   
 
 * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群）   
 
@@ -33,16 +33,12 @@
 ## 使用GalTransl翻译的游戏
 
 * 《指尖连结/ゆびさきコネクション》 [链接](https://tieba.baidu.com/p/8282814801?pid=146960460177)   
-这是**全网首个**使用chatgpt翻译的galgame，使用了GalTransl的早期版本。  
+这是**全网首个**完整使用chatgpt翻译的galgame，使用了GalTransl的早期版本。  
 翻译：主线-NewBing，hs-GPT3.5   
-
-* 《炎孕女仆学院/もっと！孕ませ！炎のおっぱい異世界 おっぱいメイド学園！》 [链接](https://www.2dfan.com/downloads/16362)   
-基本**代表纯GPT3.5能达到的质量标准**   
-翻译：全程GPT3.5   
 
 * 《甜蜜女友2+/アマカノ2+》 [链接](https://www.2dfan.com/downloads/16596)   
 这是**首次将自动化校润用于Gal翻译**，基本可以代表GalTransl在未逐文本精修的前提下目前能达到的质量上限（但不代表GPT4的上限）。   
-翻译：主线-我使用NewBing翻译+自动校润+部分手工修正；hs-云忆夕使用GPT4   
+翻译：主线-cx2333使用NewBing翻译+自动校润+部分手工修正；hs-云忆夕使用GPT4   
 美工：cx2333   
 
 ## 导航
@@ -55,15 +51,15 @@
 ## 环境准备
   * Python   
   安装最新版 Python 即可。 [下载](https://www.python.org/downloads/)   
-  安装时勾选下方 add Python to path   
+  **安装时勾选下方 add Python to path**   
    
   * [下载本项目](https://github.com/XD2333/GalTransl/releases/)   
   解压到任意位置，例如 `D:\GalTransl-main`
 
   * 安装Python依赖   
-  安装 Python 后，
+  安装 Python 后
   
-  如果你是**初学者**，可以直接双击`安装依赖.bat`来安装本项目需要的依赖。
+  如果你是**初学者**，可以直接双击`安装、更新依赖.bat`来安装本项目需要的依赖。
 
   如果你**熟悉python**，本项目提供Poetry进行依赖管理，可以通过以下命令安装并运行程序：
 
@@ -86,11 +82,12 @@
 ## 实用工具
 | 名称 | 说明 |
 | --- | --- |
-| GalTransl_DumpInjector | 文本工具：VNTextPatch gui |
-| dbTXT2Json_jp | 文本工具：通用双行文本与json_jp互转脚本 |
-| KirikiriTools | 引擎工具：Krkr、krkrz 提取、注入工具 |
-| UniversalInjectorFramework | 引擎工具：sjis隧道、sjis替换模式通用注入框架 |
-| VNTextProxy | 引擎工具：sjis隧道模式通用注入框架 |
+| GalTransl_DumpInjector | 文本工具：[VNTextPatch](https://github.com/arcusmaximus/VNTranslationTools)的图形化界面，综合文本提取导入工具 |
+| [SExtractor](https://github.com/satan53x/SExtractor) | 文本工具：综合文本提取导入工具 |
+| [DBTXT2Json_jp](https://github.com/XD2333/DBTXT2Json_jp) | 文本工具：通用双行文本与json_jp互转脚本 |
+| [KirikiriTools](https://github.com/arcusmaximus/KirikiriTools) | 引擎工具：Krkr、krkrz 提取、注入工具 |
+| [UniversalInjectorFramework](https://github.com/AtomCrafty/UniversalInjectorFramework) | 引擎工具：sjis隧道、sjis替换模式通用注入框架 |
+| [VNTextProxy](https://github.com/arcusmaximus/VNTranslationTools) | 引擎工具：sjis隧道模式通用注入框架 |
 
 ## 上手教程
 做一个gal内嵌翻译补丁的大致流程是：   
@@ -99,7 +96,7 @@
 3. 封包为资源包/免封包 -> 接4.
 4. 引擎支持unicode的话，直接玩 -> 引擎是shift jis的，尝试2种路线使其支持显示中文   
 
-我会分成以上4个模块分步讲解，这个段落为了让没做过的人也能有机会上手，会写的更照顾小白一些。   
+我会分成以上4个模块分步讲解，这个段落为了让没做过的朋友也能有机会上手，会写的更照顾小白一些。   
 
 * 建议先只跑开头一个文件的翻译，或先随便添加一些中文，导回游戏确认可以正常显示再全部翻译   
    
@@ -114,7 +111,7 @@
 
 或者，参考[资源包后缀表](https://morkt.github.io/GARbro/supported.html)，比较资源包的后缀。   
 
-脚本一般在一些有明显关键字的资源包，或在资源包中明显关键字的目录内，例如：scene、scenario、message等字样。并且脚本通常是由许多明显分章节、分人物，有的还分出了主线和hs(例如带_h)，通常多翻找几个资源包就能找到。   
+脚本一般在一些有明显关键字的资源包，或在资源包中明显关键字的目录内，例如：scene、scenario、message、script等字样。并且脚本通常是由许多明显分章节、分人物，有的还分出了主线和hs(例如带_h)，通常多翻找几个资源包就能找到。   
 
 或者，参考[Dir-A佬的教程](https://space.bilibili.com/8144708/)   
 
@@ -146,18 +143,18 @@
   }
 ]
 ```
-&ensp;&ensp;&ensp;&ensp;其中，每个{}object(对象)是一句话，`message`是消息内容，如果object还带了`name`，说明是对话。不过可能并不是所有类型的脚本都可以带name提取，当可以带name时，GalTransl的翻译质量会更好。   
-&ensp;&ensp;&ensp;&ensp;PS. GalTransl只支持指定格式的json文件输入，但并不是说GalTransl就与VNTextPatch工具绑定了，你完全可以通过其他工具提取出脚本文本，然后尝试使用"正则表达式模式"将其他格式的文本与json文本转换，但是需要一些正则经验。   
+&ensp;&ensp;&ensp;&ensp;其中，每个{object(对象)}是一句话，`message`是消息内容，如果object还带了`name`，说明是对话。不过可能并不是所有类型的脚本都可以带name提取，当可以带name时，GalTransl的翻译质量会更好。   
+&ensp;&ensp;&ensp;&ensp;PS. GalTransl只支持指定格式的json文件输入，但并不是说GalTransl就与VNTextPatch工具绑定了，你完全可以通过其他工具提取出脚本文本，然后尝试使用"正则表达式模式"或SExtractor将其他格式的文本与json文本转换，但是需要一些正则经验。   
 
 * **【2.2. GalTransl启动】**   
-&ensp;&ensp;&ensp;&ensp;将本项目下载下来解压到任意位置（示例中默认为D盘根目录），在项目示例文件夹`sampleProject`中，找到示例配置文件`config.inc.yaml`，将其重命名为`config.yaml`。  
+&ensp;&ensp;&ensp;&ensp;将本项目下载下来解压到任意位置（示例中默认为D盘根目录），在项目示例文件夹`sampleProject`中，找到示例配置文件`config.inc.yaml`，将其重命名为`config.yaml`。另外，建议将sampleProject改个名字，一般是游戏的名字。   
 
-&ensp;&ensp;&ensp;&ensp;本教程使用GPT3.5官方API来举例。其他项目可参考下面[引擎使用]()章节，修改示例项目的`config.yaml`即可调用。   
-&ensp;&ensp;&ensp;&ensp;先将所有提取出的日文json文件放入`sampleProject`内的`json_jp`文件夹中，然后用任意文本编辑器编辑`config.yaml`文件，按注释修改以下内容：
+&ensp;&ensp;&ensp;&ensp;本教程使用GPT3.5官方API来举例。其他项目可参考下面[引擎使用](https://github.com/XD2333/GalTransl?tab=readme-ov-file#配置文件与翻译引擎设置)章节，对应修改示例项目的`config.yaml`即可调用。   
+&ensp;&ensp;&ensp;&ensp;先将所有提取出的日文json文件放入示例文件夹内的`json_jp`文件夹中，然后用任意文本编辑器编辑`config.yaml`文件，按**注释**修改以下内容：
 ```yaml
 # 代理设置
 proxy:
-  enableProxy: false # 是否启用代理(true/false)
+  enableProxy: true # 是否启用代理(true/false)
   proxies:
     - address: socks5://127.0.0.1:10818 # 代理地址
 backendSpecific:
@@ -169,22 +166,15 @@ backendSpecific:
         endpoint: "" # 可以填多个令牌，如果你只有一个的话，把示例文件的这两行删掉
     defaultEndpoint: https://api.openai.com # 默认 API 端点，一般不修改
 ```   
-&ensp;&ensp;&ensp;&ensp;在这里需要一个openai的api key，以及需要魔法上网。如果你的魔法上网不稳定的话，可以尝试[自建openai api转发](https://github.com/noobnooc/noobnooc/discussions/9)。我建好了一个，免费给大家用(不一定总是可用，因为有免费限额，可能会被人滥用)，只需要再做如下修改：   
-```python
-  enableProxy: false # 此时不要设置代理
-
-  GPT35: # GPT3.5 官方 API
-    tokens: # 令牌列表
-      - token: sk-xxxxxxxx # 你的令牌
-        endpoint: https://openaiapi.cx2333.com  # 使用转发API端点
-```   
-&ensp;&ensp;&ensp;&ensp;如果连api key也没有的话，你甚至还可以使用第三方api项目：   
-* 使用[GPT-API-free项目](https://github.com/chatanywhere/GPT_API_free)，这是一个openai api的第三方代理，提供每小时120请求的**免费API**。   
-* 或[openai-sb项目](https://openai-sb.com/)，这也是个代理项目，价格还算优惠，这不是推广，我也不担保它的稳定性。   
+&ensp;&ensp;&ensp;&ensp;在这里需要一个openai的api key，以及需要魔法上网。   
+&ensp;&ensp;&ensp;&ensp;如果没有api key的话，你还可以使用第三方api转发项目：   
+* [GPT-API-free](https://github.com/chatanywhere/GPT_API_free)，这是一个openai api的第三方代理，提供每小时60次请求的**免费API**。   
+* [GPT水龙头](https://faucet.openkey.cloud/)，每24小时可领取一个 $1.00 令牌用于开发测试 AI 产品   
+* 一些收费api转发项目，例如：[openai-sb](https://openai-sb.com/)、[Keya api](https://api.keya.pw/)等，比官方定价便宜。**这不是推广，我也不担保它们的稳定性，建议充多少用多少**   
    
-&ensp;&ensp;&ensp;&ensp;但要注意这里获取的key是第三方的key，不能用于官方API和我的转发API端点。如果你使用类似项目的话，做以下额外的修改：   
+&ensp;&ensp;&ensp;&ensp;但要注意这里获取的key是第三方的key，不能用于官方API端点。如果你使用类似项目的话，做以下额外的修改：   
 ```python
-  enableProxy: false # 此时不要设置代理
+  enableProxy: false # 此时不用设置代理
 
   GPT35: # GPT3.5 官方 API
     tokens: # 令牌列表
@@ -202,9 +192,9 @@ backendSpecific:
 
 ![img_start](./img/img_start.png)
 
-&ensp;&ensp;&ensp;&ensp;**但是**，我不建议你就这样开始翻译了，你至少要先看一下[GPT字典的使用](https://github.com/XD2333/GalTransl#gpt字典)，为你要翻译的gal设定好各角色的人名字典，这样才能保证基本的质量。   
+&ensp;&ensp;&ensp;&ensp;**但是**，我不建议就这样开始翻译了，你至少要先看一下[GPT字典的使用](https://github.com/XD2333/GalTransl#gpt字典)，为你要翻译的gal设定好各角色的人名字典，这样才能保证基本的质量。   
 
-&ensp;&ensp;&ensp;&ensp;翻译完成后，如果你想手工修正，见[翻译缓存章节](https://github.com/XD2333/GalTransl#翻译缓存)
+&ensp;&ensp;&ensp;&ensp;翻译完成后，如果想手工修正，见[翻译缓存章节](https://github.com/XD2333/GalTransl#翻译缓存)
 
 * **【2.3. 构建中文脚本】**   
 &ensp;&ensp;&ensp;&ensp;如果你是使用GalTransl提取注入工具提取的脚本，构建同理，选择日文脚本目录、中文json目录、中文脚本保存目录，然后点'注入'，即可将文本注入回脚本。但这里面有一些坑，第四章会提到。
@@ -238,12 +228,12 @@ backendSpecific:
 如果你在做的引擎支持unicode编码，例如krkr、Artemis引擎等，一般就可以直接玩了。但如果引擎是使用sjis编码的话，直接打开会是乱码，这时候需要通过2种路线尝试使其可以正常显示中文：   
 
 路线1：使用GBK编码注入脚本，然后修改引擎程序使其支持GBK编码   
-路线2：仍然使用sjis编码注入脚本，但通过sjis隧道或sjis替换模式，结合通用注入dll在运行过程中通过动态替换来显示中文   
+路线2：仍然使用sjis编码注入脚本，但通过sjis隧道或sjis替换2种方式，结合通用注入dll在运行过程中通过动态替换来显示中文   
 
-GalTransl提取注入工具的VNTextPatch模式注入脚本时默认是以sjis或unicode(utf8)编码注入的，这取决于脚本类型。
+GalTransl提取注入工具的VNTextPatch模式注入脚本时默认是以sjis或unicode(utf8)编码注入的，这取决于引擎类型。
 
 * **使用路线1**   
-（注：这个模式现在好像有bug）在注入前勾选"GBK编码注入"，在这个模式下所有GBK编码不支持的字符将被替换成空白，例如音符♪   
+（注：这个模式现在有bug，有的引擎会卡死）在注入前勾选"GBK编码注入"，在这个模式下所有GBK编码不支持的字符将被替换成空白，例如音符♪   
 然后需要ollydbg或windbg工具，[在这里下载](https://down.52pojie.cn/Tools/Debuggers/)，用于修改引擎。   
 最后还是去看[Dir-A佬的教程](https://space.bilibili.com/8144708/)，里面有教如何下断点、修改，完全没接触过逆向的话这可能很难，但没办法，照着视频多试试。   
 
@@ -254,14 +244,14 @@ GalTransl提取注入工具的VNTextPatch模式注入脚本时默认是以sjis�
 
 当使用sjis隧道模式时，将`script_cn`内的`sjis_ext.bin`文件移动到游戏目录内，然后将useful_tools\VNTextProxy内的所有dll逐个丢到游戏目录内(一般推荐先试version.dll，或使用PEID/DIE等工具查输入表)，运行游戏，看有没有哪个dll可以正确的hook游戏并让不显示的文本可以正常显示（不正常的话那些地方会是空的）。不正常的话，删掉这个DLL，换下一个。[详细设置见此](https://github.com/XD2333/GalTransl/tree/main/useful_tools/VNTextProxy)
 
-**sjis替换**：来自AtomCrafty大佬的[UniversalInjectorFramework(通用注入框架)](https://github.com/AtomCrafty/UniversalInjectorFramework#character-substitution)项目，也是通过DLL劫持技术HOOK游戏，并可以将某个字符根据设置替换成指定的另一个字符，不限编码。我建立了一套替换字典，按一些规则梳理了sjis编码内不支持的简中汉字与sjis支持的汉字的映射关系，可以满足99.99%常用简体中文汉字的正常显示(见hanzi2kanji_table.txt)，并将替换功能写在了GalTransl提取注入工具内。在替换后结合sjis替换功能在游戏中将这些汉字替换回简中文字，实现游戏的正常显示。
+**sjis替换**：来自AtomCrafty大佬的[UniversalInjectorFramework(通用注入框架)](https://github.com/AtomCrafty/UniversalInjectorFramework#character-substitution)项目，也是通过DLL劫持技术HOOK游戏，并可以将某个字符根据设置替换成指定的另一个字符，不限编码。我建立了[一套替换字典](https://github.com/XD2333/GalTransl_DumpInjector/blob/main/hanzi2kanji_table.txt)，按一些规则梳理了sjis编码内不支持的简中汉字与sjis支持的日文汉字的映射关系，可以满足99.99%常用简体中文汉字的正常显示(见hanzi2kanji_table.txt)，并将替换功能写在了GalTransl提取注入工具内(现在[SExtractor](https://github.com/satan53x/SExtractor)也支持替换)。在替换后结合UniversalInjectorFramework的动态Hook替换功能在游戏中将这些日文汉字替换回简中文字，实现游戏的正常显示。
 
 当使用sjis替换模式时，可以先运行一遍GalTransl提取注入工具的注入文本，获取游戏不支持的文字列表（注入后会提示"sjis_ext.bin包含文字：xxx"），然后，勾选"sjis替换模式注入"，把这些文字复制到右边的文本框内，再点击注入。注入后会获得一个sjis替换模式配置。
 
 打开useful_tools/UniversalInjectorFramework文件夹，里面也是很多dll，也是逐个尝试，一般推荐先试winmm.dll，把目录内的uif_config.json一并复制到游戏目录，然后编辑这个json，按GalTransl提取注入工具提供的配置填写`source_characters`和`target_characters`。然后运行游戏，如果游戏可以正常运行，并且弹出了一个像这样的控制台：
 ![img_terminal](./img/img_terminal.png)
 那多半就搞定了。如果不正常的话，删掉这个DLL，尝试换下一个。
-注：UniversalInjectorFramework也支持sjis隧道模式，可以设置`tunnel_decoder`为`True`然后在`mapping`里填入sjis_ext.bin包含文字。[详细设置见此](https://github.com/XD2333/GalTransl/tree/main/useful_tools/UniversalInjectorFramework)
+注：UniversalInjectorFramework也支持sjis隧道模式，可以设置`tunnel_decoder`为`True`然后在`mapping`里填入sjis_ext.bin包含文字。[详细配置文件设置见此](https://github.com/XD2333/GalTransl/tree/main/useful_tools/UniversalInjectorFramework)
 
 </details>
 
@@ -321,6 +311,20 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
   🚩 模拟网页操作方式是逆向网页版GPT4的，**可能因此被封号**（封号因素有很多，主要是用了虚拟卡）   
 
   * 总结：~~氪服困难~~，有爱的话合购一个来搞也不是不可以。不要用官方API，用不起。   
+  ---   
+  ---   
+* **Sakura-13B-Galgame**:+1:  
+基于一系列开源大模型构建，在通用日文语料与轻小说/Galgame等领域的中日语料上进行继续预训练与微调，旨在提供性能接近GPT3.5且完全离线的Galgame/轻小说翻译大语言模型。[项目地址](https://github.com/SakuraLLM/Sakura-13B-Galgame)   
+  
+  * 优点：   
+  ✔ 完全离线，不会哪一天突然不可用   
+  ✔ 质量接近GPT3.5（基于Q6_K GGUF模型主观测试）   
+   
+  * 缺点：   
+  🚩 目前不支持GPT字典，可以用译前字典来固定片假名人名   
+  🚩 需要一块显存大一点的显卡，或尝试[白嫖谷歌](https://github.com/Isotr0py/SakuraLLM-Notebooks)   
+
+  * 总结：未来可期！在模型越来越*安全*的将来，本地模型有望成为有效替代。   
   ---   
 * **彩云小译**   
   彩云小译api，传统机翻，本项目断断续续写了两年多，大部分时间都是基于这个引擎来构建云翻补丁   
@@ -645,8 +649,17 @@ cookiePath下可以将多个文件按例子往下写，当一个账号到达上�
 > 开启校润模式：   
 配置`  gpt.enableProofRead: true`，翻译完一个json后会开始对这个json自动化再润色   
 
+* **Sakura**  
+按教程部署llama.cpp一键包（[地址](https://github.com/SakuraLLM/Sakura-13B-Galgame/wiki/llama.cpp%E4%B8%80%E9%94%AE%E5%8C%85%E9%83%A8%E7%BD%B2%E6%95%99%E7%A8%8B)）   
+   
+然后修改配置文件来设置后端地址：（一般不用改了）   
+```yaml
+  Sakura:
+    endpoint: http://127.0.0.1:8080
+```
+
 * **彩云小译**  
-沉迷王国之泪，后面再补！   
+沉迷王国之泪，后面再补！（2023.12 可能不补了，谁还用传统机翻？）   
 
 </details>
 

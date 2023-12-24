@@ -3,5 +3,11 @@ __pycache__/
 
 # VSCode
 .vscode
+
+# useful_tools
 useful_tools/GalTransl_DumpInjector/config.ini
 useful_tools/GalTransl_DumpInjector/VNTextPatch/names.xml
+
+# sampleProject
+sampleProject/
+!sampleProject/config.inc.yaml

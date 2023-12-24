@@ -57,11 +57,11 @@ class CSakuraTranslate:
 
     def init_chatbot(self, type, config: CProjectConfig):
         if type == "Sakura0.9":
-            from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
+            from GalTransl.Backend.Sakura.V1 import Chatbot as SakuraChatbot
 
             endpoint = config.getBackendConfigSection("Sakura").get("endpoint")
 
-            self.chatbot = ChatbotV3(
+            self.chatbot = SakuraChatbot(
                 api_key="sk-114514",
                 proxy=self.proxyProvider.getProxy().addr
                 if self.proxyProvider

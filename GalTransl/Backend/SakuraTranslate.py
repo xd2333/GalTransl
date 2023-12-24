@@ -33,8 +33,12 @@ class CSakuraTranslate:
         else:
             self.skipRetry = False
         # 流式输出模式
-        self.streamOutputMode = False
-        if val := config.getKey("workersPerProject"):  # 多线程关闭流式输出
+        if val := config.getKey("gpt.streamOutputMode"):
+            self.streamOutputMode = val
+        else:
+            self.streamOutputMode = False
+        # 多线程关闭流式输出
+        if val := config.getKey("workersPerProject"):  
             if val > 1:
                 self.streamOutputMode = False
         # 代理
@@ -108,7 +112,7 @@ class CSakuraTranslate:
                     if self.streamOutputMode:
                         print(data, end="", flush=True)
                     resp += data
-                print(data, end="\n")
+                #print(data, end="\n")
                 if not self.streamOutputMode:
                     LOGGER.info("->输出：\n" + resp)
                 else:
@@ -117,7 +121,7 @@ class CSakuraTranslate:
                 raise
             except Exception as ex:
                 str_ex = str(ex).lower()
-                LOGGER.error(f"-> {str_ex}")
+                traceback.print_exc()
                 self._del_last_answer()
                 LOGGER.info("-> 报错:%s, 5秒后重试" % ex)
                 await asyncio.sleep(5)
@@ -161,6 +165,10 @@ class CSakuraTranslate:
                     line = line.replace("\\n", "\n")
                 if "\r" in trans_list[i].post_jp:
                     line = line.replace("\\r", "\r")
+                    
+                # fix trick
+                if line.startswith("："):
+                    line = line[1:]
 
                 trans_list[i].pre_zh = line
                 trans_list[i].post_zh = line
@@ -178,7 +186,29 @@ class CSakuraTranslate:
                         trans_list[i].trans_by = "Sakura v0.9(Failed)"
                         result_trans_list.append(trans_list[i])
                 else:
-                    self._handle_error(error_message)
+                    LOGGER.error(f"-> 错误的输出：{error_message}")
+                    self.retry_count += 1
+                    if len(trans_list) > 1:  # 可拆分先对半拆
+                        LOGGER.warning("-> 对半拆分重试")
+                        await asyncio.sleep(5)
+                        return await self.translate(
+                            trans_list[: len(trans_list) // 2], gptdict
+                        )
+                    # 切换模式
+                    if self.transl_style == "auto":
+                        self._set_gpt_style("normal")
+                    # 3次重试则重置会话
+                    if self.retry_count % 3 == 0:
+                        self.reset_conversation()
+                        LOGGER.warning("-> 3次出错重置会话")
+                        return
+                    # 5次重试则中止
+                    if self.retry_count > 5:
+                        LOGGER.error(f"-> 循环重试超过5次，已中止：{error_message}")
+                        exit(-1)
+                    # 删除上次回答并重试
+                    self._del_last_answer()
+                    await asyncio.sleep(5)
                     continue
             else:
                 self.retry_count = 0
@@ -247,27 +277,6 @@ class CSakuraTranslate:
 
         return trans_result_list
 
-    def _handle_error(self, error_msg: str = "") -> None:
-        LOGGER.error(f"-> 错误的输出：{error_msg}")
-        self.retry_count += 1
-        # 切换模式
-        if self.transl_style == "auto":
-            self._set_gpt_style("normal")
-        # 3次重试则重置会话
-        if self.retry_count % 3 == 0:
-            self.reset_conversation()
-            LOGGER.warning("-> 3次出错重置会话")
-            return
-        # 10次重试则中止
-        if self.retry_count > 10:
-            LOGGER.error(f"-> 循环重试超过10次，已中止：{error_msg}")
-            exit(-1)
-        # 其他情况
-        if self.type != "unoffapi":
-            self._del_last_answer()
-        elif self.type == "unoffapi":
-            self.reset_conversation()
-
     def reset_conversation(self):
         self.chatbot.reset()
 
@@ -325,10 +334,10 @@ class CSakuraTranslate:
             if current_tran.pre_zh == "":
                 current_tran = current_tran.prev_tran
                 continue
-            if current_tran.speaker!="":
-                tmp_text=f"{current_tran.speaker}「{current_tran.pre_zh}」"
+            if current_tran.speaker != "":
+                tmp_text = f"{current_tran.speaker}「{current_tran.pre_zh}」"
             else:
-                tmp_text=f"{current_tran.pre_zh}"
+                tmp_text = f"{current_tran.pre_zh}"
             tmp_context.append(tmp_text)
             num_count += 1
             if num_count >= num_pre_request:
@@ -344,8 +353,6 @@ class CSakuraTranslate:
             }
         )
         LOGGER.info("-> 恢复了上下文")
-
-
 
 
 if __name__ == "__main__":

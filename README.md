@@ -13,7 +13,7 @@
 
   * 特性：   
   1. 支持**ChatGPT、Newbing、GPT-4、Sakura**等翻译引擎，并通过提示工程大幅提高了GPT引擎翻译质量   
-  2. NewBing基于GPT-4并且**免费**；ChatGPT与GPT-4支持官方API与~~模拟网页操作模式~~（目前失效），一定程度节省费用   
+  2. NewBing基于GPT-4并且**免费**；ChatGPT与GPT-4支持官方API与~~模拟网页操作模式~~（2023.12 模拟网页操作目前不可用），一定程度节省费用   
   3. 首创**GPT字典系统**，让GPT了解人设，准确翻译人名、人称代词与生词   
   4. 首创NewBing、GPT-4下支持自动**记录翻译确信度、存疑句、未知专有名词**，方便手工修正，并支持**自动化校润**(还不稳定)   
   5. 通过译前、译后字典与条件字典实现灵活的自动化字典系统   
@@ -283,7 +283,7 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
   * 总结：它很强，但它运行在青少年模式(NewBing大小姐拒绝了本次请求🙏)   
   ---   
 * **ChatGPT**:+1::+1:   
-目前大火的OpenAI的大语言模型，模型代号为gpt-3.5-turbo，也就是GPT-3.5。本项目提供通过官方api与模拟网页操作两种方式调用ChatGPT，优化了token用量，并通过提示工程优化了翻译质量，解除了涩涩限制。   
+目前大火的OpenAI的大语言模型，模型代号为gpt-3.5-turbo，也就是GPT-3.5。本项目提供通过官方api与~~模拟网页操作两种方式~~调用ChatGPT，优化了token用量，并通过提示工程优化了翻译质量，解除了涩涩限制。   
    
   * 优点：   
   ✔ 涩涩解禁，~~很会涩涩~~   
@@ -299,7 +299,7 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
   * 总结：速度与价格都尚可，搞个拔作绰绰有余。~~它已经很努力了，只是不太聪明~~   
   ---   
 * **GPT-4**:+1:  
-目前大火的OpenAI的*最先进*大语言模型，模型代号为GPT-4。本项目提供通过官方API与模拟网页操作两种方式调用GPT-4，优化了token用量，并通过提示工程解除了涩涩限制。   
+目前大火的OpenAI的*最先进*大语言模型，模型代号为GPT-4。本项目提供通过官方API与~~模拟网页操作两种方式~~调用GPT-4，优化了token用量，并通过提示工程解除了涩涩限制。   
   
   * 优点：   
   ✔ *GPT4涩涩（*   
@@ -623,8 +623,9 @@ cookiePath下可以将多个文件按例子往下写，当一个账号到达上�
 
 * **ChatGPT**   
 官方API调用方式见上手教程   
-
-使用模拟网页操作模式时，登录网页版账号后访问https://chat.openai.com/api/auth/session
+   
+（2023.12 模拟网页操作目前不可用）   
+~~使用模拟网页操作模式时~~，登录网页版账号后访问https://chat.openai.com/api/auth/session
 
 拷贝其中"accessToken":后面双引号内的一大串内容，复制到配置里，然后调用时选择Chatgpt-gpt35引擎即可调用
 ```yaml
@@ -634,9 +635,10 @@ cookiePath下可以将多个文件按例子往下写，当一个账号到达上�
 ```
 
 * **GPT-4**   
-官方API调用方式见上手教程，api key填入`  GPT4: # GPT4 官方 API`中   
-
-使用模拟网页操作模式时，登录网页版账号后访问https://chat.openai.com/api/auth/session
+官方API调用方式见上手教程，api key填入`  GPT4: # GPT4 官方 API`中即可   
+   
+（2023.12 模拟网页操作目前不可用）   
+~~使用模拟网页操作模式时~~，登录网页版账号后访问https://chat.openai.com/api/auth/session
 
 拷贝其中"accessToken":后面双引号内的一大串内容，复制到配置里，然后调用时选择Chatgpt-gpt4引擎即可调用
 ```yaml

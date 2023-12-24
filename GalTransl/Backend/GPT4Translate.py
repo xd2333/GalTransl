@@ -137,6 +137,7 @@ class CGPT4Translate:
                 system_prompt=GPT4_SYSTEM_PROMPT,
                 engine="gpt-4",
                 api_address=token.domain + "/v1/chat/completions",
+                timeout=30,
             )
             self.chatbot.trans_prompt = GPT4_TRANS_PROMPT
             self.chatbot.proofread_prompt = GPT4_PROOFREAD_PROMPT
@@ -159,6 +160,7 @@ class CGPT4Translate:
                 system_prompt=system_prompt,
                 engine="gpt-4-1106-preview",
                 api_address=token.domain + "/v1/chat/completions",
+                timeout=30,
                 # response_format="json",
             )
             self.chatbot.trans_prompt = GPT4Turbo_TRANS_PROMPT

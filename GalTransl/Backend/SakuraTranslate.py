@@ -80,6 +80,12 @@ class CSakuraTranslate:
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
         for i, trans in enumerate(trans_list):
+            # 处理\r\n
+            if "\n" in trans.post_jp:
+                trans.post_jp = trans.post_jp.replace("\n", "\\n")
+            if "\r" in trans.post_jp:
+                trans.post_jp = trans.post_jp.replace("\r", "\\r")
+
             if trans.speaker == "":
                 input_list.append(trans.post_jp)
             else:
@@ -134,7 +140,6 @@ class CSakuraTranslate:
             for line in result_list:
                 if error_flag:
                     break
-
                 i += 1
                 # 本行输出不应为空
                 if trans_list[i].post_jp != "" and line == "":
@@ -150,6 +155,11 @@ class CSakuraTranslate:
                         line = line[:-1]
                 # 统一简繁体
                 line = self.opencc.convert(line)
+                # 处理\r\n
+                if "\n" in trans_list[i].post_jp:
+                    line = line.replace("\\n", "\n")
+                if "\r" in trans_list[i].post_jp:
+                    line = line.replace("\\r", "\r")
 
                 trans_list[i].pre_zh = line
                 trans_list[i].post_zh = line
@@ -296,8 +306,8 @@ class CSakuraTranslate:
             temperature, top_p = 0.1, 0.3
             frequency_penalty, presence_penalty = 0.0, 0.0
         elif style_name == "normal":
-            temperature, top_p = 0.4, 0.3
-            frequency_penalty, presence_penalty = 0.0, 0.0
+            temperature, top_p = 0.5, 1.0
+            frequency_penalty, presence_penalty = 0.2, 0.0
 
         self.chatbot.temperature = temperature
         self.chatbot.top_p = top_p

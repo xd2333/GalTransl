@@ -3,7 +3,7 @@
 
 <h1><p align='center' >GalTransl</p></h1>
 <div align=center><img src="https://img.shields.io/github/v/release/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/license/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/stars/XD2333/GalTransl"/></div>
-<p align='center' >支持GPT3.5/4/Newbing的Galgame自动化翻译解决方案</p>
+<p align='center' >支持GPT3.5/4/Newbing等大语言模型的Galgame自动化翻译解决方案</p>
 
   [English](https://github.com/XD2333/GalTransl/blob/main/README_EN.md)
   
@@ -312,7 +312,6 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
 
   * 总结：~~氪服困难~~，有爱的话合购一个来搞也不是不可以。不要用官方API，用不起。   
   ---   
-  ---   
 * **Sakura-13B-Galgame**:+1:  
 基于一系列开源大模型构建，在通用日文语料与轻小说/Galgame等领域的中日语料上进行继续预训练与微调，旨在提供性能接近GPT3.5且完全离线的Galgame/轻小说翻译大语言模型。[项目地址](https://github.com/SakuraLLM/Sakura-13B-Galgame)   
   
@@ -324,7 +323,7 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
   🚩 目前不支持GPT字典，可以用译前字典来固定片假名人名   
   🚩 需要一块显存大一点的显卡，或尝试[白嫖谷歌](https://github.com/Isotr0py/SakuraLLM-Notebooks)   
 
-  * 总结：未来可期！在模型越来越*安全*的将来，本地模型有望成为有效替代。   
+  * 总结：未来可期！在模型越来越~~安全~~的将来，本地模型有望成为有效替代。   
   ---   
 * **彩云小译**   
   彩云小译api，传统机翻，本项目断断续续写了两年多，大部分时间都是基于这个引擎来构建云翻补丁   

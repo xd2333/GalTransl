@@ -101,15 +101,24 @@ class CSakuraTranslate:
         prompt_req = prompt_req.replace("[Input]", input_str)
         prompt_req = prompt_req.replace("[Glossary]", gptdict)
 
+        once_flag = False
+
         while True:  # 一直循环，直到得到数据
             try:
                 LOGGER.info("->输入：\n" + prompt_req + "\n")
                 resp = ""
+                last_data = ""
+                repetition_cnt = 0
+                degen_flag = False
                 self._del_previous_message()
                 async for data in self.chatbot.ask_stream_async(prompt_req):
                     if self.streamOutputMode:
                         print(data, end="", flush=True)
                     resp += data
+                    # 检测是否反复重复输出同一内容，如果超过一定次数，则判定为退化并打断。
+                    last_data, repetition_cnt, degen_flag = self.check_degen_in_process(last_data, data, repetition_cnt)
+                    if degen_flag:
+                        break
                 # print(data, end="\n")
                 if not self.streamOutputMode:
                     LOGGER.info("->输出：\n" + resp)
@@ -121,8 +130,7 @@ class CSakuraTranslate:
                 str_ex = str(ex).lower()
                 traceback.print_exc()
                 self._del_last_answer()
-                LOGGER.info("-> 报错:%s, 5秒后重试" % ex)
-                await asyncio.sleep(5)
+                LOGGER.info("-> 报错:%s, 立刻重试" % ex)
                 continue
 
             result_text = resp.strip("\n")
@@ -136,7 +144,11 @@ class CSakuraTranslate:
             error_flag = False
             error_message = ""
 
-            if len(result_list) != len(trans_list):
+            if degen_flag:
+                error_message = f"-> 生成过程中检测到大概率为退化的特征"
+                error_flag = True
+
+            elif len(result_list) != len(trans_list):
                 error_message = f"-> 翻译结果与原文长度不一致"
                 error_flag = True
 
@@ -189,9 +201,13 @@ class CSakuraTranslate:
                     # 切换模式
                     if self.transl_style == "auto":
                         self._set_gpt_style("normal")
+                        # 先增加frequency_penalty参数重试再进行二分
+                        if not once_flag:
+                            self._del_last_answer()
+                            once_flag = True
+                            continue
                     if len(trans_list) > 1:  # 可拆分先对半拆
                         LOGGER.warning("-> 对半拆分重试")
-                        await asyncio.sleep(5)
                         return await self.translate(
                             trans_list[: len(trans_list) // 2], gptdict
                         )
@@ -206,7 +222,6 @@ class CSakuraTranslate:
                         exit(-1)
                     # 删除上次回答并重试
                     self._del_last_answer()
-                    await asyncio.sleep(5)
                     continue
             else:
                 self.retry_count = 0
@@ -315,8 +330,8 @@ class CSakuraTranslate:
             temperature, top_p = 0.1, 0.3
             frequency_penalty, presence_penalty = 0.0, 0.0
         elif style_name == "normal":
-            temperature, top_p = 0.5, 1.0
-            frequency_penalty, presence_penalty = 0.4, 0.0
+            temperature, top_p = 0.3, 0.3
+            frequency_penalty, presence_penalty = 0.15, 0.0
 
         self.chatbot.temperature = temperature
         self.chatbot.top_p = top_p
@@ -353,6 +368,17 @@ class CSakuraTranslate:
         )
         LOGGER.info("-> 恢复了上下文")
 
+    def check_degen_in_process(self, last_data: str, data: str, repetition_cnt: int):
+        MAX_REPETITION_CNT = 30
+        degen_flag = False
+        if last_data == data:
+            repetition_cnt += 1
+        else:
+            repetition_cnt = 0
+        if repetition_cnt > MAX_REPETITION_CNT:
+            degen_flag = True
+        last_data = data
+        return last_data, repetition_cnt, degen_flag
 
 if __name__ == "__main__":
     pass

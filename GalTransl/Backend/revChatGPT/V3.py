@@ -220,6 +220,8 @@ class Chatbot:
             line = line.decode("utf-8")[6:]
             if line == "[DONE]":
                 break
+            if "{" not in line:
+                continue
             resp: dict = json.loads(line)
             choices = resp.get("choices")
             if not choices:
@@ -292,6 +294,8 @@ class Chatbot:
                 line = line[6:]
                 if line == "[DONE]":
                     break
+                if "{" not in line:
+                    continue
                 resp: dict = json.loads(line)
                 choices = resp.get("choices")
                 if not choices:

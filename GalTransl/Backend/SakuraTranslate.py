@@ -60,6 +60,8 @@ class CSakuraTranslate:
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             endpoint = config.getBackendConfigSection("Sakura").get("endpoint")
+            if endpoint.endswith("/"):
+                endpoint = endpoint[:-1]
 
             self.chatbot = ChatbotV3(
                 api_key="sk-114514",
@@ -248,7 +250,7 @@ class CSakuraTranslate:
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
         while i < len_trans_list:
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
             trans_list_split = (
                 trans_list_unhit[i : i + num_pre_request]
                 if (i + num_pre_request < len_trans_list)

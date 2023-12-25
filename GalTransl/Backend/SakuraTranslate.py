@@ -87,12 +87,8 @@ class CSakuraTranslate:
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
         for i, trans in enumerate(trans_list):
-            tmp_text = trans.post_jp
-            # 处理\r\n
-            if "\n" in tmp_text:
-                tmp_text = tmp_text.replace("\n", "\\n")
-            if "\r" in tmp_text:
-                tmp_text = tmp_text.replace("\r", "\\r")
+            # 处理换行
+            tmp_text = trans.post_jp.replace("\r\n", "\\n").replace("\n", "\\n")
             # 有name
             if trans.speaker != "":
                 tmp_text = f"{trans.speaker}「{tmp_text}」"
@@ -162,11 +158,11 @@ class CSakuraTranslate:
                         line = line[:-1]
                 # 统一简繁体
                 line = self.opencc.convert(line)
-                # 处理\r\n
-                if "\n" in trans_list[i].post_jp:
+                # 还原换行
+                if "\r\n" in trans_list[i].post_jp:
+                    line = line.replace("\\n", "\r\n")
+                elif "\n" in trans_list[i].post_jp:
                     line = line.replace("\\n", "\n")
-                if "\r" in trans_list[i].post_jp:
-                    line = line.replace("\\r", "\r")
 
                 # fix trick
                 if line.startswith("："):
@@ -199,14 +195,14 @@ class CSakuraTranslate:
                         return await self.translate(
                             trans_list[: len(trans_list) // 2], gptdict
                         )
-                    # 3次重试则重置会话
-                    if self.retry_count % 3 == 0:
+                    # 单句2次重试则重置会话
+                    if self.retry_count % 2 == 0:
                         self.reset_conversation()
-                        LOGGER.warning("-> 3次出错重置会话")
+                        LOGGER.warning(f"-> {self.retry_count}次出错重置会话")
                         return
                     # 5次重试则中止
                     if self.retry_count > 5:
-                        LOGGER.error(f"-> 循环重试超过5次，已中止：{error_message}")
+                        LOGGER.error(f"-> 循环重试{self.retry_count}次不通过，已中止：{error_message}")
                         exit(-1)
                     # 删除上次回答并重试
                     self._del_last_answer()
@@ -320,7 +316,7 @@ class CSakuraTranslate:
             frequency_penalty, presence_penalty = 0.0, 0.0
         elif style_name == "normal":
             temperature, top_p = 0.5, 1.0
-            frequency_penalty, presence_penalty = 0.2, 0.0
+            frequency_penalty, presence_penalty = 0.4, 0.0
 
         self.chatbot.temperature = temperature
         self.chatbot.top_p = top_p

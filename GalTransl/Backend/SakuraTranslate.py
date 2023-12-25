@@ -38,7 +38,7 @@ class CSakuraTranslate:
         else:
             self.streamOutputMode = False
         # 多线程关闭流式输出
-        if val := config.getKey("workersPerProject"):  
+        if val := config.getKey("workersPerProject"):
             if val > 1:
                 self.streamOutputMode = False
         # 代理
@@ -87,18 +87,18 @@ class CSakuraTranslate:
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
         for i, trans in enumerate(trans_list):
+            tmp_text = trans.post_jp
             # 处理\r\n
-            if "\n" in trans.post_jp:
-                trans.post_jp = trans.post_jp.replace("\n", "\\n")
-            if "\r" in trans.post_jp:
-                trans.post_jp = trans.post_jp.replace("\r", "\\r")
+            if "\n" in tmp_text:
+                tmp_text = tmp_text.replace("\n", "\\n")
+            if "\r" in tmp_text:
+                tmp_text = tmp_text.replace("\r", "\\r")
+            # 有name
+            if trans.speaker != "":
+                tmp_text = f"{trans.speaker}「{tmp_text}」"
+            input_list.append(tmp_text)
 
-            if trans.speaker == "":
-                input_list.append(trans.post_jp)
-            else:
-                input_list.append(f"{trans.speaker}「{trans.post_jp}」")
-
-        input_str = "\n".join(input_list)
+        input_str = "\n".join(input_list).strip("\n")
 
         prompt_req = self.chatbot.trans_prompt
 
@@ -114,7 +114,7 @@ class CSakuraTranslate:
                     if self.streamOutputMode:
                         print(data, end="", flush=True)
                     resp += data
-                #print(data, end="\n")
+                # print(data, end="\n")
                 if not self.streamOutputMode:
                     LOGGER.info("->输出：\n" + resp)
                 else:
@@ -167,7 +167,7 @@ class CSakuraTranslate:
                     line = line.replace("\\n", "\n")
                 if "\r" in trans_list[i].post_jp:
                     line = line.replace("\\r", "\r")
-                    
+
                 # fix trick
                 if line.startswith("："):
                     line = line[1:]
@@ -190,15 +190,15 @@ class CSakuraTranslate:
                 else:
                     LOGGER.error(f"-> 错误的输出：{error_message}")
                     self.retry_count += 1
+                    # 切换模式
+                    if self.transl_style == "auto":
+                        self._set_gpt_style("normal")
                     if len(trans_list) > 1:  # 可拆分先对半拆
                         LOGGER.warning("-> 对半拆分重试")
                         await asyncio.sleep(5)
                         return await self.translate(
                             trans_list[: len(trans_list) // 2], gptdict
                         )
-                    # 切换模式
-                    if self.transl_style == "auto":
-                        self._set_gpt_style("normal")
                     # 3次重试则重置会话
                     if self.retry_count % 3 == 0:
                         self.reset_conversation()
@@ -215,6 +215,7 @@ class CSakuraTranslate:
             else:
                 self.retry_count = 0
 
+            self._set_gpt_style("precise")
             return i + 1, result_trans_list
 
     async def batch_translate(

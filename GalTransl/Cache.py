@@ -25,7 +25,7 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, post_save=F
 
         cache_obj = {
             "index": tran.index,
-            "name": tran._speaker,
+            "name": tran.speaker,
             "pre_jp": tran.pre_jp,
             "post_jp": tran.post_jp,
             "pre_zh": tran.pre_zh,

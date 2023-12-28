@@ -39,8 +39,8 @@ class CBingGPT4Translate:
         else:
             self.target_lang = "zh-cn"
 
-        if config.getKey("enableProxy") == True:
-            self.proxies = proxyPool
+        if config.getKey("internals.enableProxy") == True:
+            self.proxyProvider = proxyPool
         else:
             self.proxyProvider = None
             LOGGER.warning("不使用代理")

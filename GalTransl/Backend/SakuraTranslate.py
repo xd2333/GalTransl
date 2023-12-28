@@ -68,9 +68,6 @@ class CSakuraTranslate:
                 proxy=self.proxyProvider.getProxy().addr
                 if self.proxyProvider
                 else None,
-                temperature=0.1,
-                top_p=0.3,
-                frequency_penalty=0.0,
                 system_prompt=Sakura_SYSTEM_PROMPT,
                 engine="gpt-3.5-turbo",
                 api_address=endpoint + "/v1/chat/completions",
@@ -80,6 +77,7 @@ class CSakuraTranslate:
             self.chatbot.trans_prompt = Sakura_TRANS_PROMPT
             self.transl_style = "auto"
             self._current_style = "precies"
+            self._set_gpt_style("precise")
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None
             )
@@ -217,7 +215,7 @@ class CSakuraTranslate:
                         LOGGER.warning(f"-> {self.retry_count}次出错重置会话")
                         return
                     # 5次重试则中止
-                    if self.retry_count > 5:
+                    if self.retry_count == 5:
                         LOGGER.error(f"-> 循环重试{self.retry_count}次不通过，已中止：{error_message}")
                         exit(-1)
                     # 删除上次回答并重试

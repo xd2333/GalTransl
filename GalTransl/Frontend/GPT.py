@@ -50,6 +50,8 @@ async def doGPT3TranslateSingleFile(
         for i, tran in enumerate(trans_list):
             tran.analyse_dialogue()  # 解析是否为对话
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
+            if projectConfig.getDictCfgSection("usePreDictInName"):
+                tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
 
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
@@ -69,6 +71,8 @@ async def doGPT3TranslateSingleFile(
             tran.some_normal_fix()
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
+            if projectConfig.getDictCfgSection("usePostDictInName"):
+                tran.speaker = post_dic.do_replace(tran.speaker, tran)  # 译后name替换
 
     # 用于保存problems
     arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
@@ -177,6 +181,8 @@ async def doGPT4TranslateSingleFile(
         for i, tran in enumerate(trans_list):
             tran.analyse_dialogue()  # 解析是否为对话
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
+            if projectConfig.getDictCfgSection("usePreDictInName"):
+                tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
 
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
@@ -207,6 +213,8 @@ async def doGPT4TranslateSingleFile(
             tran.some_normal_fix()
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
+            if projectConfig.getDictCfgSection("usePostDictInName"):
+                tran.speaker = post_dic.do_replace(tran.speaker, tran)  # 译后name替换
 
     # 用于保存problems
     arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
@@ -311,6 +319,8 @@ async def doNewBingTranslateSingleFile(
         for i, tran in enumerate(trans_list):
             tran.analyse_dialogue()  # 解析是否为对话
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
+            if projectConfig.getDictCfgSection("usePreDictInName"):
+                tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
 
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
@@ -356,6 +366,8 @@ async def doNewBingTranslateSingleFile(
             tran.some_normal_fix()
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
+            if projectConfig.getDictCfgSection("usePostDictInName"):
+                tran.speaker = post_dic.do_replace(tran.speaker, tran)  # 译后name替换
 
     # 用于保存problems
     arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
@@ -456,6 +468,8 @@ async def doSakuraTranslateSingleFile(
         # 2、翻译前处理
         for i, tran in enumerate(trans_list):
             tran.analyse_dialogue()  # 解析是否为对话
+            if projectConfig.getDictCfgSection("usePreDictInName"):
+                tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
 
         # 3、读出未命中的Translate然后批量翻译
@@ -476,6 +490,8 @@ async def doSakuraTranslateSingleFile(
             tran.some_normal_fix()
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
+            if projectConfig.getDictCfgSection("usePostDictInName"):
+                tran.speaker = post_dic.do_replace(tran.speaker, tran)  # 译后name替换
 
     # 用于保存problems
     arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()

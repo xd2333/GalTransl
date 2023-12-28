@@ -31,8 +31,10 @@ proxy:
       # password: bar
 # 字典
 dictionary:
-  defaultDictFolder: Dict # 通用字典文件夹，相对于程序目录
-  # 预处理字典
+  defaultDictFolder: Dict # 通用字典文件夹，相对于程序目录，也可填入绝对路径
+  usePreDictInName: false # 将译前字典用在name字段，可用于改名[True/False]
+  usePostDictInName: false # 将译后字典用在name字段，可用于汉化name[True/False]
+  # 预处理字典，按字典顺序替换
   preDict:
     - 01H字典_矫正_译前.txt # 用于口齿不清的矫正
     - 00通用字典_译前.txt
@@ -41,7 +43,7 @@ dictionary:
   gpt.dict:
     - GPT字典.txt
     - (project_dir)项目GPT字典.txt
-  # 后处理字典
+  # 后处理字典，按字典顺序替换
   postDict:
     - 00通用字典_符号_译后.txt # 符号矫正
     - 00通用字典_译后.txt

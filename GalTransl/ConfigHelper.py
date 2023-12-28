@@ -90,8 +90,13 @@ class CProjectConfig:
         """
         return self.projectConfig["backendSpecific"][backendName]
 
-    def getDictCfgSection(self) -> dict:
-        return self.projectConfig["dictionary"]
+    def getDictCfgSection(self, key: str = "") -> dict:
+        if key == "":
+            return self.projectConfig["dictionary"]
+        elif key in self.projectConfig["dictionary"]:
+            return self.projectConfig["dictionary"][key]
+        else:
+            return None
 
     def getKey(self, key: str) -> str | bool | int | None:
         return self.keyValues.get(key)

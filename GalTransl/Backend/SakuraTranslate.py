@@ -206,7 +206,7 @@ class CSakuraTranslate:
                         exit(-1)
                     # 删除上次回答并重试
                     self._del_last_answer()
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(1)
                     continue
             else:
                 self.retry_count = 0

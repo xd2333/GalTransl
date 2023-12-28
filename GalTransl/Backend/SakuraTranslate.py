@@ -109,13 +109,17 @@ class CSakuraTranslate:
                 repetition_cnt = 0
                 degen_flag = False
                 self._del_previous_message()
-                async for data in self.chatbot.ask_stream_async(prompt_req):
+                ask_stream = self.chatbot.ask_stream_async(prompt_req)
+                async for data in ask_stream:
                     if self.streamOutputMode:
                         print(data, end="", flush=True)
                     resp += data
                     # 检测是否反复重复输出同一内容，如果超过一定次数，则判定为退化并打断。
-                    last_data, repetition_cnt, degen_flag = self.check_degen_in_process(last_data, data, repetition_cnt)
+                    last_data, repetition_cnt, degen_flag = self.check_degen_in_process(
+                        last_data, data, repetition_cnt
+                    )
                     if degen_flag:
+                        await ask_stream.aclose()
                         break
                 # print(data, end="\n")
                 if not self.streamOutputMode:
@@ -195,7 +199,6 @@ class CSakuraTranslate:
                         result_trans_list.append(trans_list[i])
                 else:
                     LOGGER.error(f"-> 错误的输出：{error_message}")
-                    self.retry_count += 1
                     # 切换模式
                     if self.transl_style == "auto":
                         self._set_gpt_style("normal")
@@ -209,14 +212,17 @@ class CSakuraTranslate:
                         return await self.translate(
                             trans_list[: len(trans_list) // 2], gptdict
                         )
+                    self.retry_count += 1
                     # 单句2次重试则重置会话
                     if self.retry_count % 2 == 0:
                         self.reset_conversation()
                         LOGGER.warning(f"-> {self.retry_count}次出错重置会话")
-                        return
+                        continue
                     # 5次重试则中止
                     if self.retry_count == 5:
-                        LOGGER.error(f"-> 循环重试{self.retry_count}次不通过，已中止：{error_message}")
+                        LOGGER.error(
+                            f"-> 循环重试{self.retry_count}次不通过，已中止：{error_message}"
+                        )
                         exit(-1)
                     # 删除上次回答并重试
                     self._del_last_answer()
@@ -377,6 +383,7 @@ class CSakuraTranslate:
             degen_flag = True
         last_data = data
         return last_data, repetition_cnt, degen_flag
+
 
 if __name__ == "__main__":
     pass

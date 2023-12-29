@@ -129,9 +129,6 @@ class CGPT35Translate:
             self.chatbot = ChatbotV3(
                 api_key=token.token,
                 engine="gpt-3.5-turbo-0613",
-                proxy=self.proxyProvider.getProxy().addr
-                if self.proxyProvider
-                else None,  # type: ignore
                 max_tokens=4096,
                 temperature=0.4,
                 truncate_limit=3200,
@@ -153,9 +150,6 @@ class CGPT35Translate:
             self.chatbot = ChatbotV3(
                 api_key=token.token,
                 engine="gpt-3.5-turbo-1106",
-                proxy=self.proxyProvider.getProxy().addr
-                if self.proxyProvider
-                else None,  # type: ignore
                 max_tokens=4096,
                 temperature=0.4,
                 truncate_limit=3200,

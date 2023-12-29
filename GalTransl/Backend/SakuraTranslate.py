@@ -65,22 +65,20 @@ class CSakuraTranslate:
 
             self.chatbot = ChatbotV3(
                 api_key="sk-114514",
-                proxy=self.proxyProvider.getProxy().addr
-                if self.proxyProvider
-                else None,
                 system_prompt=Sakura_SYSTEM_PROMPT,
                 engine="gpt-3.5-turbo",
                 api_address=endpoint + "/v1/chat/completions",
                 timeout=60,
             )
-
+            self.chatbot.update_proxy(
+                self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
+            )
             self.chatbot.trans_prompt = Sakura_TRANS_PROMPT
             self.transl_style = "auto"
             self._current_style = "precies"
             self._set_gpt_style("precise")
-            self.chatbot.update_proxy(
-                self.proxyProvider.getProxy().addr if self.proxyProvider else None
-            )
+
+
 
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
@@ -199,6 +197,7 @@ class CSakuraTranslate:
                         result_trans_list.append(trans_list[i])
                 else:
                     LOGGER.error(f"-> 错误的输出：{error_message}")
+                    await asyncio.sleep(1)
                     # 切换模式
                     if self.transl_style == "auto":
                         self._set_gpt_style("normal")

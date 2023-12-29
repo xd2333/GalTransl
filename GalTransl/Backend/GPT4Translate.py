@@ -129,9 +129,6 @@ class CGPT4Translate:
             token = self.tokenProvider.getToken(False, True)
             self.chatbot = ChatbotV3(
                 api_key=token.token,
-                proxy=self.proxyProvider.getProxy().addr
-                if self.proxyProvider
-                else None,
                 temperature=0.4,
                 frequency_penalty=0.2,
                 system_prompt=GPT4_SYSTEM_PROMPT,
@@ -152,9 +149,6 @@ class CGPT4Translate:
             system_prompt = GPT4Turbo_SYSTEM_PROMPT
             self.chatbot = ChatbotV3(
                 api_key=token.token,
-                proxy=self.proxyProvider.getProxy().addr
-                if self.proxyProvider
-                else None,
                 temperature=0.4,
                 frequency_penalty=0.2,
                 system_prompt=system_prompt,

@@ -21,6 +21,10 @@ class Chatbot:
     """
 
     def update_proxy(self, proxy: str) -> None:
+        # 本地地址忽略代理
+        if "127.0.0.1" in self.api_address or "localhost" in self.api_address:
+            proxy = ""
+
         self.proxy = proxy
         self.session.proxies.update(
             {

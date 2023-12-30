@@ -213,17 +213,24 @@ class CSakuraTranslate:
                             trans_list[: len(trans_list) // 2], gptdict
                         )
                     self.retry_count += 1
-                    # 单句2次重试则重置会话
+                    # 拆成单句，2次重试则重置会话
                     if self.retry_count % 2 == 0:
                         self.reset_conversation()
-                        LOGGER.warning(f"-> {self.retry_count}次出错重置会话")
+                        LOGGER.warning(f"-> 单句循环重试{self.retry_count}次出错，重置会话")
                         continue
-                    # 5次重试则中止
+                    # 拆成单句，5次重试则填充原文
                     if self.retry_count == 5:
                         LOGGER.error(
-                            f"-> 循环重试{self.retry_count}次不通过，已中止：{error_message}"
+                            f"-> 单句循环重试{self.retry_count}次出错，填充原文"
                         )
-                        exit(-1)
+                        i = 0 if i < 0 else i
+                        while i < len(trans_list):
+                            trans_list[i].pre_zh = trans_list[i].post_jp
+                            trans_list[i].post_zh = trans_list[i].post_jp
+                            trans_list[i].trans_by = "Sakura v0.9(Failed)"
+                            result_trans_list.append(trans_list[i])
+                            i = i + 1
+                        return i, result_trans_list
                     # 删除上次回答并重试
                     self._del_last_answer()
                     continue

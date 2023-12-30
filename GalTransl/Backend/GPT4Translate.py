@@ -94,7 +94,7 @@ class CGPT4Translate:
         if val := config.getKey("workersPerProject"):  # 多线程关闭流式输出
             if val > 1:
                 self.streamOutputMode = False
-                
+
         self.tokenProvider = token_pool
         if config.getKey("internals.enableProxy") == True:
             self.proxyProvider = proxy_pool
@@ -108,8 +108,8 @@ class CGPT4Translate:
             self.transl_style = "normal"
         self._current_style = ""
 
-        self.init_chatbot(type=type, config=config) # 模型选择
-        
+        self.init_chatbot(type=type, config=config)  # 模型选择
+
         if self.transl_style == "auto":
             self._set_gpt_style("precise")
         else:
@@ -121,7 +121,7 @@ class CGPT4Translate:
             self.opencc = OpenCC("s2t.json")
 
         pass
-    
+
     def init_chatbot(self, type, config):
         if type == "gpt4":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
@@ -360,8 +360,8 @@ class CGPT4Translate:
                 if self.skipRetry:
                     self.reset_conversation()
                     LOGGER.warning("-> 解析出错但跳过本轮翻译")
-                    while i + 1 < len(trans_list):
-                        i = i + 1
+                    i = 0 if i < 0 else i
+                    while i < len(trans_list):
                         if not proofread:
                             trans_list[i].pre_zh = "Failed translation"
                             trans_list[i].post_zh = "Failed translation"
@@ -371,6 +371,7 @@ class CGPT4Translate:
                             trans_list[i].post_zh = trans_list[i].pre_zh
                             trans_list[i].proofread_by = "GPT-4(Failed)"
                         result_trans_list.append(trans_list[i])
+                        i = i + 1
                 else:
                     self._handle_error(error_message)
                     continue

@@ -319,12 +319,12 @@ class CGPT35Translate:
                 if self.skipRetry:
                     self.reset_conversation()
                     LOGGER.warning("-> 解析出错但跳过本轮翻译")
-                    i = -1
-                    while i + 1 < len(content):
-                        i = i + 1
+                    i = 0
+                    while i < len(content):
                         content[i].pre_zh = "Failed translation"
                         content[i].post_zh = "Failed translation"
                         content[i].trans_by = "GPT-3.5(Failed)"
+                        i = i + 1
                     return content
                 self._handle_error(error_message)
                 if error_flag:

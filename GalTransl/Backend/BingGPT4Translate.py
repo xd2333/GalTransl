@@ -278,8 +278,8 @@ class CBingGPT4Translate:
                 if self.skipRetry:
                     self.reset_conversation()
                     LOGGER.warning("-> 解析出错但跳过本轮翻译")
-                    while i + 1 < len(trans_list):
-                        i = i + 1
+                    i = 0 if i < 0 else i
+                    while i < len(trans_list):
                         if not proofread:
                             trans_list[i].pre_zh = "Failed translation"
                             trans_list[i].post_zh = "Failed translation"
@@ -289,6 +289,7 @@ class CBingGPT4Translate:
                             trans_list[i].post_zh = trans_list[i].pre_zh
                             trans_list[i].proofread_by = "NewBing(Failed)"
                         result_trans_list.append(trans_list[i])
+                        i = i + 1
                 else:
                     await asyncio.sleep(2)
                     await self.chatbot.reset()

@@ -101,7 +101,7 @@ class CSakuraTranslate:
 
         while True:  # 一直循环，直到得到数据
             try:
-                LOGGER.info("->输入：\n" + prompt_req + "\n")
+                LOGGER.info("->输入：\n" + input_str + "\n")
                 resp = ""
                 last_data = ""
                 repetition_cnt = 0
@@ -158,7 +158,7 @@ class CSakuraTranslate:
                 i += 1
                 # 本行输出不应为空
                 if trans_list[i].post_jp != "" and line == "":
-                    error_message = f"-> 第{i}句空白"
+                    error_message = f"-> 第{i+1}句空白"
                     error_flag = True
                     break
 
@@ -189,12 +189,13 @@ class CSakuraTranslate:
                 if self.skipRetry:
                     self.reset_conversation()
                     LOGGER.warning("-> 解析出错但跳过本轮翻译")
-                    while i + 1 < len(trans_list):
-                        i = i + 1
+                    i = 0 if i < 0 else i
+                    while i < len(trans_list):
                         trans_list[i].pre_zh = "Failed translation"
                         trans_list[i].post_zh = "Failed translation"
                         trans_list[i].trans_by = "Sakura v0.9(Failed)"
                         result_trans_list.append(trans_list[i])
+                        i = i + 1
                 else:
                     LOGGER.error(f"-> 错误的输出：{error_message}")
                     await asyncio.sleep(1)

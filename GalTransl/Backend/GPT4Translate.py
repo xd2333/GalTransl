@@ -372,6 +372,7 @@ class CGPT4Translate:
                             trans_list[i].proofread_by = "GPT-4(Failed)"
                         result_trans_list.append(trans_list[i])
                         i = i + 1
+                    return i, result_trans_list
                 else:
                     self._handle_error(error_message)
                     continue

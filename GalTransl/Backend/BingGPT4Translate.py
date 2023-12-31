@@ -290,6 +290,7 @@ class CBingGPT4Translate:
                             trans_list[i].proofread_by = "NewBing(Failed)"
                         result_trans_list.append(trans_list[i])
                         i = i + 1
+                    return i, result_trans_list
                 else:
                     await asyncio.sleep(2)
                     await self.chatbot.reset()

@@ -1,13 +1,10 @@
 import json, time, asyncio, os, traceback
 from opencc import OpenCC
 from typing import Optional
-from GalTransl.ConfigHelper import CProxyPool
-from GalTransl import LOGGER, LANG_SUPPORTED
 from sys import exit
-from GalTransl.ConfigHelper import (
-    CProjectConfig,
-)
 from random import choice
+from GalTransl import LOGGER, LANG_SUPPORTED
+from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
@@ -78,10 +75,9 @@ class CSakuraTranslate:
             self._current_style = "precies"
             self._set_gpt_style("precise")
 
-
-
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
+        max_len = 0
         for i, trans in enumerate(trans_list):
             # 处理换行
             tmp_text = trans.post_jp.replace("\r\n", "\\n").replace("\n", "\\n")
@@ -89,11 +85,13 @@ class CSakuraTranslate:
             if trans.speaker != "":
                 tmp_text = f"{trans.speaker}「{tmp_text}」"
             input_list.append(tmp_text)
-
+            max_len = max(max_len, len(tmp_text))
         input_str = "\n".join(input_list).strip("\n")
+        
+        # 检测退化阈值
+        self.MAX_REPETITION_CNT = max(max_len + 5, 30)
 
         prompt_req = self.chatbot.trans_prompt
-
         prompt_req = prompt_req.replace("[Input]", input_str)
         prompt_req = prompt_req.replace("[Glossary]", gptdict)
 
@@ -207,22 +205,17 @@ class CSakuraTranslate:
                             self._del_last_answer()
                             once_flag = True
                             continue
-                    if len(trans_list) > 1:  # 可拆分先对半拆
+                    # 可拆分先对半拆
+                    if len(trans_list) > 1:  
                         LOGGER.warning("-> 对半拆分重试")
                         return await self.translate(
                             trans_list[: len(trans_list) // 2], gptdict
                         )
+                    # 无法拆分后，才开始计算重试次数
                     self.retry_count += 1
-                    # 拆成单句，2次重试则重置会话
-                    if self.retry_count % 2 == 0:
-                        self.reset_conversation()
-                        LOGGER.warning(f"-> 单句循环重试{self.retry_count}次出错，重置会话")
-                        continue
-                    # 拆成单句，5次重试则填充原文
-                    if self.retry_count == 5:
-                        LOGGER.error(
-                            f"-> 单句循环重试{self.retry_count}次出错，填充原文"
-                        )
+                    # 5次重试则填充原文
+                    if self.retry_count >= 5:
+                        LOGGER.error(f"-> 单句循环重试{self.retry_count}次出错，填充原文")
                         i = 0 if i < 0 else i
                         while i < len(trans_list):
                             trans_list[i].pre_zh = trans_list[i].post_jp
@@ -231,6 +224,12 @@ class CSakuraTranslate:
                             result_trans_list.append(trans_list[i])
                             i = i + 1
                         return i, result_trans_list
+                    # 2次重试则重置会话
+                    if self.retry_count % 2 == 0:
+                        self.reset_conversation()
+                        LOGGER.warning(f"-> 单句循环重试{self.retry_count}次出错，重置会话")
+                        continue
+
                     # 删除上次回答并重试
                     self._del_last_answer()
                     continue
@@ -380,13 +379,12 @@ class CSakuraTranslate:
         LOGGER.info("-> 恢复了上下文")
 
     def check_degen_in_process(self, last_data: str, data: str, repetition_cnt: int):
-        MAX_REPETITION_CNT = 30
         degen_flag = False
         if last_data == data:
             repetition_cnt += 1
         else:
             repetition_cnt = 0
-        if repetition_cnt > MAX_REPETITION_CNT:
+        if repetition_cnt > self.MAX_REPETITION_CNT:
             degen_flag = True
         last_data = data
         return last_data, repetition_cnt, degen_flag

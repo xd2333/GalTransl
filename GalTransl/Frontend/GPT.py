@@ -71,8 +71,14 @@ async def doGPT3TranslateSingleFile(
             tran.some_normal_fix()
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
-            if projectConfig.getDictCfgSection("usePostDictInName"):
-                tran.speaker = post_dic.do_replace(tran.speaker, tran)  # 译后name替换
+            if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
+                if tran._speaker != "":
+                    if type(tran.speaker) == list and type(tran._speaker) == list:
+                        tran._speaker = [
+                            post_dic.do_replace(s, tran) for s in tran.speaker
+                        ]
+                    else:
+                        tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
     # 用于保存problems
     arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
@@ -213,8 +219,14 @@ async def doGPT4TranslateSingleFile(
             tran.some_normal_fix()
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
-            if projectConfig.getDictCfgSection("usePostDictInName"):
-                tran.speaker = post_dic.do_replace(tran.speaker, tran)  # 译后name替换
+            if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
+                if tran._speaker != "":
+                    if type(tran.speaker) == list and type(tran._speaker) == list:
+                        tran._speaker = [
+                            post_dic.do_replace(s, tran) for s in tran.speaker
+                        ]
+                    else:
+                        tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
     # 用于保存problems
     arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
@@ -366,8 +378,14 @@ async def doNewBingTranslateSingleFile(
             tran.some_normal_fix()
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
-            if projectConfig.getDictCfgSection("usePostDictInName"):
-                tran.speaker = post_dic.do_replace(tran.speaker, tran)  # 译后name替换
+            if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
+                if tran._speaker != "":
+                    if type(tran.speaker) == list and type(tran._speaker) == list:
+                        tran._speaker = [
+                            post_dic.do_replace(s, tran) for s in tran.speaker
+                        ]
+                    else:
+                        tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
     # 用于保存problems
     arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
@@ -490,8 +508,14 @@ async def doSakuraTranslateSingleFile(
             tran.some_normal_fix()
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
-            if projectConfig.getDictCfgSection("usePostDictInName"):
-                tran.speaker = post_dic.do_replace(tran.speaker, tran)  # 译后name替换
+            if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
+                if tran._speaker != "":
+                    if type(tran.speaker) == list and type(tran._speaker) == list:
+                        tran._speaker = [
+                            post_dic.do_replace(s, tran) for s in tran.speaker
+                        ]
+                    else:
+                        tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
     # 用于保存problems
     arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()

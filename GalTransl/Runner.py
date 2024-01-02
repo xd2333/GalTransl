@@ -22,21 +22,21 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         )
 
     if translator == "gpt35-0613":
-        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="gpt35-0613")
+        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, eng_type="gpt35-0613")
     elif translator == "gpt35-1106":
-        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="gpt35-1106")
+        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, eng_type="gpt35-1106")
     elif translator == "gpt4":
-        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, type="gpt4")
+        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, eng_type="gpt4")
     elif translator == "gpt4-turbo":
-        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, type="gpt4-turbo")
+        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, eng_type="gpt4-turbo")
     elif translator == "chatgpt-gpt35":
-        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, type="unoffapi")
+        await doGPT3Translate(cfg, OpenAITokenPool, proxyPool, eng_type="unoffapi")
     elif translator == "chatgpt-gpt4":
-        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, type="unoffapi")
+        await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, eng_type="unoffapi")
     elif translator == "newbing":
         await doNewBingTranslate(cfg, proxyPool)
     elif translator == "Sakura":
-        await doSakuraTranslate(cfg, proxyPool, type="Sakura0.9")
+        await doSakuraTranslate(cfg, proxyPool, eng_type="Sakura0.9")
     elif translator == "caiyun":
         raise RuntimeError("Work in progress!")
     end_time = time.time()

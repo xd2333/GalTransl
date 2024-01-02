@@ -33,7 +33,7 @@ async def doGPT3TranslateSingleFile(
     semaphore: Semaphore,
     file_name: str,
     projectConfig: CProjectConfig,
-    type: str,
+    eng_type: str,
     pre_dic: CNormalDic,
     post_dic: CNormalDic,
     gpt_dic: CGptDict,
@@ -51,7 +51,8 @@ async def doGPT3TranslateSingleFile(
             tran.analyse_dialogue()  # 解析是否为对话
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
             if projectConfig.getDictCfgSection("usePreDictInName"):
-                tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
+                if type(tran.speaker) == type(tran._speaker) == str:
+                    tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
 
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
@@ -72,12 +73,12 @@ async def doGPT3TranslateSingleFile(
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
             if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
-                if tran._speaker != "":
-                    if type(tran.speaker) == list and type(tran._speaker) == list:
+                if tran._speaker:
+                    if type(tran.speaker) == type(tran._speaker) == list:
                         tran._speaker = [
                             post_dic.do_replace(s, tran) for s in tran.speaker
                         ]
-                    else:
+                    elif type(tran.speaker) == type(tran._speaker) == str:
                         tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
     # 用于保存problems
@@ -106,7 +107,7 @@ async def doGPT3Translate(
     projectConfig: CProjectConfig,
     tokenPool: COpenAITokenPool,
     proxyPool: Optional[CProxyPool],
-    type="offapi",
+    eng_type="offapi",
 ) -> bool:
     print(projectConfig.getKey("internals.enableProxy"))
     # 加载字典
@@ -135,7 +136,7 @@ async def doGPT3Translate(
 
     gptapi = CGPT35Translate(
         projectConfig,
-        type,
+        eng_type,
         proxyPool if projectConfig.getKey("internals.enableProxy") else None,
         tokenPool,
     )
@@ -155,7 +156,7 @@ async def doGPT3Translate(
             semaphore,
             file_name,
             projectConfig,
-            type,
+            eng_type,
             pre_dic,
             post_dic,
             gpt_dic,
@@ -170,7 +171,7 @@ async def doGPT4TranslateSingleFile(
     semaphore: Semaphore,
     file_name: str,
     projectConfig: CProjectConfig,
-    type: str,
+    eng_type: str,
     pre_dic: CNormalDic,
     post_dic: CNormalDic,
     gpt_dic: CGptDict,
@@ -188,7 +189,8 @@ async def doGPT4TranslateSingleFile(
             tran.analyse_dialogue()  # 解析是否为对话
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
             if projectConfig.getDictCfgSection("usePreDictInName"):
-                tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
+                if type(tran.speaker) == type(tran._speaker) == str:
+                    tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
 
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
@@ -220,12 +222,12 @@ async def doGPT4TranslateSingleFile(
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
             if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
-                if tran._speaker != "":
-                    if type(tran.speaker) == list and type(tran._speaker) == list:
+                if tran._speaker:
+                    if type(tran.speaker) == type(tran._speaker) == list:
                         tran._speaker = [
                             post_dic.do_replace(s, tran) for s in tran.speaker
                         ]
-                    else:
+                    elif type(tran.speaker) == type(tran._speaker) == str:
                         tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
     # 用于保存problems
@@ -255,7 +257,7 @@ async def doGPT4Translate(
     projectConfig: CProjectConfig,
     tokenPool: COpenAITokenPool,
     proxyPool: Optional[CProxyPool],
-    type="offapi",
+    eng_type="offapi",
 ) -> bool:
     # 加载字典
     pre_dic = CNormalDic(
@@ -282,7 +284,7 @@ async def doGPT4Translate(
 
     gptapi = CGPT4Translate(
         projectConfig,
-        type,
+        eng_type,
         proxyPool if projectConfig.getKey("internals.enableProxy") else None,
         tokenPool,
     )
@@ -301,7 +303,7 @@ async def doGPT4Translate(
             semaphore,
             file_name,
             projectConfig,
-            type,
+            eng_type,
             pre_dic,
             post_dic,
             gpt_dic,
@@ -332,7 +334,8 @@ async def doNewBingTranslateSingleFile(
             tran.analyse_dialogue()  # 解析是否为对话
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
             if projectConfig.getDictCfgSection("usePreDictInName"):
-                tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
+                if type(tran.speaker) == type(tran._speaker) == str:
+                    tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
 
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
@@ -379,12 +382,12 @@ async def doNewBingTranslateSingleFile(
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
             if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
-                if tran._speaker != "":
-                    if type(tran.speaker) == list and type(tran._speaker) == list:
+                if tran._speaker:
+                    if type(tran.speaker) == type(tran._speaker) == list:
                         tran._speaker = [
                             post_dic.do_replace(s, tran) for s in tran.speaker
                         ]
-                    else:
+                    elif type(tran.speaker) == type(tran._speaker) == str:
                         tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
     # 用于保存problems
@@ -470,7 +473,7 @@ async def doSakuraTranslateSingleFile(
     semaphore: Semaphore,
     file_name: str,
     projectConfig: CProjectConfig,
-    type: str,
+    eng_type: str,
     pre_dic: CNormalDic,
     post_dic: CNormalDic,
     gpt_dic: CGptDict,
@@ -486,9 +489,10 @@ async def doSakuraTranslateSingleFile(
         # 2、翻译前处理
         for i, tran in enumerate(trans_list):
             tran.analyse_dialogue()  # 解析是否为对话
-            if projectConfig.getDictCfgSection("usePreDictInName"):
-                tran.speaker = pre_dic.do_replace(tran.speaker, tran)  # 译前name替换
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
+            if projectConfig.getDictCfgSection("usePreDictInName"):  # 译前name替换
+                if type(tran.speaker) == type(tran._speaker) == str:
+                    tran.speaker = pre_dic.do_replace(tran.speaker, tran)
 
         # 3、读出未命中的Translate然后批量翻译
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
@@ -509,12 +513,12 @@ async def doSakuraTranslateSingleFile(
             tran.recover_dialogue_symbol()  # 恢复对话框
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
             if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
-                if tran._speaker != "":
-                    if type(tran.speaker) == list and type(tran._speaker) == list:
+                if tran._speaker:
+                    if type(tran.speaker) == type(tran._speaker) == list:
                         tran._speaker = [
                             post_dic.do_replace(s, tran) for s in tran.speaker
                         ]
-                    else:
+                    elif type(tran.speaker) == type(tran._speaker) == str:
                         tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
     # 用于保存problems
@@ -542,7 +546,7 @@ async def doSakuraTranslateSingleFile(
 async def doSakuraTranslate(
     projectConfig: CProjectConfig,
     proxyPool: Optional[CProxyPool],
-    type="Sakura0.9",
+    eng_type="Sakura0.9",
 ) -> bool:
     # 加载字典
     pre_dic = CNormalDic(
@@ -567,7 +571,7 @@ async def doSakuraTranslate(
         )
     )
 
-    gptapi = CSakuraTranslate(projectConfig, type, proxyPool)
+    gptapi = CSakuraTranslate(projectConfig, eng_type, proxyPool)
 
     for dir_path in [
         projectConfig.getInputPath(),
@@ -584,7 +588,7 @@ async def doSakuraTranslate(
             semaphore,
             file_name,
             projectConfig,
-            type,
+            eng_type,
             pre_dic,
             post_dic,
             gpt_dic,

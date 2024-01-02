@@ -16,10 +16,10 @@ class CSakuraTranslate:
     def __init__(
         self,
         config: CProjectConfig,
-        type: str,
+        eng_type: str,
         proxy_pool: Optional[CProxyPool],
     ):
-        self.type = type
+        self.eng_type = eng_type
         self.last_file_name = ""
         self.restore_context_mode = config.getKey("gpt.restoreContextMode")
         self.retry_count = 0
@@ -48,12 +48,12 @@ class CSakuraTranslate:
         # 现在只有简体
         self.opencc = OpenCC("t2s.json")
 
-        self.init_chatbot(type=type, config=config)  # 模型初始化
+        self.init_chatbot(eng_type=eng_type, config=config)  # 模型初始化
 
         pass
 
-    def init_chatbot(self, type, config: CProjectConfig):
-        if type == "Sakura0.9":
+    def init_chatbot(self, eng_type, config: CProjectConfig):
+        if eng_type == "Sakura0.9":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             endpoint = config.getBackendConfigSection("Sakura").get("endpoint")

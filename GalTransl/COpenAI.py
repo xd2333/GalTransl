@@ -35,36 +35,35 @@ def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
     """
     result: list[dict] = []
     degradeBackend: bool = False
-    endpointDomain: str = "https://api.openai.com"
 
     if val := config.getKey("gpt.degradeBackend"):
         degradeBackend = val
 
+    defaultEndpoint = config.getBackendConfigSection("GPT35")["defaultEndpoint"]
     if gpt35_tokens := config.getBackendConfigSection("GPT35").get("tokens"):
         for tokenEntry in gpt35_tokens:
-            result.append(
-                COpenAIToken(
-                    tokenEntry["token"],
-                    tokenEntry["endpoint"]
-                    if tokenEntry.get("endpoint")
-                    else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
-                    True,
-                    False,
-                )
+            token = tokenEntry["token"]
+            domain = (
+                tokenEntry["endpoint"]
+                if tokenEntry.get("endpoint")
+                else defaultEndpoint
             )
+            domain = domain[:-1] if domain.endswith("/") else domain
+            result.append(COpenAIToken(token, domain, True, False))
             pass
 
+    defaultEndpoint = config.getBackendConfigSection("GPT4")["defaultEndpoint"]
     if gpt4_tokens := config.getBackendConfigSection("GPT4").get("tokens"):
         for tokenEntry in gpt4_tokens:
+            token = tokenEntry["token"]
+            domain = (
+                tokenEntry["endpoint"]
+                if tokenEntry.get("endpoint")
+                else defaultEndpoint
+            )
+            domain = domain[:-1] if domain.endswith("/") else domain
             result.append(
-                COpenAIToken(
-                    tokenEntry["token"],
-                    tokenEntry["endpoint"]
-                    if tokenEntry.get("endpoint")
-                    else config.getBackendConfigSection("GPT35")["defaultEndpoint"],
-                    True if degradeBackend else False,
-                    True,
-                )
+                COpenAIToken(token, domain, True if degradeBackend else False, True)
             )
             pass
 

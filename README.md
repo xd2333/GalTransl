@@ -7,30 +7,26 @@
 
   [English](https://github.com/XD2333/GalTransl/blob/main/README_EN.md)
   
-  GalTransl是一套将数个基础功能上的微小创新与对ChatGPT提示工程（Prompt Engineering）的深度利用相结合的galgame自动化翻译工具，用于制作内嵌式翻译补丁。   
+  GalTransl是一套将数个基础功能上的微小创新与对GPT提示工程（Prompt Engineering）的深度利用相结合的Galgame自动化翻译工具，用于制作内嵌式翻译补丁。   
    
-  GalTransl的核心是一组由我(cx2333)构建的自动化翻译脚本，它解决了使用ChatGPT自动化翻译GalGame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合，打通了制作补丁的完整流程，一定程度降低了上手门槛。对此感兴趣的朋友可以更容易的构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  
+## 前言
+&ensp;&ensp;&ensp;&ensp;GalTransl的核心是一组由我(cx2333)构建的自动化翻译脚本，它解决了使用ChatGPT自动化翻译Galgame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合，打通了制作补丁的完整流程，一定程度降低了上手门槛。对此感兴趣的朋友可以更容易的构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  
 
   * 特性：   
   1. 支持**ChatGPT、Newbing、GPT-4、Sakura**等大语言模型，并通过提示工程大幅提高了GPT的翻译质量   
-  2. NewBing基于GPT-4并且**免费**；ChatGPT与GPT-4支持官方API与~~模拟网页操作模式~~（2023.12 模拟网页操作目前不可用），一定程度节省费用   
+  2. NewBing基于GPT-4并且**免费**；ChatGPT与GPT-4支持官方API与~~模拟网页操作模式~~（2023.12 模拟网页操作目前不可用）   
   3. 首创**GPT字典系统**，让GPT了解人设，准确翻译人名、人称代词与生词   
-  4. 首创NewBing、GPT-4下支持自动**记录翻译确信度、存疑句、未知专有名词**，方便手工修正，并支持**自动化校润**(还不稳定)   
+  4. 首创NewBing、GPT-4下支持自动记录翻译确信度、存疑句、未知专有名词，方便手工修正，并支持自动化校润(目前不稳定)   
   5. 通过译前、译后字典与条件字典实现灵活的自动化字典系统   
   6. 实时保存缓存、自动断点续翻   
   7. 结合其他项目支持多引擎脚本一键解包与注入，提供完整教程降低上手难度   
-
-## 前言
-
-* 代码贡献：感谢ryank231231、Isotr0py，完善了我的杂鱼代码。 
    
-* 支持我：点个Star~（PS. 分享补丁时请注明GPT翻译，能提一下是用GalTransl翻译的就更好了）   
+  * 支持我：点个Star~（PS. 分享补丁时**请注明GPT翻译**，能提一下是用GalTransl翻译的就更好了）   
 
-* 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群）   
-
-  **Readme还有一些图没贴**
+  * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群）   
 
 ## News
+* 2024/01/02：提供exe一键包，免安装环境   
 * 2023/12/28：增加设置项，允许通过字典在译前译后替换name，可用于汉化name字段   
 * 2023/12/23：支持Sakura-13B-Galgame离线翻译模型   
 * 2023/12/17：支持基于文件的多线程 by @ryank231231   
@@ -55,7 +51,7 @@
 
 ## 环境准备
   * Python   
-  安装最新版 Python 即可。 [下载](https://www.python.org/downloads/)   
+  安装 Python 3.11 版（暂不支持3.12）。 [下载](https://www.python.org/downloads/release/python-3117/)   
   **安装时勾选下方 add Python to path**   
    
   * [下载本项目](https://github.com/XD2333/GalTransl/releases/)   
@@ -64,7 +60,7 @@
   * 安装Python依赖   
   安装 Python 后
   
-  如果你是**初学者**，可以直接双击`安装、更新依赖.bat`来安装本项目需要的依赖。
+  如果你是**初学者**，可以直接双击`安装、更新依赖.bat`来安装本项目需要的依赖。或者，直接使用winexe版本，不需要安装依赖。
 
   如果你**熟悉python**，本项目提供Poetry进行依赖管理，可以通过以下命令安装并运行程序：
 
@@ -82,7 +78,7 @@
   神一样的文本编辑器。[下载](https://www.ghxi.com/emeditor.html)   
   
   * GARbro   
-  神一样的解包工具。[下载](https://ghproxy.com/https://github.com/morkt/GARbro/releases/download/v1.5.44/GARbro-v1.5.44.2904.rar)
+  神一样的解包工具。[下载](https://github.com/morkt/GARbro/releases/download/v1.5.44/GARbro-v1.5.44.2904.rar)
 
 ## 实用工具
 | 名称 | 说明 |
@@ -116,7 +112,7 @@
 
 或者，参考[资源包后缀表](https://morkt.github.io/GARbro/supported.html)，比较资源包的后缀。   
 
-脚本一般在一些有明显关键字的资源包，或在资源包中明显关键字的目录内，例如：scene、scenario、message、script等字样。并且脚本通常是由许多明显分章节、分人物，有的还分出了主线和hs(例如带_h)，通常多翻找几个资源包就能找到。   
+剧情脚本一般在一些有明显关键字的资源包，或在资源包中明显关键字的目录内，例如：scene、scenario、message、script等字样。并且脚本通常是由许多明显分章节、分人物，有的还分出了主线和hs(例如带_h)，通常多翻找几个资源包就能找到。   
 
 或者，参考[Dir-A佬的教程](https://space.bilibili.com/8144708/)   
 
@@ -148,20 +144,20 @@
   }
 ]
 ```
-&ensp;&ensp;&ensp;&ensp;其中，每个{object(对象)}是一句话，`message`是消息内容，如果object还带了`name`，说明是对话。不过可能并不是所有类型的脚本都可以带name提取，当可以带name时，GalTransl的翻译质量会更好。   
-&ensp;&ensp;&ensp;&ensp;PS. GalTransl只支持指定格式的json文件输入，但并不是说GalTransl就与VNTextPatch工具绑定了，你完全可以通过其他工具提取出脚本文本，然后尝试使用"正则表达式模式"或SExtractor将其他格式的文本与json文本转换，但是需要一些正则经验。   
+&ensp;&ensp;&ensp;&ensp;其中，每个{object(对象)}是一句话，`message`是消息内容，如果object还带了`name`，说明是对话。不过可能并不是所有类型的脚本都可以带name提取，当可以正确提取name时，GalTransl的翻译质量会更好。   
+&ensp;&ensp;&ensp;&ensp;PS. GalTransl只支持指定格式的json文件输入，但并不是说GalTransl就与VNTextPatch工具绑定了，也可以通过其他工具提取出脚本文本，然后尝试使用"双行文本与json_jp互转脚本"、"正则表达式模式"等工具将其他格式的文本与json文本转换，或尝试使用SExtractor工具，现在也支持导出GalTransl需要的json。   
 
 * **【2.2. GalTransl启动】**   
-&ensp;&ensp;&ensp;&ensp;将本项目下载下来解压到任意位置（示例中默认为D盘根目录），在项目示例文件夹`sampleProject`中，找到示例配置文件`config.inc.yaml`，将其重命名为`config.yaml`。另外，建议将sampleProject改个名字，一般是游戏的名字。   
+&ensp;&ensp;&ensp;&ensp;将本项目下载下来解压到任意位置（示例中默认为D盘根目录），在项目示例文件夹`sampleProject`中，找到示例配置文件`config.inc.yaml`，将其重命名为`config.yaml`。另外，也将sampleProject文件夹改个名字，一般是游戏的名字。   
 
-&ensp;&ensp;&ensp;&ensp;本教程使用GPT3.5官方API来举例。其他项目可参考下面[引擎使用](https://github.com/XD2333/GalTransl?tab=readme-ov-file#配置文件与翻译引擎设置)章节，对应修改示例项目的`config.yaml`即可调用。   
-&ensp;&ensp;&ensp;&ensp;先将所有提取出的日文json文件放入示例文件夹内的`json_jp`文件夹中，然后用任意文本编辑器编辑`config.yaml`文件，按**注释**修改以下内容：
+&ensp;&ensp;&ensp;&ensp;本教程使用GPT3.5官方API来举例。其他引擎可参考下面[引擎使用](https://github.com/XD2333/GalTransl?tab=readme-ov-file#配置文件与翻译引擎设置)章节，对应修改示例项目的`config.yaml`即可调用。   
+&ensp;&ensp;&ensp;&ensp;先将所有提取出的日文json文件放入示例文件夹内的`json_jp`文件夹中（都放在一级目录，不要在json_jp内再新建文件夹），然后用任意文本编辑器编辑`config.yaml`文件，按**注释**修改以下内容：
 ```yaml
 # 代理设置
 proxy:
   enableProxy: true # 是否启用代理(true/false)
   proxies:
-    - address: socks5://127.0.0.1:10818 # 代理地址
+    - address: socks5://127.0.0.1:10818 # 代理地址，也可以改成http://……
 backendSpecific:
   GPT35: # GPT3.5 官方 API
     tokens: # 令牌列表
@@ -171,8 +167,8 @@ backendSpecific:
         endpoint: "" # 可以填多个令牌，如果你只有一个的话，把示例文件的这两行删掉
     defaultEndpoint: https://api.openai.com # 默认 API 端点，一般不修改
 ```   
-&ensp;&ensp;&ensp;&ensp;在这里需要一个openai的api key，以及需要魔法上网。   
-&ensp;&ensp;&ensp;&ensp;如果没有api key的话，你还可以使用第三方api转发项目：   
+&ensp;&ensp;&ensp;&ensp;在这里需要一个openai的api key，以及需要魔法上网来走代理访问openai官方api端点。   
+&ensp;&ensp;&ensp;&ensp;如果没有api key或魔法上网的话，你还可以使用第三方api转发项目：   
 * [GPT-API-free](https://github.com/chatanywhere/GPT_API_free)，这是一个openai api的第三方代理，提供每小时60次请求的**免费API**。   
 * [GPT水龙头](https://faucet.openkey.cloud/)，每24小时可领取一个 $1.00 令牌用于开发测试 AI 产品   
 * 一些收费api转发项目，例如：[openai-sb](https://openai-sb.com/)、[Keya api](https://api.keya.pw/)等，比官方定价便宜。**这不是推广，我也不担保它们的稳定性，建议充多少用多少**   
@@ -187,7 +183,7 @@ backendSpecific:
         endpoint: https://api.chatanywhere.com.cn  # 使用第三方API端点
 ```   
    
-&ensp;&ensp;&ensp;&ensp;修改好项目设置后，确保你已经安装了需要的依赖（见环境准备），然后双击`run.bat`，首先输入或拖入项目文件夹，例如`D:\GalTransl-main\sampleProject`
+&ensp;&ensp;&ensp;&ensp;修改好项目设置后，确保你已经安装了需要的依赖（见环境准备），然后双击`run.bat`，首先输入或拖入项目文件夹，例如`D:\GalTransl-main\sampleProject`（路径不要带空格）   
 
 接着选择gpt35:
 
@@ -197,7 +193,7 @@ backendSpecific:
 
 ![img_start](./img/img_start.png)
 
-&ensp;&ensp;&ensp;&ensp;**但是**，我不建议就这样开始翻译了，你至少要先看一下[GPT字典的使用](https://github.com/XD2333/GalTransl#gpt字典)，为你要翻译的gal设定好各角色的人名字典，这样才能保证基本的质量。   
+&ensp;&ensp;&ensp;&ensp;**但是**，我不建议就这样开始翻译了，请至少要先看一下[GPT字典的使用](https://github.com/XD2333/GalTransl#gpt字典)，为你要翻译的gal设定好各角色的人名字典，这样才能保证基本的翻译质量。   
 
 &ensp;&ensp;&ensp;&ensp;翻译完成后，如果想手工修正，见[翻译缓存章节](https://github.com/XD2333/GalTransl#翻译缓存)
 
@@ -322,7 +318,7 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
   
   * 优点：   
   ✔ 完全离线，不会哪一天突然不可用   
-  ✔ 质量接近GPT3.5，明显优于传统机翻（基于v0.9.0pre3_GGUF_Q6_K模型主观测试）   
+  ✔ 质量接近并在部分场景下优于GPT3.5，明显优于传统机翻（基于v0.9.0pre3模型主观测试）   
    
   * 缺点：   
   🚩 目前不支持GPT字典，可以用译前字典来固定片假名人名   
@@ -367,7 +363,7 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
 <summary>   
    
 ### GPT字典
-&ensp;&ensp;&ensp;&ensp;GPT字典系统是使用GPT翻译时想提高质量的关键功能，通过补充设定的方式大幅提高翻译质量。适用于chatgpt、newbing、gpt4。   
+&ensp;&ensp;&ensp;&ensp;GPT字典系统是使用GalTransl翻译时想提高质量的关键功能，通过补充设定的方式大幅提高翻译质量。适用于gpt35、gpt4、newbing。   
    
 </summary>   
 
@@ -387,8 +383,9 @@ $str20	$str20	player's codename, boy
 这几条字典都是定义角色用的：   
 * 第一条可以理解为我想告诉GPT：“假名フラン的翻译是芙兰，这是人名，是位女士，是老师”。这样GPT在翻译フラン先生的时候就会翻译成芙兰老师而不会是芙兰医生。   
 * 二三条是同一个人的日本姓和名，经测试姓名必须拆成两行写，不然GPT3.5会不认识。
-* 第四条是主角的推荐写法。**注意即使日文和中文相同，也要再重复一遍**   
-* 第五条是男主在脚本中使用占位符而不是名字时的写法。   
+* 第四条是设定主角的推荐写法。**注意即使日文和中文相同，也要再重复一遍**   
+* 第五条是主角在脚本中使用占位符而不是名字时的推荐写法。
+* **设定不要太复杂**，否则会让GPT多很多奇怪脑补。     
 
 ---   
    
@@ -397,12 +394,13 @@ $str20	$str20	player's codename, boy
 大家さん  房东
 あたし	我/人家	use '人家' when being cute
 ```
-* 当你发现GPT不太认识这个词，例如“大家さん”时，并且这个词含义比较唯一，那么就可以像这样加进通用GPT字典里，解释不是必要的。   
-* 第二行的中文写了一个多义词“我/人家”，并且在解释中写了“当扮可爱时用人家”。GPT3.5没那么聪明，但GPT4基本可以按解释来灵活运用。
+* 当你发现GPT不太认识这个词，例如“大家さん”，并且这个词含义比较唯一，那么就可以像这样加进通用GPT字典里，解释不是必要的。   
+* 第二行的中文写了一个多义词“我/人家”，并且在解释中写了“当扮可爱时用人家”。GPT3.5没那么聪明，但GPT4基本可以灵活运用。
 * 想让GPT更瑟？自己加字典（   
 
 在程序目录中，`Dict`文件夹内有"通用GPT字典.txt"，在`sampleProject`文件夹内会有"项目GPT字典.txt"，一般人名定义写进项目字典，通用提高翻译质量的词汇写进通用字典。   
-不用担心字典过大会带来副作用，只有当本次发送给GPT的人名和句子中有这个词，这个词的解释才会被送进本轮的对话中。也不要什么词都往里加，~~什么都往里加只会害了你~~，推荐只写**各角色的设定**和**总是会翻错的词**。 
+只有当本次发送给GPT的人名和句子中有这个词，这个词的解释才会被送进本轮的对话中。   
+**但不要什么词都往里加**，~~什么都往里加只会害了你~~，推荐只写**各角色的设定**和**总是会翻错的词**。 
 
 运行时字典会动态的展示在每一次请求里：
 
@@ -419,21 +417,15 @@ $str20	$str20	player's codename, boy
 
 </summary>   
 
-译前字典有什么用呢，这里给大家分享一个适用于传统机翻引擎的小技巧。      
-```txt
-在使用传统机翻引擎时，针对人名乱翻的情况，一个解决办法是：
-在翻译前先把人名替换成一个肯定不会乱翻的名字，例如，我一般把男主角直接替换成"张三"，
-并且彩云小译永远也不会翻错这个名字，然后在译后字典里再把张三替换回男主的中文对应原名，
-这样就实现了让传统机翻引擎稳定的翻译人名，女主同理。   
-```
-但由于GPT时代有了GPT字典系统，这个技巧基本上没啥用了。现在译前字典多用于一些口齿不清的矫正情况，以及多个词代表同个意思的话，可以用译前字典先统一。   
+译前字典多用于一些口齿不清的矫正情况，以及多个词代表同个意思的话，可以用译前字典先统一，减少GPT字典的输入。   
    
 译后字典就是比较常见的字典，在译后将某个词替换成另一个词，但是此处我改进了一个叫"条件字典"的东西。条件字典实际上就是在替换前增加了一步判断，用于避免误替换、过度替换等情况。   
 每行格式为`pre_jp/post_jp[tab]判断词[tab]查找词[tab]替换词`   
 * pre_jp/post_jp代表判断词查找的位置，定义在"翻译缓存"章节讲
-* 判断词：如果在查找位置中找到判断词，才会激活后面的替换。   
+* 判断词：如果在查找位置(pre_jp/post_jp)中找到判断词，才会激活后面的替换。   
 * 判断词可以在开头加"!"代表"不存在则替换"，否则一般是代表"存在则替换"。   
-* 判断词可以使用`[or]`或`[and]`关键字连接，多个`[or]`连接代表"有一个条件满足就进入替换"，多个`[and]`连接代表"条件都满足才进入替换"   
+* 判断词可以使用`[or]`或`[and]`关键字连接，多个`[or]`连接代表"有一个条件满足就进入替换"，多个`[and]`连接代表"条件都满足才进入替换"。   
+* 查找词、替换词，同普通字典，将a替换成b。   
 
 </details>
 
@@ -476,7 +468,7 @@ $str20	$str20	player's codename, boy
 `index`  序号   
 `name`  人名   
 `pre_jp`  原始日文   
-`post_jp`  处理后日文。一般来讲，post_jp = pre_jp 去除对话框 + 译前字典替换   
+`post_jp`  处理后日文。一般来讲，post_jp = pre_jp 去除对话框 + 译前字典替换。你会代码的话也可以在此处加入自己的处理   
 `pre_zh`  原始中文   
 `proofread_zh`  校对的中文   
 没有post_zh，post_zh在json_cn里。   
@@ -488,13 +480,13 @@ $str20	$str20	player's codename, boy
 `doub_content`  存疑片段，仅NewBing、GPT4支持，代表翻译引擎觉得翻译可能不准确的地方   
 `unknown_proper_noun`  未知专有名词，仅NewBing、GPT4支持，方便后期人工修正   
 `problem`  存储问题。见下方自动化找错。   
-`post_zh_preview`  用于预览json_cn，但对它的修改并不会应用到json_cn，要修改`pre_jp`/`proofread_zh`
+`post_zh_preview`  用于预览json_cn，但**对它的修改并不会应用到json_cn**，要修改`pre_jp`/`proofread_zh`
 
 * 简单讲下如何用Emeditor修缓存：选中一个文件，先右键-Emeditor打开，然后把transl_cache内所有文件全选拖进去。   
-这时候标签可能会占很大位置，右键标签-自定义标签页，将"标签不合适时"改成"无"，这样标签就只会在一行了。   
+这时候标签可能会占很大位置，右键标签-自定义标签页，将"标签不合适时"改成"无"，这样标签就只会在一行了（需要使用Emeditor专业版）。   
 接着ctrl+f搜索，搜索你感兴趣的关键字（如problem、doub_content），勾选"搜索组群中所有文档"，即可快速在所有文件中搜索，或点提取快速预览所有的问题。   
 
-* 在确定需要修改的内容后，直接修改对应句子的`pre_zh`，或`proofread_zh`，然后重新运行程序，就会生成新的json_cn
+* 在确定需要修改的内容后，直接修改对应句子的`pre_zh`，或`proofread_zh`，然后**重新跑一遍Galtransl**，很快就会生成新的json_cn
   
 </details>
 

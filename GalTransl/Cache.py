@@ -20,7 +20,7 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, post_save=F
     cache_json = []
 
     for tran in trans_list:
-        if tran.pre_zh == "":
+        if tran.pre_zh == tran.post_zh == "":
             continue
 
         cache_obj = {
@@ -95,12 +95,13 @@ def get_transCache_from_json(
         if tran.post_jp != cache_dict[tran.index]["post_jp"]:  # 前润被改变
             trans_list_unhit.append(tran)
             continue
-        if (
-            "pre_zh" not in cache_dict[tran.index]
-            or cache_dict[tran.index]["pre_zh"] == ""
-        ):  # 后原为空
-            trans_list_unhit.append(tran)
-            continue
+        if tran.post_jp != "":
+            if (
+                "pre_zh" not in cache_dict[tran.index]
+                or cache_dict[tran.index]["pre_zh"] == ""
+            ):  # 后原为空
+                trans_list_unhit.append(tran)
+                continue
         # 重试失败的
         if retry_failed and "Failed translation" in cache_dict[tran.index]["pre_zh"]:
             if (
@@ -111,7 +112,7 @@ def get_transCache_from_json(
                 continue
 
         # retran_key在pre_jp中
-        if retran_key  and retran_key in cache_dict[tran.index]["pre_jp"]:
+        if retran_key and retran_key in cache_dict[tran.index]["pre_jp"]:
             trans_list_unhit.append(tran)
             continue
         # retran_key在problem中

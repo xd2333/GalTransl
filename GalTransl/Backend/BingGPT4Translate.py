@@ -298,7 +298,7 @@ class CBingGPT4Translate:
             if i + 1 != len(trans_list):
                 if bing_reject:
                     LOGGER.warning("->NewBing大小姐拒绝了本次请求🙏\n")
-                    self._change_cookie()
+                    await self._change_cookie()
                 # force_NewBing_hs_mode下newbig第一句就拒绝了，为第一句标记为失败
                 if self.force_NewBing_hs_mode and bing_reject and i == -1:
                     if not proofread:

@@ -31,7 +31,6 @@ TRANSLATOR_SUPPORTED = {
     "Sakura":"Sakura离线翻译 Sakura-13B-Galgame v0.9模型",
     "chatgpt-gpt35": "GPT3.5 模拟网页模式 -- 暂不可用",
     "chatgpt-gpt4": "GPT4 模拟网页模式 -- 暂不可用",
-    "caiyun": "彩云 -- 暂不可用",
 }
 LANG_SUPPORTED = {
     "zh-cn": "Simplified Chinese",

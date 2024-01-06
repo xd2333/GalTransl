@@ -37,7 +37,5 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         await doNewBingTranslate(cfg, proxyPool)
     elif translator == "Sakura":
         await doSakuraTranslate(cfg, proxyPool, eng_type="Sakura0.9")
-    elif translator == "caiyun":
-        raise RuntimeError("Work in progress!")
     end_time = time.time()
     LOGGER.info(f"spend time:{str(end_time-start_time)}s")

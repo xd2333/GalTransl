@@ -258,33 +258,35 @@ GalTransl提取注入工具的VNTextPatch模式注入脚本时默认是以sjis�
 
 
 ## 翻译引擎介绍   
-本篇介绍各个翻译引擎的优缺点与推荐的组合，本篇主要介绍引擎优缺点，具体使用见后面的章节。   
+本篇主要介绍引擎优缺点，具体使用见后面的章节。   
 
 <details>
-<summary> <b>【引擎详细介绍】（点击展开）</b> </summary>
+<summary> <b>
+  
+### 【引擎档案】（点击展开）
+  
+</b> </summary>
 
 * **NewBing**:+1::+1::+1:   
 NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/search/march_2023/Confirmed-the-new-Bing-runs-on-OpenAI%E2%80%99s-GPT-4)，且不收费，是当你想创建高质量翻译时我推的LLM  
    
   * 优点：   
   ✔ **白嫖GPT-4**   
-  ✔ 高质量的上下文分析与保持原文风格能力   
-  ✔ 支持对每句翻译**自动给出翻译确信度**，方便人工校对   
-  ✔ 在确信度低时，支持自动记录**它觉得存疑的片段**，方便人工校对   
-  ✔ 支持自动记录**它不认识的专有名词**，方便人工校对   
-  ✔ 支持对初翻做二次**自动化校对润色**   
+  ✔ 高质量的逻辑推理、上下文分析与保持原文风格能力   
+  ✔ 支持记录翻译确信度、存疑片段、未知专有名词，方便人工校对   
+  ✔ 支持对初翻做二次自动化校对润色   
    
   * 缺点：   
   🔞 **涩涩打咩**，只能用于非h内容，需要结合其他引擎   
   ❔ 每账号目前24小时提问200次   
   🚸 速度较慢，如果开启自动化再校润，会慢更多   
-  ❔ 目前自动化校润不算稳定   
+  ❔ 目前自动化校润、记录确信度不稳定   
   🛫 目前需要翻墙   
     
   * 总结：它很强，但它运行在青少年模式(NewBing大小姐拒绝了本次请求🙏)   
   ---   
-* **ChatGPT**:+1::+1:   
-目前大火的OpenAI的大语言模型，模型代号为gpt-3.5-turbo，也就是GPT-3.5。本项目提供通过官方api与~~模拟网页操作两种方式~~调用ChatGPT，优化了token用量，并通过提示工程优化了翻译质量，解除了涩涩限制。   
+* **GPT-3.5**:+1::+1:   
+初代ChatGPT背后的OpenAI的大语言模型，模型代号为gpt-3.5-turbo，也就是GPT-3.5。本项目提供通过官方api~~与模拟网页操作两种方式~~调用ChatGPT，优化了token用量，并通过提示工程优化了翻译质量，解除了涩涩限制。   
    
   * 优点：   
   ✔ 涩涩解禁，~~很会涩涩~~   
@@ -293,31 +295,31 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
   * 缺点：   
   🫰 需要一定费用，可以通过买key、买api代理、使用模拟网页的方式一定程度节省(API开销大约是5刀额度翻译60w-70w字)   
   🛫 使用官方API和官方地址的话，需要翻墙。可以通过自建转发的方式解决   
-  🚩 使用模拟网页操作方式的话，**可能因此被封号**（封号因素有很多，主要是用了虚拟卡）   
+  🚩 使用模拟网页操作方式的话，**可能因此被封号**（模拟网页操作模式暂不可用）   
   ❔ 经常丢失换行符，偶发遗留日文、窜行、过度脑补、逻辑混乱，可通过找问题系统部分解决   
   👎 **不支持**自动化校润、提供确信度、记录存疑片段和未知名词，似乎已超出它的能力极限   
     
   * 总结：速度与价格都尚可，搞个拔作绰绰有余。~~它已经很努力了，只是不太聪明~~   
   ---   
 * **GPT-4**:+1:  
-目前大火的OpenAI的*最先进*大语言模型，模型代号为GPT-4。本项目提供通过官方API与~~模拟网页操作两种方式~~调用GPT-4，优化了token用量，并通过提示工程解除了涩涩限制。   
+OpenAI的*最先进*、~~最安全~~的大语言模型，模型代号为GPT-4。本项目提供通过官方API~~与模拟网页操作两种方式~~调用GPT-4，并通过提示工程解除了涩涩限制。   
   
   * 优点：   
-  ✔ *GPT4涩涩（*   
+  ✔ 高质量的逻辑推理、上下文分析与保持原文风格能力，直译准确率最高   
   ✔ 其他特性同NewBing   
    
   * 缺点：   
   🫰 贵，不推荐使用   
   🚸 速度较慢，每账号目前24小时提问200次   
-  🚩 模拟网页操作方式是逆向网页版GPT4的，**可能因此被封号**（封号因素有很多，主要是用了虚拟卡）   
+  🚩 模拟网页操作方式是逆向网页版GPT4的，**可能因此被封号**（模拟网页操作模式暂不可用）   
 
-  * 总结：~~氪服困难~~，有爱的话合购一个来搞也不是不可以。不要用官方API，用不起。   
+  * 总结：~~氪服困难~~，泰贵鸟。   
   ---   
 * **Sakura-13B-Galgame**:+1:  
 基于一系列开源大模型构建，在通用日文语料与轻小说/Galgame等领域的中日语料上进行继续预训练与微调，旨在提供性能接近GPT3.5且完全离线的Galgame/轻小说翻译大语言模型。[项目地址](https://github.com/SakuraLLM/Sakura-13B-Galgame)   
   
   * 优点：   
-  ✔ 完全离线，不会哪一天突然不可用   
+  ✔ 完全离线，支持本地化部署，不会哪一天突然不可用   
   ✔ 质量接近并在部分场景下优于GPT3.5，明显优于传统机翻（基于v0.9.0pre3模型主观测试）   
    
   * 缺点：   
@@ -325,34 +327,7 @@ NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/searc
   🚩 需要一块显存大一点的显卡，或尝试[白嫖免费算力](https://github.com/Isotr0py/SakuraLLM-Notebooks)   
 
   * 总结：未来可期！在大公司的模型越来越"安全"的将来，本地模型可成为有效替代。   
-  ---   
-* **彩云小译**   
-  彩云小译api，传统机翻，本项目在一坤年的自用期间，大部分时间都是基于这个引擎来构建云翻补丁   
-     
-  * 优点：   
-  ✔ 翻译快，一次30句   
-  ✔ 免费额度   
-  ✔ 质量差强人意      
-     
-  * 缺点：   
-  👀 特殊内容经常性乱翻、错翻，语句不通顺   
-
-  * 总结：~~什么年代了还用传统机翻？~~   
   
-</details>
-
-<details>
-<summary> <b>【推荐组合】   </b> </summary>
-
-| 质量 | 效率 | 组合 |
-| --- | --- | --- |
-| 还行 | 尚可 | 全程 GPT-3.5 |
-| 较好 | 较慢 | 主线 GPT4/NewBing + hs GPT-3.5 |
-| 更好 | 更慢 | 主线 GPT4/NewBing + hs GPT-4 |
-| 最好 | 最慢 | 主线 NewBing + hs GPT-4 + (人工修正) |
-   
-从上到下效率递减，质量递增。注意，以上所有的“质量”，指的是机翻质量，可以结合人工修缓存进一步提高质量（见翻译缓存章节）。    
-
 </details>
 
 ## GalTransl核心功能介绍
@@ -523,7 +498,7 @@ problemAnalyze:
 * 丢失换行：翻译后把原有换行符（\r\n）丢了
 * 多加换行：过度脑补，自己加了换行的情况。
 * 比日文长：通常来说中文的信息量是比日文大的。所以如果某一句翻译后明显比日文长的话，说明这句的翻译可能窜行了（上一句或下一句的翻译窜到了本句）。在problem中会以"比日文长x倍"的形式记录。
-* 彩云不识：仅用于彩云小译。彩云小译遇到没见过的词会翻译成something。
+* 字典使用：用于检查GPT是否正确使用了GPT字典。
 
 arinashi_dict是一个可以自定义规则的找问题字典，配置格式为
 ```
@@ -534,6 +509,8 @@ arinashi_dict是一个可以自定义规则的找问题字典，配置格式为
 设置后，程序会去寻找`在日文中有aaa，但译文中没有bbb`和`在日文中没有aaa，但在译文中有bbb`两种情况。一般用于检查某些专有名词有没有被正确的翻译。   
 
 找到问题后会存在翻译缓存里，见翻译缓存章节，使用Emeditor批量提取problem关键字就可以看到目前所有的问题了，并通过修改缓存的pre_jp来修正问题。
+   
+（新） 现在还可以通过在config.yaml中配置retranslKey来批量重翻某个问题，例如  retranslKey: "残留日文"   
 
 </details> 
 
@@ -544,32 +521,35 @@ arinashi_dict是一个可以自定义规则的找问题字典，配置格式为
 <summary>  
 本篇介绍各个翻译引擎API的调用配置。
 </summary>  
-   
-   
-* **基础配置**   
+       
+      
+* **基础配置**
+  直接读配置文件注释就好了。
 ```yaml
 ---
 # 通用（杂项）设置
 common:
-  loggingLevel: info # 日志等级，可选 [debug/info/warning/error]
-  multiThread: false # 多线程。[True/False]（暂不可用）
+  loggingLevel: info # 日志等级（未实现） [debug/info/warning/error]
+  workersPerProject: 1 # 同时翻译的文件数量，为 1 时等于单线程
   # 通用设置
   sourceLanguage: ja # 源语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   targetLanguage: zh-cn # 目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
-  retranslFail: false # 启动后重翻NewBing拒绝翻译的句子。[True/False]
+  skipRetry: false # 开启则解析结果出错时跳过循环重试，直接用"Fail Translation"占位。[True/False]
+  retranslFail: false # 重启时重翻所有"Fail Translation"的句子。[True/False]
+  retranslKey: "" # 重启时主动重翻在Problem或pre_jp中包含此关键字的句子，例如"残留日文"
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
-  gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果。[True/False]
+  gpt.streamOutputMode: true # 流式输出/打字机效果，开启方便观察过程，关闭方便观察结果（多线程下无效）[True/False]
   # NewBing/GPT4
   gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。[True/False]
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
-  gpt.recordConfidence: true # (GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
-  gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。[True/False]
+  gpt.recordConfidence: false # (NewBing/GPT4)记录确信度、存疑句，GPT4官方API关掉可节约token。[True/False]
+  gpt.forceNewBingHs: false # (NewBing)强制NewBing翻译hs，导致速度变得很慢且可能更容易被ban号。（考虑废弃）[True/False]
   # GPT3.5/GPT4
   gpt.translStyle: auto # (GPT3.5/4 官方API)GPT参数预设，precise更精确normal更随机，auto自动切换。[auto/precise/normal]
   gpt.degradeBackend: false # (GPT3.5/4 官方API)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
-  gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启时恢复上一轮的前文。[True/False]
+  gpt.restoreContextMode: true # (GPT3.5/4 官方API)重启时恢复上一轮的译文前文。[True/False]
   gpt.fullContextMode: false # (GPT3.5/4 官方API)保留更多前文。开启提升效果，关闭节约数倍token消耗。[True/False]
-  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，减少丢换行符情况，但可能导致循环重试。[True/False]
+  gpt.lineBreaksImprovementMode: false # (GPT3.5)换行符改善模式，部分减少丢换行符情况，但可能导致循环重试。（考虑废弃）[True/False]
 # 代理设置
 proxy:
   enableProxy: false # 是否启用代理。[True/False]
@@ -577,28 +557,35 @@ proxy:
     - address: http://127.0.0.1:7890
       # username: foo
       # password: bar
+```
+
+* **字典配置**
+  直接读配置文件注释就好了。
+  
+```yaml
 # 字典
 dictionary:
-  defaultDictFolder: Dict # 通用字典文件夹，相对于程序目录
-  # 预处理字典
+  defaultDictFolder: Dict # 通用字典文件夹，相对于程序目录，也可填入绝对路径
+  usePreDictInName: false # 将译前字典用在name字段，可用于改名[True/False]
+  usePostDictInName: false # 将译后字典用在name字段，可用于汉化name[True/False]
+  # 预处理字典，按字典顺序替换
   preDict:
+    - 01H字典_矫正_译前.txt # 用于口齿不清的矫正
     - 00通用字典_译前.txt
-    - 01H字典_矫正_译前.txt  # 用于口齿不清的矫正
     - (project_dir)项目字典_译前.txt # (project_dir)代表字典在项目文件夹
   # GPT 字典
   gpt.dict:
     - GPT字典.txt
     - (project_dir)项目GPT字典.txt
-  # 后处理字典
+  # 后处理字典，按字典顺序替换
   postDict:
     - 00通用字典_符号_译后.txt # 符号矫正
     - 00通用字典_译后.txt
     - (project_dir)项目字典_译后.txt
 ```
 
-
 * **NewBing**   
-需要微软账号。然后下载[EditThisCookie扩展](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)   
+需要微软账号，使用Edge浏览器，还要梯子。然后下载[EditThisCookie扩展](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)   
 访问https://www.bing.com/ ，登录后点EditThisCookie图标，点"导出Cookies"，   
 然后在示例项目的文件夹里新建一个`newbing_cookies`文件夹，然后在里面新建一个txt，名称随意，把点击导出Cookies得到的内容粘贴进去保存即可。   
 
@@ -618,7 +605,7 @@ cookiePath下可以将多个文件按例子往下写，当一个账号到达上�
 > 针对newbing拒绝翻译的情况，一个推荐的技巧是先设置`gpt.numPerRequestTranslate`为9或12，翻译一遍后，设置`retranslFail`为True，设置`gpt.numPerRequestTranslate`为3，再跑一遍，剩下的就是newbing死活都不会翻译的了，换引擎吧。
 > 另外，如果脚本有将hs分开，可以单独为hs建一个项目文件夹翻，翻完合并json_jp和transl_cache。
 
-* **ChatGPT**   
+* **GPT-3.5**   
 官方API调用方式见上手教程   
    
 （2023.12 模拟网页操作目前不可用）   
@@ -655,9 +642,6 @@ cookiePath下可以将多个文件按例子往下写，当一个账号到达上�
   Sakura:
     endpoint: http://127.0.0.1:8080 # 修改为server的地址
 ```
-
-* **彩云小译**  
-沉迷王国之泪，后面再补！（2023.12 可能不补了，谁还用传统机翻？）   
 
 </details>
 

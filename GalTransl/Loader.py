@@ -20,16 +20,13 @@ def load_transList_from_json_jp(json_str_or_list: str):
         json_list = json_str_or_list
 
     for i, item in enumerate(json_list):
+        if "message" not in item:
+            raise ValueError(f"json文件格式不正确，缺少message字段")
+
         name = (
             item["name"] if "name" in item else item["names"] if "names" in item else ""
         )
-        pre_jp = (
-            item["message"]
-            if "message" in item
-            else item["pre_jp"]
-            if "pre_jp" in item
-            else ""
-        )
+        pre_jp = item["message"]
         index = item["index"] if "index" in item else i + 1
         tmp_tran = CSentense(pre_jp, name, index)
         # 链接上下文

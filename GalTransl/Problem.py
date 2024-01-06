@@ -3,6 +3,7 @@
 """
 from GalTransl.CSentense import CTransList
 from GalTransl.StringUtils import get_most_common_char, contains_japanese
+from GalTransl.Dictionary import CGptDict
 from enum import Enum
 
 
@@ -19,11 +20,14 @@ class CTranslateProblem(Enum):
     丢失换行 = 4
     多加换行 = 5
     比日文长 = 6
-    彩云不识 = 7
+    字典使用 = 7
 
 
 def find_problems(
-    trans_list: CTransList, find_type: list[CTranslateProblem] = [], arinashi_dict={}
+    trans_list: CTransList,
+    find_type: list[CTranslateProblem] = [],
+    arinashi_dict={},
+    gpt_dict: CGptDict = None,
 ) -> None:
     """
     此函数接受一个翻译列表，查找其中的问题并将其记录在每个翻译对象的 `problem` 属性中。
@@ -79,9 +83,9 @@ def find_problems(
                 problem_list.append(
                     f"比日文长{round(len(find_from_str)/len(tran.pre_jp),1)}倍"
                 )
-        if CTranslateProblem.彩云不识 in find_type:
-            if "some" in tran.pre_zh or "SOME" in tran.pre_zh:
-                problem_list.append("彩云不识")
+        if CTranslateProblem.字典使用 in find_type:
+            if val := gpt_dict.check_dic_use(find_from_str, tran):
+                problem_list.append(val)
         if arinashi_dict != {}:
             for key, value in arinashi_dict.items():
                 if key not in tran.pre_jp and value in find_from_str:

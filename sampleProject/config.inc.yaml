@@ -86,18 +86,21 @@ problemAnalyze:
     - 丢失换行
     - 多加换行
     - 比日文长
+    - 字典使用
   GPT4: # GPT4 / ChatGPT
     - 词频过高
     - 标点错漏
     - 残留日文
     - 丢失换行
     - 多加换行
+    - 字典使用
   bingGPT4: # NewBing
     - 词频过高
     - 标点错漏
     - 残留日文
     - 丢失换行
     - 多加换行
+    - 字典使用
   arinashiDict: # 格式为 aaa:<空格>bbb
     aaa: bbb
     ccc: ddd

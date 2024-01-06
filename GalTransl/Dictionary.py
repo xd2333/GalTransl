@@ -319,3 +319,26 @@ class CGptDict:
                 + promt
             )
         return promt
+
+    def check_dic_use(self, find_from_str: str, tran: CSentense):
+        problem_list = []
+        for dic in self._dic_list:
+            if dic.search_word not in tran.post_jp:
+                continue
+
+            replace_word_list = (
+                dic.replace_word.split("/")
+                if "/" in dic.replace_word
+                else [dic.replace_word]
+            )
+
+            flag = False
+            for replace_word in replace_word_list:
+                if replace_word in find_from_str:
+                    flag = True
+                    break
+
+            if not flag:
+                problem_list.append(f"字典 {dic.search_word}={dic.replace_word} 未使用")
+
+        return ", ".join(problem_list)

@@ -87,6 +87,7 @@ async def doGPT3TranslateSingleFile(
         trans_list,
         find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
         arinashi_dict=arinashi_dict,
+        gpt_dict=gpt_dic,
     )
     save_transCache_to_json(trans_list, cache_file_path, post_save=True)
     # 5、整理输出
@@ -236,6 +237,7 @@ async def doGPT4TranslateSingleFile(
         trans_list,
         find_type=projectConfig.getProblemAnalyzeConfig("GPT4"),
         arinashi_dict=arinashi_dict,
+        gpt_dict=gpt_dic
     )
     save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 
@@ -396,6 +398,7 @@ async def doNewBingTranslateSingleFile(
         trans_list,
         find_type=projectConfig.getProblemAnalyzeConfig("bingGPT4"),
         arinashi_dict=arinashi_dict,
+        gpt_dict=gpt_dic
     )
     save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 
@@ -527,6 +530,7 @@ async def doSakuraTranslateSingleFile(
         trans_list,
         find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
         arinashi_dict=arinashi_dict,
+        gpt_dict=gpt_dic
     )
     save_transCache_to_json(trans_list, cache_file_path, post_save=True)
     # 5、整理输出

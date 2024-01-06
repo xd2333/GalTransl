@@ -164,7 +164,7 @@ class Chatbot:
         """
         Get max tokens
         """
-        return max(self.max_tokens - self.get_token_count(convo_id), 4096)
+        return self.max_tokens - self.get_token_count(convo_id)
 
     def ask_stream(
         self,

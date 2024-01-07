@@ -618,8 +618,9 @@ async def doRebuildSingleFile(
             joinpath(projectConfig.getInputPath(), file_name)
         )
 
-        # 2、翻译前处理，Rebuild下忽略
+        # 2、翻译前处理，Rebuild下忽略译前字典替换
         for i, tran in enumerate(trans_list):
+            tran.analyse_dialogue()  # 解析是否为对话
             pass
 
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
@@ -627,7 +628,8 @@ async def doRebuildSingleFile(
             trans_list, cache_file_path, load_post_jp=True
         )
 
-        if not trans_list_hit:  # 不Build
+        if len(trans_list_hit) != len(trans_list):  # 不Build
+            LOGGER.info(f"{file_name} 缓存不完整，跳过重构")
             return
 
         # 3、翻译后处理
@@ -644,16 +646,19 @@ async def doRebuildSingleFile(
                     elif type(tran.speaker) == type(tran._speaker) == str:
                         tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
-    # 4、找problems
-    arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
-    find_problems(
-        trans_list,
-        find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
-        arinashi_dict=arinashi_dict,
-        gpt_dict=gpt_dic,
     )
     # 5、保存cache
-    save_transCache_to_json(trans_list, cache_file_path, post_save=True)
+    # # 4、找problems
+    # arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
+    # find_problems(
+    #     trans_list,
+    #     find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
+    #     arinashi_dict=arinashi_dict,
+    #     gpt_dict=gpt_dic,
+    # )
+    # # 5、保存cache
+    # save_transCache_to_json(trans_list, cache_file_path, post_save=True)
+                        
     # 6、整理输出
     if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
         name_dict = load_name_table(

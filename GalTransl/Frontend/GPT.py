@@ -618,18 +618,16 @@ async def doRebuildSingleFile(
             joinpath(projectConfig.getInputPath(), file_name)
         )
 
-        # 2、翻译前处理
+        # 2、翻译前处理，Rebuild下忽略
         for i, tran in enumerate(trans_list):
-            tran.analyse_dialogue()  # 解析是否为对话
-            tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
-            if projectConfig.getDictCfgSection("usePreDictInName"):  # 译前name替换
-                if type(tran.speaker) == type(tran._speaker) == str:
-                    tran.speaker = pre_dic.do_replace(tran.speaker, tran)
+            pass
 
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
-        trans_list_hit, _ = get_transCache_from_json(trans_list, cache_file_path)
-        
-        if not trans_list_hit: # 不Build
+        trans_list_hit, _ = get_transCache_from_json(
+            trans_list, cache_file_path, load_post_jp=True
+        )
+
+        if not trans_list_hit:  # 不Build
             return
 
         # 3、翻译后处理

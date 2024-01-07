@@ -6,6 +6,7 @@ from GalTransl.Frontend.GPT import (
     doGPT4Translate,
     doNewBingTranslate,
     doSakuraTranslate,
+    doRebuildTranslate
 )
 from GalTransl import LOGGER
 
@@ -37,5 +38,8 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         await doNewBingTranslate(cfg, proxyPool)
     elif translator == "Sakura":
         await doSakuraTranslate(cfg, proxyPool, eng_type="Sakura0.9")
+    elif translator == "Rebuild":
+        await doRebuildTranslate(cfg)
+
     end_time = time.time()
     LOGGER.info(f"spend time:{str(end_time-start_time)}s")

@@ -17,7 +17,7 @@ from GalTransl.ConfigHelper import initDictList
 from GalTransl.Loader import load_transList_from_json_jp
 from GalTransl.Dictionary import CGptDict, CNormalDic
 from GalTransl.Problem import find_problems
-from GalTransl.Cache import save_transCache_to_json
+from GalTransl.Cache import save_transCache_to_json, get_transCache_from_json
 from GalTransl.Name import load_name_table
 from GalTransl.CSerialize import save_transList_to_json_cn
 from GalTransl.Problem import CTranslateProblem
@@ -237,7 +237,7 @@ async def doGPT4TranslateSingleFile(
         trans_list,
         find_type=projectConfig.getProblemAnalyzeConfig("GPT4"),
         arinashi_dict=arinashi_dict,
-        gpt_dict=gpt_dic
+        gpt_dict=gpt_dic,
     )
     save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 
@@ -398,7 +398,7 @@ async def doNewBingTranslateSingleFile(
         trans_list,
         find_type=projectConfig.getProblemAnalyzeConfig("bingGPT4"),
         arinashi_dict=arinashi_dict,
-        gpt_dict=gpt_dic
+        gpt_dict=gpt_dic,
     )
     save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 
@@ -530,7 +530,7 @@ async def doSakuraTranslateSingleFile(
         trans_list,
         find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
         arinashi_dict=arinashi_dict,
-        gpt_dict=gpt_dic
+        gpt_dict=gpt_dic,
     )
     save_transCache_to_json(trans_list, cache_file_path, post_save=True)
     # 5、整理输出
@@ -597,6 +597,121 @@ async def doSakuraTranslate(
             post_dic,
             gpt_dic,
             gptapi,
+        )
+        for file_name in listdir(projectConfig.getInputPath())
+    ]
+    await gather(*tasks)  # run
+
+
+async def doRebuildSingleFile(
+    semaphore: Semaphore,
+    file_name: str,
+    projectConfig: CProjectConfig,
+    pre_dic: CNormalDic,
+    post_dic: CNormalDic,
+    gpt_dic: CGptDict,
+) -> bool:
+    async with semaphore:
+        st = time()
+        # 1、初始化trans_list
+        trans_list = load_transList_from_json_jp(
+            joinpath(projectConfig.getInputPath(), file_name)
+        )
+
+        # 2、翻译前处理
+        for i, tran in enumerate(trans_list):
+            tran.analyse_dialogue()  # 解析是否为对话
+            tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
+            if projectConfig.getDictCfgSection("usePreDictInName"):  # 译前name替换
+                if type(tran.speaker) == type(tran._speaker) == str:
+                    tran.speaker = pre_dic.do_replace(tran.speaker, tran)
+
+        cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
+        trans_list_hit, _ = get_transCache_from_json(trans_list, cache_file_path)
+        
+        if not trans_list_hit: # 不Build
+            return
+
+        # 3、翻译后处理
+        for i, tran in enumerate(trans_list):
+            tran.some_normal_fix()
+            tran.recover_dialogue_symbol()  # 恢复对话框
+            tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
+            if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
+                if tran._speaker:
+                    if type(tran.speaker) == type(tran._speaker) == list:
+                        tran._speaker = [
+                            post_dic.do_replace(s, tran) for s in tran.speaker
+                        ]
+                    elif type(tran.speaker) == type(tran._speaker) == str:
+                        tran._speaker = post_dic.do_replace(tran.speaker, tran)
+
+    # 4、找problems
+    arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
+    find_problems(
+        trans_list,
+        find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
+        arinashi_dict=arinashi_dict,
+        gpt_dict=gpt_dic,
+    )
+    # 5、保存cache
+    save_transCache_to_json(trans_list, cache_file_path, post_save=True)
+    # 6、整理输出
+    if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
+        name_dict = load_name_table(
+            joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
+        )
+    else:
+        name_dict = {}
+    save_transList_to_json_cn(
+        trans_list, joinpath(projectConfig.getOutputPath(), file_name), name_dict
+    )
+    et = time()
+    LOGGER.info(f"文件 {file_name} Rebuild完成，用时 {et-st}s.")
+
+
+async def doRebuildTranslate(projectConfig: CProjectConfig) -> bool:
+    # 加载字典
+    pre_dic = CNormalDic(
+        initDictList(
+            projectConfig.getDictCfgSection()["preDict"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
+            projectConfig.getProjectDir(),
+        )
+    )
+    post_dic = CNormalDic(
+        initDictList(
+            projectConfig.getDictCfgSection()["postDict"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
+            projectConfig.getProjectDir(),
+        )
+    )
+    gpt_dic = CGptDict(
+        initDictList(
+            projectConfig.getDictCfgSection()["gpt.dict"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
+            projectConfig.getProjectDir(),
+        )
+    )
+
+    for dir_path in [
+        projectConfig.getInputPath(),
+        projectConfig.getOutputPath(),
+        projectConfig.getCachePath(),
+    ]:
+        if not isPathExists(dir_path):
+            LOGGER.info("%s 文件夹不存在，让我们创建它...", dir_path)
+            mkdir(dir_path)
+
+    semaphore = Semaphore(projectConfig.getKey("workersPerProject"))
+    tasks = [
+        doRebuildSingleFile(
+            semaphore,
+            file_name,
+            projectConfig,
+            pre_dic,
+            post_dic,
+            gpt_dic,
         )
         for file_name in listdir(projectConfig.getInputPath())
     ]

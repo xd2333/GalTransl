@@ -15,7 +15,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     start_time = time.time()
     proxyPool = CProxyPool(cfg) if cfg.getKey("internals.enableProxy") else None
     OpenAITokenPool = COpenAITokenPool(cfg)
-    if proxyPool:
+    if proxyPool and translator != "Rebuild":
         await proxyPool.checkAvailablity()
     if "gpt35" in translator or "gpt4" in translator:
         await OpenAITokenPool.checkTokenAvailablity(

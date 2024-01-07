@@ -607,6 +607,7 @@ async def doRebuildSingleFile(
     semaphore: Semaphore,
     file_name: str,
     projectConfig: CProjectConfig,
+    pre_dic: CNormalDic,
     post_dic: CNormalDic,
     gpt_dic: CGptDict,
 ) -> bool:
@@ -617,14 +618,17 @@ async def doRebuildSingleFile(
             joinpath(projectConfig.getInputPath(), file_name)
         )
 
-        # 2、翻译前处理，Rebuild下忽略译前字典替换
+        # 2、翻译前处理
         for i, tran in enumerate(trans_list):
             tran.analyse_dialogue()  # 解析是否为对话
-            pass
+            tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
+            if projectConfig.getDictCfgSection("usePreDictInName"):  # 译前name替换
+                if type(tran.speaker) == type(tran._speaker) == str:
+                    tran.speaker = pre_dic.do_replace(tran.speaker, tran)
 
         cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
         trans_list_hit, _ = get_transCache_from_json(
-            trans_list, cache_file_path, load_post_jp=True
+            trans_list, cache_file_path, ignr_post_jp=True
         )
 
         if len(trans_list_hit) != len(trans_list):  # 不Build
@@ -672,6 +676,13 @@ async def doRebuildSingleFile(
 
 async def doRebuildTranslate(projectConfig: CProjectConfig) -> bool:
     # 加载字典
+    pre_dic = CNormalDic(
+        initDictList(
+            projectConfig.getDictCfgSection()["preDict"],
+            projectConfig.getDictCfgSection()["defaultDictFolder"],
+            projectConfig.getProjectDir(),
+        )
+    )
     post_dic = CNormalDic(
         initDictList(
             projectConfig.getDictCfgSection()["postDict"],
@@ -702,6 +713,7 @@ async def doRebuildTranslate(projectConfig: CProjectConfig) -> bool:
             semaphore,
             file_name,
             projectConfig,
+            pre_dic,
             post_dic,
             gpt_dic,
         )

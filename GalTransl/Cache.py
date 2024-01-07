@@ -60,6 +60,7 @@ def get_transCache_from_json(
     proofread=False,
     retran_key="",
     load_post_jp=False,
+    ignr_post_jp=False,
 ):
     """
     此函数从 JSON 文件中检索翻译缓存，并相应地更新翻译列表。
@@ -69,7 +70,8 @@ def get_transCache_from_json(
         cache_file_path (str): 包含翻译缓存的 JSON 文件的路径。
         retry_failed (bool, optional): 是否重试失败的翻译。默认为 False。
         proofread (bool, optional): 是否是校对模式。默认为 False。
-        load_post_jp: 不检查post_jp是否被改变, 且直接读取cache的post_jp
+        load_post_jp: 不检查post_jp是否被改变, 且直接使用cache的post_jp
+        ignr_post_jp: 仅不检查post_jp是否被改变
 
     Returns:
         Tuple[List[CTrans], List[CTrans]]: 包含两个列表的元组：击中缓存的翻译列表和未击中缓存的翻译列表。
@@ -94,7 +96,7 @@ def get_transCache_from_json(
         if tran.index not in cache_dict:  # 原句不在缓存
             trans_list_unhit.append(tran)
             continue
-        if not load_post_jp:
+        if load_post_jp == ignr_post_jp == False:
             if tran.post_jp != cache_dict[tran.index]["post_jp"]:  # 前润被改变
                 trans_list_unhit.append(tran)
                 continue

@@ -29,7 +29,7 @@ TRANSLATOR_SUPPORTED = {
     "gpt4-turbo": "GPT4-Turbo API模式 -- 1106-preview模型",
     "newbing": "NewBing 模拟网页模式",
     "Sakura":"Sakura-13B-Galgame翻译模型 -- v0.9pre3模型",
-    "Rebuild":"仅重构模式 仅用译后字典+找问题通过缓存重构json -- 跳过翻译",
+    "Rebuild":"仅重构模式 仅用译后字典通过缓存重构结果json -- 跳过翻译",
     "chatgpt-gpt35": "GPT3.5 模拟网页模式 -- 暂不可用",
     "chatgpt-gpt4": "GPT4 模拟网页模式 -- 暂不可用",
 }

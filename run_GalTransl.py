@@ -34,3 +34,6 @@ os.system("")  # 解决cmd的ANSI转义bug
 translator = BulletMenu("翻译器：", TRANSLATOR_SUPPORTED).run()
 
 worker(project_dir, config_file_name, translator, show_banner=False)
+
+if __file__.endswith(".exe"):
+    os.system("pause")

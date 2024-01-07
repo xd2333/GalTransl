@@ -42,4 +42,4 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         await doRebuildTranslate(cfg)
 
     end_time = time.time()
-    LOGGER.info(f"spend time:{str(end_time-start_time)}s")
+    LOGGER.info(f"总耗时: {end_time-start_time:.3f}s")

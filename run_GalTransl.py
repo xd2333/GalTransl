@@ -20,7 +20,7 @@ print(f"Contributors: {CONTRIBUTORS}\n")
 INPUT_PROMPT = "请输入/拖入项目文件夹，或项目文件夹内的yaml配置文件："
 
 while True:
-    project_dir = os.path.abspath(input(INPUT_PROMPT))
+    project_dir = os.path.abspath(input(INPUT_PROMPT).strip('"'))
     config_file_name = CONFIG_FILENAME
     if project_dir.endswith(".yaml"):
         config_file_name = os.path.basename(project_dir)

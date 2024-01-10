@@ -607,6 +607,7 @@ async def doRebuildSingleFile(
     semaphore: Semaphore,
     file_name: str,
     projectConfig: CProjectConfig,
+    eng_type: str,
     pre_dic: CNormalDic,
     post_dic: CNormalDic,
     gpt_dic: CGptDict,
@@ -649,17 +650,18 @@ async def doRebuildSingleFile(
                     elif type(tran.speaker) == type(tran._speaker) == str:
                         tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
-    # # 4、找problems
-    # arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
-    # find_problems(
-    #     trans_list,
-    #     find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
-    #     arinashi_dict=arinashi_dict,
-    #     gpt_dict=gpt_dic,
-    # )
-    # # 5、保存cache
-    # save_transCache_to_json(trans_list, cache_file_path, post_save=True)
-                        
+    if eng_type == "rebuilda":
+        # 4、找problems
+        arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
+        find_problems(
+            trans_list,
+            find_type=projectConfig.getProblemAnalyzeConfig("GPT35"),
+            arinashi_dict=arinashi_dict,
+            gpt_dict=gpt_dic,
+        )
+        # 5、保存cache
+        save_transCache_to_json(trans_list, cache_file_path, post_save=True)
+
     # 6、整理输出
     if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
         name_dict = load_name_table(
@@ -674,7 +676,10 @@ async def doRebuildSingleFile(
     LOGGER.info(f"文件 {file_name} Rebuild完成，用时 {et-st:.3f}s.")
 
 
-async def doRebuildTranslate(projectConfig: CProjectConfig) -> bool:
+async def doRebuildTranslate(
+    projectConfig: CProjectConfig,
+    eng_type: str,
+) -> bool:
     # 加载字典
     pre_dic = CNormalDic(
         initDictList(
@@ -713,6 +718,7 @@ async def doRebuildTranslate(projectConfig: CProjectConfig) -> bool:
             semaphore,
             file_name,
             projectConfig,
+            eng_type,
             pre_dic,
             post_dic,
             gpt_dic,

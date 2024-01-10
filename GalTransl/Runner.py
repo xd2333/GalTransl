@@ -36,10 +36,12 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         await doGPT4Translate(cfg, OpenAITokenPool, proxyPool, eng_type="unoffapi")
     elif translator == "newbing":
         await doNewBingTranslate(cfg, proxyPool)
-    elif translator == "Sakura":
+    elif translator == "sakura":
         await doSakuraTranslate(cfg, proxyPool, eng_type="Sakura0.9")
-    elif translator == "Rebuild":
-        await doRebuildTranslate(cfg)
+    elif translator == "rebuildr":
+        await doRebuildTranslate(cfg, eng_type="rebuildr")
+    elif translator == "rebuilda":
+        await doRebuildTranslate(cfg, eng_type="rebuilda")
 
     end_time = time.time()
     LOGGER.info(f"总耗时: {end_time-start_time:.3f}s")

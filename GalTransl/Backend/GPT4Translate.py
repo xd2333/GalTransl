@@ -126,14 +126,14 @@ class CGPT4Translate:
         if eng_type == "gpt4":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
-            token = self.tokenProvider.getToken(False, True)
+            self.token = self.tokenProvider.getToken(False, True)
             self.chatbot = ChatbotV3(
-                api_key=token.token,
+                api_key=self.token.token,
                 temperature=0.4,
                 frequency_penalty=0.2,
                 system_prompt=GPT4_SYSTEM_PROMPT,
                 engine="gpt-4",
-                api_address=token.domain + "/v1/chat/completions",
+                api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
             )
             self.chatbot.trans_prompt = GPT4_TRANS_PROMPT
@@ -144,16 +144,16 @@ class CGPT4Translate:
         elif eng_type == "gpt4-turbo":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
-            token = self.tokenProvider.getToken(False, True)
+            self.token = self.tokenProvider.getToken(False, True)
 
             system_prompt = GPT4Turbo_SYSTEM_PROMPT
             self.chatbot = ChatbotV3(
-                api_key=token.token,
+                api_key=self.token.token,
                 temperature=0.4,
                 frequency_penalty=0.2,
                 system_prompt=system_prompt,
                 engine="gpt-4-1106-preview",
-                api_address=token.domain + "/v1/chat/completions",
+                api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
                 # response_format="json",
             )
@@ -230,9 +230,8 @@ class CGPT4Translate:
             try:
                 # change token
                 if self.eng_type != "unoffapi":
-                    self.chatbot.set_api_key(
-                        self.tokenProvider.getToken(False, True).token
-                    )
+                    self.token = self.tokenProvider.getToken(False, True)
+                    self.chatbot.set_api_key(self.token.token)
                 # LOGGER.info("->输入：\n" + prompt_req + "\n")
                 LOGGER.info(
                     f"->{'翻译输入' if not proofread else '校对输入'}：{gptdict}\n{input_json}\n"
@@ -274,6 +273,11 @@ class CGPT4Translate:
                     self.reset_conversation()
                     LOGGER.error("-> 报错重置会话")
                     continue
+                if "quota" in str_ex:
+                    self.tokenProvider.reportTokenProblem(self.token)
+                    LOGGER.error(f"-> 余额不足： {self.token.maskToken()}")
+                    self.token = self.tokenProvider.getToken(False, True)
+                    self.chatbot.set_api_key(self.token.token)
                 self._del_last_answer()
                 LOGGER.info("-> 报错:%s, 5秒后重试" % ex)
                 await asyncio.sleep(5)

@@ -158,7 +158,7 @@ class COpenAITokenPool:
         """
         for id, tokenPair in enumerate(self.tokens):
             if tokenPair[1] == token:
-                self.tokens[id][0] = False
+                self.tokens.pop(id)
             pass
         pass
 
@@ -169,7 +169,7 @@ class COpenAITokenPool:
         rounds: int = 0
         while True:
             if rounds > 20:
-                raise RuntimeError("COpenAITokenPool::getToken: 迭代次数过多！")
+                raise RuntimeError("COpenAITokenPool::getToken: 可用的OpenAI token耗尽！")
             try:
                 available, token = choice(self.tokens)
                 if not available:

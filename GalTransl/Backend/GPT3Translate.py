@@ -124,17 +124,17 @@ class CGPT35Translate:
         if eng_type == "gpt35-0613":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
-            token = self.tokenProvider.getToken(True, False)
+            self.token = self.tokenProvider.getToken(True, False)
             # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
             self.chatbot = ChatbotV3(
-                api_key=token.token,
+                api_key=self.token.token,
                 engine="gpt-3.5-turbo-0613",
                 max_tokens=4096,
                 temperature=0.4,
                 truncate_limit=3200,
                 frequency_penalty=0.2,
                 system_prompt=GPT35_0613_SYSTEM_PROMPT,
-                api_address=token.domain + "/v1/chat/completions",
+                api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
             )
             self.chatbot.trans_prompt = GPT35_0613_TRANS_PROMPT
@@ -145,17 +145,17 @@ class CGPT35Translate:
         elif eng_type == "gpt35-1106":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
-            token = self.tokenProvider.getToken(True, False)
+            self.token = self.tokenProvider.getToken(True, False)
             # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
             self.chatbot = ChatbotV3(
-                api_key=token.token,
+                api_key=self.token.token,
                 engine="gpt-3.5-turbo-1106",
                 max_tokens=4096,
                 temperature=0.4,
                 truncate_limit=3200,
                 frequency_penalty=0.2,
                 system_prompt=GPT35_1106_SYSTEM_PROMPT,
-                api_address=token.domain + "/v1/chat/completions",
+                api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
             )
             self.chatbot.trans_prompt = GPT35_1106_TRANS_PROMPT
@@ -203,9 +203,8 @@ class CGPT35Translate:
             try:
                 # change token
                 if self.eng_type != "unoffapi":
-                    self.chatbot.set_api_key(
-                        self.tokenProvider.getToken(True, False).token
-                    )
+                    self.token = self.tokenProvider.getToken(True, False)
+                    self.chatbot.set_api_key(self.token.token)
                 LOGGER.info(f"-> 翻译输入：\n{gptdict}\n{input_json}\n")
                 if self.streamOutputMode:
                     LOGGER.info("-> 输出：\n")
@@ -241,9 +240,14 @@ class CGPT35Translate:
                     self.reset_conversation()
                     LOGGER.error("-> 报错重置会话")
                     continue
+                if "quota" in str_ex:
+                    self.tokenProvider.reportTokenProblem(self.token)
+                    LOGGER.error(f"-> 余额不足： {self.token.maskToken()}")
+                    self.token = self.tokenProvider.getToken(True, False)
+                    self.chatbot.set_api_key(self.token.token)
+
                 self._del_last_answer()
                 LOGGER.error(f"-> 报错, 5秒后重试")
-                time.sleep(5)
                 await asyncio.sleep(5)
                 continue
 

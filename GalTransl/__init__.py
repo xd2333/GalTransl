@@ -14,7 +14,7 @@ PROGRAM_SPLASH = """
   \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|                                           
 """
 
-GALTRANSL_VERSION = "3.3.0"
+GALTRANSL_VERSION = "3.4.0"
 AUTHOR = "cx2333"
 CONTRIBUTORS = "ryank231231, Isotr0py, Noriverwater, pipixia244, gulaodeng"
 
@@ -25,7 +25,7 @@ CACHE_FOLDERNAME = "transl_cache"
 TRANSLATOR_SUPPORTED = {
     "gpt35-0613": "GPT3.5-Turbo API模式 -- 0613模型",
     "gpt35-1106": "GPT3.5-Turbo API模式 -- 1106模型",
-    "gpt4": "GPT4 API模式",
+    "gpt4": "GPT4 API模式 -- 0613模型",
     "gpt4-turbo": "GPT4-Turbo API模式 -- 1106-preview模型",
     "newbing": "NewBing 模拟网页模式",
     "sakura":"Sakura-13B-Galgame翻译模型 -- v0.9模型",

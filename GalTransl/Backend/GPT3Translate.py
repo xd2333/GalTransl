@@ -229,22 +229,22 @@ class CGPT35Translate:
             except Exception as ex:
                 str_ex = str(ex).lower()
                 LOGGER.error(f"-> {str_ex}")
-                if "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.warning("-> 请求受限，5分钟后继续尝试")
-                    await asyncio.sleep(300)
-                    continue
-                if "expired" in str_ex:
-                    LOGGER.error("-> access_token过期，请更换")
-                    exit()
-                if "try reload" in str_ex:
-                    self.reset_conversation()
-                    LOGGER.error("-> 报错重置会话")
-                    continue
                 if "quota" in str_ex:
                     self.tokenProvider.reportTokenProblem(self.token)
                     LOGGER.error(f"-> 余额不足： {self.token.maskToken()}")
                     self.token = self.tokenProvider.getToken(True, False)
                     self.chatbot.set_api_key(self.token.token)
+                elif "try again later" in str_ex or "too many requests" in str_ex:
+                    LOGGER.warning("-> 请求受限，5分钟后继续尝试")
+                    await asyncio.sleep(300)
+                    continue
+                elif "expired" in str_ex:
+                    LOGGER.error("-> access_token过期，请更换")
+                    exit()
+                elif "try reload" in str_ex:
+                    self.reset_conversation()
+                    LOGGER.error("-> 报错重置会话")
+                    continue
 
                 self._del_last_answer()
                 LOGGER.error(f"-> 报错, 5秒后重试")

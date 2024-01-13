@@ -9,6 +9,10 @@
 &	＆
 
 //一些对于符号的fix
+post_jp	「	1^"	「
+post_jp	」	1^"	」
+post_jp	『	1^"	『
+post_jp	』	1^"	』
 pre_jp	♪	#	♪
 pre_jp	♪	*	♪
 pre_jp	《	『	《

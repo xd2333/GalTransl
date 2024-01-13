@@ -38,6 +38,7 @@ class CBasicDicElement:
         "search_word",  # 搜索词
         "replace_word",  # 替换词
         "startswith_flag",  # 是否为startwith情况
+        "onetime_flag",  # 是否为onetime情况
         "special_key",  # 区分是否为特殊词典的关键字
         "is_situationsDic",  # 是否为情景字典
         "is_conditionaDic",  # 是否为条件字典
@@ -56,6 +57,11 @@ class CBasicDicElement:
         if search_word.startswith("^^"):  # startswith情况
             self.startswith_flag = True
             self.search_word = search_word[2:]
+        if search_word.startswith("1^"):  # onetime情况
+            self.onetime_flag = True
+            self.search_word = search_word[2:]
+        else:
+            self.onetime_flag = False
 
         self.special_key: str = special_key  # 区分是否为特殊词典的关键字
 
@@ -165,12 +171,12 @@ class CNormalDic:
                 self.dic_list.append(CBasicDicElement(sp[0], sp[1]))
                 normalDic_count += 1
         LOGGER.info(
-            "载入 "
+            "载入 普通字典："
             + path.basename(dic_path)
             + "  "
-            + (str(normalDic_count) + "普通；" if normalDic_count != 0 else "")
-            + (str(conditionaDic_count) + "条件；" if conditionaDic_count != 0 else "")
-            + (str(situationsDic_count) + "场景；" if situationsDic_count != 0 else "")
+            + (str(normalDic_count) + "普通词条 " if normalDic_count != 0 else "")
+            + (str(conditionaDic_count) + "条件词条 " if conditionaDic_count != 0 else "")
+            + (str(situationsDic_count) + "场景词条 " if situationsDic_count != 0 else "")
         )
 
     def do_replace(self, input_text: str, input_tran: CSentense) -> str:
@@ -242,7 +248,7 @@ class CNormalDic:
             search_word = dic.search_word
             replace_word = dic.replace_word
 
-            # 但是需要检查search_word是否是startwith情况
+            # startwith情况，只替换开头的
             if dic.startswith_flag:
                 len_search_word = len(search_word)
                 len_input_text = len(input_text)
@@ -250,6 +256,8 @@ class CNormalDic:
                     continue  # 肯定不满足
                 elif input_text[:len_search_word] == search_word:
                     input_text = input_text.replace(search_word, replace_word, 1)
+            elif dic.onetime_flag:  # onetime情况，只替换一次
+                input_text = input_text.replace(search_word, replace_word, 1)
             else:  # 普通情况
                 input_text = input_text.replace(search_word, replace_word)
 
@@ -300,7 +308,7 @@ class CGptDict:
                 dic.note = ""
             self._dic_list.append(dic)
             normalDic_count += 1
-        LOGGER.info(f"载入 GPT字典: {path.basename(dic_path)} {normalDic_count}个词条")
+        LOGGER.info(f"载入 GPT字典: {path.basename(dic_path)} {normalDic_count}普通词条")
 
     def gen_prompt(self, trans_list: CTransList):
         promt = ""

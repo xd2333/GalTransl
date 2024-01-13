@@ -139,6 +139,9 @@ class CNormalDic:
             elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
                 continue
 
+            # 四个空格换成Tab
+            line = line.replace("    ", "\t")
+
             sp = line.rstrip("\r\n").split("\t")  # 去多余换行符，Tab分割
             len_sp = len(sp)
             if len_sp < 2:  # 至少是2个元素
@@ -290,6 +293,9 @@ class CGptDict:
             elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
                 continue
 
+            # 四个空格换成Tab
+            line = line.replace("    ", "\t")
+            
             sp = line.rstrip("\r\n").split("\t")  # 去多余换行符，Tab分割
             len_sp = len(sp)
 

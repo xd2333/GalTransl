@@ -239,7 +239,7 @@ class Chatbot:
                 content = delta["content"]
                 full_response += content
                 yield content
-        self.add_to_conversation(full_response, response_role, convo_id=convo_id)
+        self.add_to_conversation(full_response, "assistant", convo_id=convo_id)
 
     async def ask_stream_async(
         self,
@@ -313,7 +313,7 @@ class Chatbot:
                     content: str = delta["content"]
                     full_response += content
                     yield content
-        self.add_to_conversation(full_response, response_role, convo_id=convo_id)
+        self.add_to_conversation(full_response, "assistant", convo_id=convo_id)
 
     async def ask_async(
         self,

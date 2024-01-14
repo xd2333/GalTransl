@@ -70,7 +70,7 @@ class CSakuraTranslate:
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
             )
-            self.chatbot.trans_prompt = Sakura_TRANS_PROMPT
+            self.trans_prompt = Sakura_TRANS_PROMPT
             self.transl_style = "auto"
             self._current_style = "precies"
             self._set_gpt_style("precise")
@@ -91,7 +91,7 @@ class CSakuraTranslate:
         # 检测退化阈值
         self.MAX_REPETITION_CNT = max(max_len + 5, 30)
 
-        prompt_req = self.chatbot.trans_prompt
+        prompt_req = self.trans_prompt
         prompt_req = prompt_req.replace("[Input]", input_str)
         prompt_req = prompt_req.replace("[Glossary]", gptdict)
 
@@ -131,8 +131,7 @@ class CSakuraTranslate:
                 LOGGER.info("-> 报错:%s, 立刻重试" % ex)
                 continue
 
-            result_text = resp.strip("\n")
-            result_list = result_text.split("\n")
+            result_list = resp.strip("\n").split("\n")
             # fix trick
             if result_list[0] == "——":
                 result_list.pop(0)
@@ -196,22 +195,23 @@ class CSakuraTranslate:
                         i = i + 1
                 else:
                     LOGGER.error(f"-> 错误的输出：{error_message}")
+                    # 删除上次回答与提问
+                    self._del_last_answer()
                     await asyncio.sleep(1)
                     # 切换模式
                     if self.transl_style == "auto":
                         self._set_gpt_style("normal")
-                        # 先增加frequency_penalty参数重试再进行二分
-                        if not once_flag:
-                            self._del_last_answer()
-                            once_flag = True
-                            continue
+                    # 先增加frequency_penalty参数重试再进行二分
+                    if not once_flag:
+                        once_flag = True
+                        continue
                     # 可拆分先对半拆
                     if len(trans_list) > 1:  
                         LOGGER.warning("-> 对半拆分重试")
                         return await self.translate(
                             trans_list[: len(trans_list) // 2], gptdict
                         )
-                    # 无法拆分后，才开始计算重试次数
+                    # 拆成单句后，才开始计算重试次数
                     self.retry_count += 1
                     # 5次重试则填充原文
                     if self.retry_count >= 5:
@@ -225,18 +225,15 @@ class CSakuraTranslate:
                             i = i + 1
                         return i, result_trans_list
                     # 2次重试则重置会话
-                    if self.retry_count % 2 == 0:
+                    elif self.retry_count % 2 == 0:
                         self.reset_conversation()
                         LOGGER.warning(f"-> 单句循环重试{self.retry_count}次出错，重置会话")
                         continue
-
-                    # 删除上次回答并重试
-                    self._del_last_answer()
                     continue
             else:
                 self.retry_count = 0
-
-            self._set_gpt_style("precise")
+            if self.transl_style == "auto":
+                self._set_gpt_style("precise")
             return i + 1, result_trans_list
 
     async def batch_translate(
@@ -273,26 +270,17 @@ class CSakuraTranslate:
         len_trans_list = len(trans_list_unhit)
         while i < len_trans_list:
             await asyncio.sleep(1)
-            trans_list_split = (
-                trans_list_unhit[i : i + num_pre_request]
-                if (i + num_pre_request < len_trans_list)
-                else trans_list_unhit[i:]
-            )
 
+            trans_list_split = trans_list_unhit[i : i + num_pre_request]
             dic_prompt = (
                 chatgpt_dict.gen_prompt(trans_list_split)
                 if chatgpt_dict != None
                 else ""
             )
-
             num, trans_result = await self.translate(trans_list_split, dic_prompt)
 
-            if num > 0:
-                i += num
-            result_output = ""
-            for trans in trans_result:
-                result_output = result_output + repr(trans)
-            LOGGER.info(result_output)
+            i += num if num > 0 else 0
+            LOGGER.info("".join([repr(tran) for tran in trans_result]))
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path)
             LOGGER.info(

@@ -14,7 +14,7 @@ PROGRAM_SPLASH = """
   \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|                                           
 """
 
-GALTRANSL_VERSION = "3.4.0"
+GALTRANSL_VERSION = "3.5.0"
 AUTHOR = "cx2333"
 CONTRIBUTORS = "ryank231231, Isotr0py, Noriverwater, pipixia244, gulaodeng"
 

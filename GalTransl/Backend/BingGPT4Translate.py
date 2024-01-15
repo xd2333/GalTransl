@@ -60,7 +60,7 @@ class CBingGPT4Translate:
             self.record_confidence = False
         # 流式输出模式
         if val := config.getKey("gpt.streamOutputMode"):
-            self.streamOutputMode = val  
+            self.streamOutputMode = val
         else:
             self.streamOutputMode = False
 
@@ -350,7 +350,6 @@ class CBingGPT4Translate:
         Returns:
             CTransList: _description_
         """
-        await self._change_cookie()
         _, trans_list_unhit = get_transCache_from_json(
             trans_list,
             cache_file_path,
@@ -362,7 +361,7 @@ class CBingGPT4Translate:
             return []
         # 新文件重置chatbot
         if self.last_file_name != "" and self.last_file_name != filename:
-            self.chatbot.reset()
+            await self._change_cookie()
             self.last_file_name = filename
 
         i = 0
@@ -370,14 +369,10 @@ class CBingGPT4Translate:
         len_trans_list = len(trans_list_unhit)
         while i < len_trans_list:
             await asyncio.sleep(1)
-            trans_list_split = (
-                trans_list_unhit[i : i + num_pre_request]
-                if (i + num_pre_request < len_trans_list)
-                else trans_list_unhit[i:]
-            )
+            trans_list_split = trans_list_unhit[i : i + num_pre_request]
 
             # 生成dic prompt
-            if chatgpt_dict != None:
+            if chatgpt_dict:
                 dic_prompt = chatgpt_dict.gen_prompt(trans_list_split)
             else:
                 dic_prompt = ""
@@ -385,14 +380,11 @@ class CBingGPT4Translate:
             num, trans_result = await self.translate(
                 trans_list_split, dic_prompt, proofread=proofread
             )
-            if num > 0:
-                i += num
-            result_output = ""
-            for trans in trans_result:
-                result_output = result_output + repr(trans)
-            LOGGER.info(result_output)
+
+            i += num if num > 0 else 0
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path)
+            LOGGER.info("".join([repr(tran) for tran in trans_result]))
             LOGGER.info(
                 f"{filename}：{str(len(trans_result_list))}/{str(len_trans_list)}"
             )

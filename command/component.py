@@ -43,12 +43,20 @@ class BulletMenu:
         old_position = self.position
         if direction == Direction.DOWN:
             if self.position + 1 >= len(self.choices):
-                return
-            self.position += num_spaces
+                # go back to the top
+                self.position = 0
+                num_spaces = len(self.choices) - 1
+                direction = Direction.UP
+            else:
+                self.position += num_spaces
         else:
             if self.position - 1 < 0:
-                return
-            self.position -= num_spaces
+                # go to the bottom
+                self.position = len(self.choices) - 1
+                num_spaces = len(self.choices) - 1
+                direction = Direction.DOWN
+            else:
+                self.position -= num_spaces
         clear_line()
         self.print_choice(old_position)
         move_cursor(num_spaces, direction.name)

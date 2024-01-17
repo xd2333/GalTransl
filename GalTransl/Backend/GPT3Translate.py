@@ -176,6 +176,10 @@ class CGPT35Translate:
         translate with async requests
         """
         input_list = []
+        error_flag = False
+        warn_flag = False
+        error_message = ""
+        key_name = "dst"
         for i, trans in enumerate(content):
             tmp_obj = {"id": trans.index, "name": trans.speaker, "src": trans.post_jp}
             if trans.speaker == "":
@@ -256,46 +260,43 @@ class CGPT35Translate:
 
             try:
                 result_json = json.loads(result_text)  # 尝试解析json
+                if len(result_json) != len(input_list):  # 输出行数错误
+                    LOGGER.error("-> 错误的输出行数：\n" + result_text + "\n")
+                    error_message="输出行数错误"
+                    error_flag = True
             except:
                 LOGGER.error("-> 非json：\n" + result_text + "\n")
-                self._handle_error("输出非json")
-                continue
+                error_message="输出非json"
+                error_flag = True
 
-            if len(result_json) != len(input_list):  # 输出行数错误
-                LOGGER.error("-> 错误的输出行数：\n" + result_text + "\n")
-                self._handle_error("输出行数错误")
-                continue
-
-            error_flag = False
-            warn_flag = False
-            error_message = ""
-            key_name = "dst"
-            for i, result in enumerate(result_json):
-                # 本行输出不正常
-                if key_name not in result or type(result[key_name]) != str:
-                    error_message = f"第{content[i].index}句找不到{key_name}"
-                    error_flag = True
-                    break
-                # 本行输出不应为空
-                if content[i].post_jp != "" and result[key_name] == "":
-                    error_message = f"第{content[i].index}句空白"
-                    error_flag = True
-                    break
-                # 本行输出有多余的 /
-                if "/" in result[key_name] and not any(
-                    char in content[i].post_jp for char in ["／", "/", "・"]
-                ):
-                    error_message = f"第{content[i].index}句多余 / 符号"
-                    error_flag = True
-                    break
-                # 丢name
-                if "name" not in result and content[i].speaker != "":
-                    error_message = f"第{content[i].index}句丢 name"
-                    warn_flag = True
-                # 多余name
-                if "name" in result and content[i].speaker == "":
-                    error_message = f"第{content[i].index}句多 name"
-                    warn_flag = True
+            if not error_flag:
+                # 解析后检查
+                for i, result in enumerate(result_json):
+                    # 本行输出不正常
+                    if key_name not in result or type(result[key_name]) != str:
+                        error_message = f"第{content[i].index}句找不到{key_name}"
+                        error_flag = True
+                        break
+                    # 本行输出不应为空
+                    if content[i].post_jp != "" and result[key_name] == "":
+                        error_message = f"第{content[i].index}句空白"
+                        error_flag = True
+                        break
+                    # 本行输出有多余的 /
+                    if "/" in result[key_name] and not any(
+                        char in content[i].post_jp for char in ["／", "/", "・"]
+                    ):
+                        error_message = f"第{content[i].index}句多余 / 符号"
+                        error_flag = True
+                        break
+                    # 丢name
+                    if "name" not in result and content[i].speaker != "":
+                        error_message = f"第{content[i].index}句丢 name"
+                        warn_flag = True
+                    # 多余name
+                    if "name" in result and content[i].speaker == "":
+                        error_message = f"第{content[i].index}句多 name"
+                        warn_flag = True
 
             # if self.line_breaks_improvement_mode and len(input_list) > 3:
             #     if "\\r\\n" in input_json and "\\r\\n" not in result_text:

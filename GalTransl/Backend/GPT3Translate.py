@@ -93,6 +93,7 @@ class CGPT35Translate:
         else:
             self.proxyProvider = None
             LOGGER.warning("不使用代理")
+
         # 翻译风格
         if val := config.getKey("gpt.translStyle"):
             self.transl_style = val
@@ -100,18 +101,12 @@ class CGPT35Translate:
             self.transl_style = "normal"
         self._current_style = ""
 
-        self.init_chatbot(eng_type=eng_type, config=config)  # 模型选择
-
-        if self.transl_style == "auto":
-            self._set_gpt_style("precise")
-        else:
-            self._set_gpt_style(self.transl_style)
-
         if self.target_lang == "Simplified Chinese":
             self.opencc = OpenCC("t2s.json")
         elif self.target_lang == "Traditional Chinese":
             self.opencc = OpenCC("s2t.json")
 
+        self.init_chatbot(eng_type=eng_type, config=config)  # 模型选择
         pass
 
     def init(self) -> bool:
@@ -129,16 +124,12 @@ class CGPT35Translate:
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
                 engine="gpt-3.5-turbo-0613",
-                max_tokens=4096,
-                temperature=0.4,
-                truncate_limit=3200,
-                frequency_penalty=0.2,
                 system_prompt=GPT35_0613_SYSTEM_PROMPT,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
             )
-            self.chatbot.trans_prompt = GPT35_0613_TRANS_PROMPT
-            self.chatbot.name_prompt = GPT35_0613_NAME_PROMPT3
+            self.trans_prompt = GPT35_0613_TRANS_PROMPT
+            self.name_prompt = GPT35_0613_NAME_PROMPT3
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
             )
@@ -150,16 +141,12 @@ class CGPT35Translate:
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
                 engine="gpt-3.5-turbo-1106",
-                max_tokens=4096,
-                temperature=0.4,
-                truncate_limit=3200,
-                frequency_penalty=0.2,
                 system_prompt=GPT35_1106_SYSTEM_PROMPT,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
             )
-            self.chatbot.trans_prompt = GPT35_1106_TRANS_PROMPT
-            self.chatbot.name_prompt = GPT35_1106_NAME_PROMPT3
+            self.trans_prompt = GPT35_1106_TRANS_PROMPT
+            self.name_prompt = GPT35_1106_NAME_PROMPT3
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
             )
@@ -179,6 +166,11 @@ class CGPT35Translate:
             self.chatbot = ChatbotV1(config=gpt_config)
             self.chatbot.clear_conversations()
 
+        if self.transl_style == "auto":
+            self._set_gpt_style("precise")
+        else:
+            self._set_gpt_style(self.transl_style)
+
     async def asyncTranslate(self, content: CTransList, gptdict="") -> CTransList:
         """
         translate with async requests
@@ -190,13 +182,13 @@ class CGPT35Translate:
                 del tmp_obj["name"]
             input_list.append(tmp_obj)
         input_json = json.dumps(input_list, ensure_ascii=False)
-        prompt_req = self.chatbot.trans_prompt
+        prompt_req = self.trans_prompt
         prompt_req = prompt_req.replace("[Input]", input_json)
         prompt_req = prompt_req.replace("[Glossary]", gptdict)
         prompt_req = prompt_req.replace("[SourceLang]", self.source_lang)
         prompt_req = prompt_req.replace("[TargetLang]", self.target_lang)
         if '"name"' in input_json:
-            prompt_req = prompt_req.replace("[NamePrompt3]", self.chatbot.name_prompt)
+            prompt_req = prompt_req.replace("[NamePrompt3]", self.name_prompt)
         else:
             prompt_req = prompt_req.replace("[NamePrompt3]", "")
         while True:  # 一直循环，直到得到数据
@@ -281,7 +273,7 @@ class CGPT35Translate:
             for i, result in enumerate(result_json):
                 # 本行输出不正常
                 if key_name not in result or type(result[key_name]) != str:
-                    error_message = f"第{content[i].index}句不正常"
+                    error_message = f"第{content[i].index}句找不到{key_name}"
                     error_flag = True
                     break
                 # 本行输出不应为空
@@ -290,15 +282,12 @@ class CGPT35Translate:
                     error_flag = True
                     break
                 # 本行输出有多余的 /
-                if "/" in result[key_name]:
-                    if (
-                        "／" not in content[i].post_jp
-                        and "/" not in content[i].post_jp
-                        and "・" not in content[i].post_jp
-                    ):
-                        error_message = f"第{content[i].index}句多余 / 符号"
-                        error_flag = True
-                        break
+                if "/" in result[key_name] and not any(
+                    char in content[i].post_jp for char in ["／", "/", "・"]
+                ):
+                    error_message = f"第{content[i].index}句多余 / 符号"
+                    error_flag = True
+                    break
                 # 丢name
                 if "name" not in result and content[i].speaker != "":
                     error_message = f"第{content[i].index}句丢 name"
@@ -307,79 +296,71 @@ class CGPT35Translate:
                 if "name" in result and content[i].speaker == "":
                     error_message = f"第{content[i].index}句多 name"
                     warn_flag = True
-                if "*" in result[key_name] and "*" not in content[i].post_jp:
-                    error_message = f"第{content[i].index}句多余 * 符号"
-                    result[key_name] = result[key_name].replace("*", "")
-                    warn_flag = True
-                if "：" in result[key_name] and "：" not in content[i].post_jp:
-                    error_message = f"第{content[i].index}句多余 ： 符号"
-                    warn_flag = True
 
-            if self.line_breaks_improvement_mode and len(input_list) > 3:
-                if "\\r\\n" in input_json and "\\r\\n" not in result_text:
-                    error_message = "换行符改善模式"
-                    error_flag = True
+            # if self.line_breaks_improvement_mode and len(input_list) > 3:
+            #     if "\\r\\n" in input_json and "\\r\\n" not in result_text:
+            #         error_message = "换行符改善模式"
+            #         error_flag = True
 
-            if error_flag or warn_flag:
+            if error_flag:
+                LOGGER.error(f"-> 解析结果出错：{error_message}")
+                # 跳过重试
                 if self.skipRetry:
                     self.reset_conversation()
-                    LOGGER.warning("-> 解析出错但跳过本轮翻译")
+                    LOGGER.warning("-> 解析出错但直接跳过本轮翻译")
                     i = 0
                     while i < len(content):
                         content[i].pre_zh = "Failed translation"
                         content[i].post_zh = "Failed translation"
                         content[i].trans_by = "GPT-3.5(Failed)"
                         i = i + 1
-                    return content
-                self._handle_error(error_message)
-                if error_flag:
-                    continue
+                    return len(content), content
+
+                # 重试逻辑
+                await asyncio.sleep(1)
+                self.retry_count += 1
+
+                if self.eng_type != "unoffapi":
+                    self._del_last_answer()
+                elif self.eng_type == "unoffapi":
+                    self.reset_conversation()
+                # 先切换模式
+                if self.transl_style == "auto":
+                    self._set_gpt_style("normal")
+                # 2次重试则对半拆
+                if self.retry_count == 2 and len(content) > 1:
+                    self.retry_count -= 1
+                    LOGGER.warning("-> 仍然出错，拆分重试")
+                    return await self.asyncTranslate(
+                        content[: len(content) // 2], gptdict
+                    )
+                # 单句重试仍错则重置会话
+                if self.retry_count == 3:
+                    self.reset_conversation()
+                    LOGGER.warning("-> 单句仍错，重置会话")
+                # 单句5次重试则中止
+                if self.retry_count == 5:
+                    LOGGER.error(f"-> 单句反复出错，已中止。错误为：{error_message}")
+                    exit(-1)
+                continue
+
+            if warn_flag:
+                LOGGER.warning(f"-> 解析结果有问题：{error_message}")
+                await asyncio.sleep(1)
 
             for i, result in enumerate(result_json):  # 正常输出
-                # 修复输出中的换行符
-                if "\r\n" in content[i].post_jp:
-                    if "\r\n" not in result[key_name] and "\n" in result[key_name]:
-                        result[key_name] = result[key_name].replace("\n", "\r\n")
-                    if result[key_name].startswith("\r\n") and not content[
-                        i
-                    ].post_jp.startswith("\r\n"):
-                        result[key_name] = result[key_name][2:]
-
                 if "Chinese" in self.target_lang:  # 统一简繁体
                     result[key_name] = self.opencc.convert(result[key_name])
-
                 content[i].pre_zh = result[key_name]
                 content[i].post_zh = result[key_name]
                 content[i].trans_by = "GPT-3.5"
 
             if self.transl_style == "auto" and not warn_flag:
                 self._set_gpt_style("precise")
-
             self.retry_count = 0
 
             break  # 输出正确，跳出循环
-        return content
-
-    def _handle_error(self, error_msg: str = "") -> None:
-        LOGGER.error(f"-> 错误的输出：{error_msg}")
-        self.retry_count += 1
-        # 切换模式
-        if self.transl_style == "auto":
-            self._set_gpt_style("normal")
-        # 3次重试则重置会话
-        if self.retry_count % 3 == 0:
-            self.reset_conversation()
-            LOGGER.warning("-> 3次出错重置会话")
-            return
-        # 10次重试则中止
-        if self.retry_count > 10:
-            LOGGER.error(f"-> 循环重试超过10次，已中止：{error_msg}")
-            exit(-1)
-        # 其他情况
-        if self.eng_type != "unoffapi":
-            self._del_last_answer()
-        elif self.eng_type == "unoffapi":
-            self.reset_conversation()
+        return len(content), content
 
     def reset_conversation(self):
         if self.eng_type != "unoffapi":
@@ -422,18 +403,19 @@ class CGPT35Translate:
         if self._current_style == style_name:
             return
         self._current_style = style_name
-        if self.transl_style == "auto":
-            LOGGER.info(f"-> 自动切换至{style_name}参数预设")
-        else:
-            LOGGER.info(f"-> 使用{style_name}参数预设")
-        # normal default
-        temperature, top_p = 1.0, 1.0
-        frequency_penalty, presence_penalty = 0.2, 0.0
+
+        LOGGER.info(
+            f"-> 自动切换至{style_name}参数预设"
+            if self.transl_style == "auto"
+            else f"-> 使用{style_name}参数预设"
+        )
+
         if style_name == "precise":
             temperature, top_p = 1.0, 0.4
             frequency_penalty, presence_penalty = 0.3, 0.0
-        elif style_name == "normal":
-            pass
+        else:  # normal default
+            temperature, top_p = 1.0, 1.0
+            frequency_penalty, presence_penalty = 0.2, 0.0
         if self.eng_type != "unoffapi":
             self.chatbot.temperature = temperature
             self.chatbot.top_p = top_p
@@ -501,6 +483,8 @@ class CGPT35Translate:
             self.reset_conversation()
             self.last_file_name = filename
             LOGGER.info(f"-> 开始翻译文件：{filename}")
+
+        # 恢复上下文
         if (
             self.eng_type != "unoffapi"
             and self.restore_context_mode
@@ -513,26 +497,18 @@ class CGPT35Translate:
         len_trans_list = len(trans_list_unhit)
         while i < len_trans_list:
             await asyncio.sleep(1)
-            trans_list_split = (
-                trans_list_unhit[i : i + num_pre_req]
-                if (i + num_pre_req < len_trans_list)
-                else trans_list_unhit[i:]
-            )
+            trans_list_split = trans_list_unhit[i : i + num_pre_req]
+
             dic_prompt = ""
             if gptdict != None:
                 dic_prompt = gptdict.gen_prompt(trans_list_split)
-            trans_result = await self.asyncTranslate(trans_list_split, dic_prompt)
-
-            i += num_pre_req
-            result_output = ""
-            for trans in trans_result:
-                result_output = result_output + repr(trans)
-            LOGGER.info(result_output)
+            num, trans_result = await self.asyncTranslate(trans_list_split, dic_prompt)
             trans_result_list += trans_result
+            i += num if num > 0 else 0
+
             save_transCache_to_json(trans_list, cache_path)
-            LOGGER.info(
-                f"{filename}: {str(len(trans_result_list))}/{str(len_trans_list)}"
-            )
+            LOGGER.info("".join([repr(tran) for tran in trans_result]))
+            LOGGER.info(f"{filename}: {len(trans_result_list)}/{len_trans_list}")
 
         return trans_result_list
 

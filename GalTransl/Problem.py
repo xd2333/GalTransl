@@ -48,27 +48,28 @@ def find_problems(
             if word_count > 20 and most_word != ".":
                 problem_list.append(f"词频过高-'{most_word}'{str(word_count)}次")
         if CTranslateProblem.标点错漏 in find_type:
-            if "（" not in tran.pre_jp and ")" not in tran.pre_jp:
-                if "（" in find_from_str or ")" in find_from_str:
-                    problem_list.append("本无括号")
-            elif "（" in tran.pre_jp:
-                if "（" not in find_from_str and ")" not in find_from_str:
-                    problem_list.append("本有括号")
+            char_to_error = {
+                ("（", ")"): "括号",
+                "：": "冒号",
+                "*": "*号",
+                ("『", "「", "“"): "引号"
+            }
 
-            if "：" not in tran.pre_jp and ":" not in tran.pre_jp:
-                if "：" in find_from_str:
-                    problem_list.append("本无冒号")
-            elif "：" in tran.pre_jp:
-                if "：" not in find_from_str:
-                    problem_list.append("本有冒号")
-
-            if (
-                "『" not in tran.post_jp
-                and "「" not in tran.post_jp
-                and "“" not in tran.post_jp
-            ):
-                if "‘" in find_from_str or "“" in find_from_str:
-                    problem_list.append("本无引号")
+            for chars, error in char_to_error.items():
+                if isinstance(chars, tuple):
+                    if not any(char in tran.pre_jp for char in chars):
+                        if any(char in find_from_str for char in chars):
+                            problem_list.append(f"本无{error}")
+                    elif any(char in tran.pre_jp for char in chars):
+                        if not any(char in find_from_str for char in chars):
+                            problem_list.append(f"本有{error}")
+                else:
+                    if chars not in tran.pre_jp:
+                        if chars in find_from_str:
+                            problem_list.append(f"本无{error}")
+                    elif chars in tran.pre_jp:
+                        if chars not in find_from_str:
+                            problem_list.append(f"本有{error}")
         if CTranslateProblem.残留日文 in find_type:
             if contains_japanese(find_from_str):
                 problem_list.append("残留日文")

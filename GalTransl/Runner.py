@@ -6,7 +6,7 @@ from GalTransl.Frontend.GPT import (
     doGPT4Translate,
     doNewBingTranslate,
     doSakuraTranslate,
-    doRebuildTranslate
+    doRebuildTranslate,
 )
 from GalTransl import LOGGER
 
@@ -14,12 +14,12 @@ from GalTransl import LOGGER
 async def run_galtransl(cfg: CProjectConfig, translator: str):
     start_time = time.time()
     proxyPool = CProxyPool(cfg) if cfg.getKey("internals.enableProxy") else None
-    OpenAITokenPool = COpenAITokenPool(cfg)
     if proxyPool and translator != "Rebuild":
         await proxyPool.checkAvailablity()
     if "gpt35" in translator or "gpt4" in translator:
+        OpenAITokenPool = COpenAITokenPool(cfg, translator)
         await OpenAITokenPool.checkTokenAvailablity(
-            proxyPool.getProxy() if proxyPool else None
+            proxyPool.getProxy() if proxyPool else None, translator
         )
 
     if translator == "gpt35-0613":

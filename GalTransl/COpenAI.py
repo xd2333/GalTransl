@@ -26,10 +26,10 @@ class COpenAIToken:
         """
         返回脱敏后的 sk-
         """
-        return self.token[:5] + "*" * 18
+        return self.token[:6] + "*" * 17
 
 
-def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
+def initGPTToken(config: CProjectConfig, eng_type: str) -> Optional[list[COpenAIToken]]:
     """
     处理 GPT Token 设置项
     """
@@ -40,7 +40,8 @@ def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
         degradeBackend = val
 
     defaultEndpoint = config.getBackendConfigSection("GPT35")["defaultEndpoint"]
-    if gpt35_tokens := config.getBackendConfigSection("GPT35").get("tokens"):
+    gpt35_tokens = config.getBackendConfigSection("GPT35").get("tokens")
+    if "gpt35" in eng_type and gpt35_tokens:
         for tokenEntry in gpt35_tokens:
             token = tokenEntry["token"]
             domain = (
@@ -51,6 +52,9 @@ def initGPTToken(config: CProjectConfig) -> Optional[list[COpenAIToken]]:
             domain = domain[:-1] if domain.endswith("/") else domain
             result.append(COpenAIToken(token, domain, True, False))
             pass
+
+        if not degradeBackend:
+            return result
 
     defaultEndpoint = config.getBackendConfigSection("GPT4")["defaultEndpoint"]
     if gpt4_tokens := config.getBackendConfigSection("GPT4").get("tokens"):
@@ -75,13 +79,13 @@ class COpenAITokenPool:
     OpenAI 令牌池
     """
 
-    def __init__(self, config: CProjectConfig) -> None:
+    def __init__(self, config: CProjectConfig, eng_type: str) -> None:
         self.tokens: list[tuple[bool, COpenAIToken]] = []
-        for token in initGPTToken(config):
+        for token in initGPTToken(config, eng_type):
             self.tokens.append((False, token))
 
     async def _isTokenAvailable(
-        self, token: COpenAIToken, proxy: CProxy = None
+        self, token: COpenAIToken, proxy: CProxy = None, eng_type: str = ""
     ) -> Tuple[bool, bool, bool, COpenAIToken]:
         # returns isAvailable,isGPT3Available,isGPT4Available,token
         # todo: do not remove token directly, we can score the token
@@ -91,35 +95,34 @@ class COpenAITokenPool:
                 proxies={"https://": proxy.addr} if proxy else None
             ) as client:
                 auth = {"Authorization": "Bearer " + token.token}
-                modelResponse = await client.get(
-                    token.domain + "/v1/models", headers=auth
+                if "gpt35" in eng_type:
+                    model_name = "gpt-3.5-turbo"
+                if "gpt4" in eng_type:
+                    model_name = "gpt-4"
+                if "gpt4-turbo" in eng_type:
+                    model_name = "gpt-4-1106-preview"
+                # test if have balance
+                chatResponse = await client.post(
+                    token.domain + "/v1/chat/completions",
+                    headers=auth,
+                    json={
+                        "model": model_name,
+                        "messages": [{"role": "user", "content": "Echo OK"}],
+                        "temperature": 0.7,
+                    },
                 )
-                if modelResponse.status_code != 200:
+                if chatResponse.status_code != 200:
                     # token not available, may token has been revoked
                     return False, False, False, token
                 else:
-                    # test if have balance
-                    chatResponse = await client.post(
-                        token.domain + "/v1/chat/completions",
-                        headers=auth,
-                        json={
-                            "model": "gpt-3.5-turbo",
-                            "messages": [{"role": "user", "content": "Echo OK"}],
-                            "temperature": 0.7,
-                        },
-                    )
-                    if chatResponse.status_code != 200:
-                        # token not available, may token has been revoked
-                        return False, False, False, token
-                    else:
-                        isGPT3Available = False
-                        isGPT4Available = False
-                        for model in modelResponse.json()["data"]:
-                            if "gpt-4" in model["id"]:
-                                isGPT4Available = True
-                            elif "gpt-3.5-turbo" in model["id"]:
-                                isGPT3Available = True
-                        return True, isGPT3Available, isGPT4Available, token
+                    isGPT3Available = False
+                    isGPT4Available = False
+
+                    if "gpt-4" in model_name:
+                        isGPT4Available = True
+                    elif "gpt-3.5" in model_name:
+                        isGPT3Available = True
+                    return True, isGPT3Available, isGPT4Available, token
         except:
             LOGGER.debug(
                 "we got exception in testing OpenAI token %s", token.maskToken()
@@ -130,22 +133,25 @@ class COpenAITokenPool:
             LOGGER.debug("tested OpenAI token %s in %s", token.maskToken(), et - st)
             pass
 
-    async def checkTokenAvailablity(self, proxy: CProxy = None) -> None:
+    async def checkTokenAvailablity(
+        self, proxy: CProxy = None, eng_type: str = ""
+    ) -> None:
         """
         检测令牌有效性
         """
         fs = []
         for _, token in self.tokens:
-            fs.append(self._isTokenAvailable(token, proxy if proxy else None))
+            fs.append(self._isTokenAvailable(token, proxy if proxy else None, eng_type))
         result: list[tuple[bool, bool, bool, COpenAIToken]] = await gather(*fs)
 
         # replace list with new one
         newList: list[tuple[bool, COpenAIToken]] = []
         for isAvailable, isGPT3Available, isGPT4Available, token in result:
             if isAvailable != True:
-                LOGGER.info(
-                    "removed OpenAI token %s, because it's not available",
+                LOGGER.warning(
+                    "%s is not available for %s, will be removed",
                     token.maskToken(),
+                    eng_type,
                 )
             else:
                 newList.append((True, token))

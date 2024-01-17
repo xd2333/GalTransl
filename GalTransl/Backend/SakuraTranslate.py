@@ -165,6 +165,8 @@ class CSakuraTranslate:
                         line = line[line.find("「") + 1 :]
                     if line.endswith("」"):
                         line = line[:-1]
+                    if line.endswith("」。") or line.endswith("」."):
+                        line = line[:-2]
                 # 统一简繁体
                 line = self.opencc.convert(line)
                 # 还原换行
@@ -283,9 +285,7 @@ class CSakuraTranslate:
             LOGGER.info("".join([repr(tran) for tran in trans_result]))
             trans_result_list += trans_result
             save_transCache_to_json(trans_list, cache_file_path)
-            LOGGER.info(
-                f"{filename}: {str(len(trans_result_list))}/{str(len_trans_list)}"
-            )
+            LOGGER.info(f"{filename}: {len(trans_result_list)}/{len_trans_list}")
 
         return trans_result_list
 

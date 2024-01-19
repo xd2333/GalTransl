@@ -86,6 +86,20 @@ class CBingGPT4Translate:
         elif self.target_lang == "Traditional Chinese":
             self.opencc = OpenCC("s2t.json")
 
+        self.init_chatbot()
+            
+    def init_chatbot(self):
+        while True:
+            try:
+                self.chatbot = Chatbot(
+                    proxy=self.proxy, cookies=self.get_random_cookie()
+                )
+                break
+            except Exception as e:
+                LOGGER.info(f"换cookie失败：{e}")
+                asyncio.sleep(1)
+                continue
+
     async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
         prompt_req = NewBing_TRANS_PROMPT if not proofread else NewBing_PROOFREAD_PROMPT
         input_list = []
@@ -170,7 +184,7 @@ class CBingGPT4Translate:
                     LOGGER.info("->Request is throttled.")
                     self.throttled_cookie_list.append(self.current_cookie_file)
                     self.cookiefile_list.remove(self.current_cookie_file)
-                    await self._change_cookie()
+                    self.init_chatbot()
                     await asyncio.sleep(self.sleep_time)
                     continue
                 elif "InvalidRequest" in str(ex):
@@ -298,7 +312,7 @@ class CBingGPT4Translate:
             if i + 1 != len(trans_list):
                 if bing_reject:
                     LOGGER.warning("->NewBing大小姐拒绝了本次请求🙏\n")
-                    await self._change_cookie()
+                    self.init_chatbot()
                 # force_NewBing_hs_mode下newbig第一句就拒绝了，为第一句标记为失败
                 if self.force_NewBing_hs_mode and bing_reject and i == -1:
                     if not proofread:
@@ -361,7 +375,7 @@ class CBingGPT4Translate:
             return []
         # 新文件重置chatbot
         if self.last_file_name != "" and self.last_file_name != filename:
-            await self._change_cookie()
+            self.init_chatbot()
             self.last_file_name = filename
 
         i = 0
@@ -413,14 +427,4 @@ class CBingGPT4Translate:
         cookies = json.loads(open(self.current_cookie_file, encoding="utf-8").read())
         return cookies
 
-    async def _change_cookie(self):
-        while True:
-            try:
-                self.chatbot = Chatbot(
-                    proxy=self.proxy, cookies=self.get_random_cookie()
-                )
-                break
-            except Exception as e:
-                LOGGER.info(f"换cookie失败：{e}")
-                await asyncio.sleep(1)
-                continue
+

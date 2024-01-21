@@ -52,7 +52,7 @@ def find_problems(
                 ("（", ")"): "括号",
                 "：": "冒号",
                 "*": "*号",
-                ("『", "「", "“"): "引号"
+                ("『", "「", "“"): "引号",
             }
 
             for chars, error in char_to_error.items():
@@ -82,7 +82,7 @@ def find_problems(
         if CTranslateProblem.比日文长 in find_type:
             if len(find_from_str) > len(tran.pre_jp) * 1.3:
                 problem_list.append(
-                    f"比日文长{round(len(find_from_str)/len(tran.pre_jp),1)}倍"
+                    f"比日文长{round(len(find_from_str)/max(len(tran.pre_jp),0.1),1)}倍"
                 )
         if CTranslateProblem.字典使用 in find_type:
             if val := gpt_dict.check_dic_use(find_from_str, tran):

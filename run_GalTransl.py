@@ -52,7 +52,7 @@ def main():
     while True:
         print(PROGRAM_SPLASH)
         print("------Translate your favorite Galgame------")
-        print(f"GalTransl ver: {GALTRANSL_VERSION}")
+        print(f"Ver: {GALTRANSL_VERSION}")
         print(f"Author: {AUTHOR}")
         print(f"Contributors: {CONTRIBUTORS}\n")
 

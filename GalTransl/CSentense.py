@@ -16,7 +16,7 @@ class CSentense:
         """
         self.index = index
 
-        self.pre_jp = pre_jp  # 前原
+        self._pre_jp = pre_jp  # 前原
         self.post_jp = pre_jp  # 前润，初始为原句
         self.pre_zh = ""  # 后原
         self.proofread_zh = ""  # 校对, For GPT4
@@ -42,6 +42,16 @@ class CSentense:
 
         self.prev_tran: CSentense = None  # 指向上一个tran
         self.next_tran: CSentense = None  # 指向下一个tran
+
+    @property
+    def pre_jp(self):
+        return self._pre_jp
+
+    @pre_jp.setter
+    def pre_jp(self, value):
+        if hasattr(self, "_pre_jp"):
+            raise AttributeError("Can't modify pre_jp")
+        self._pre_jp = value
 
     def __repr__(self) -> str:
         name = self.speaker

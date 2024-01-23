@@ -84,13 +84,11 @@ def get_transCache_from_json(
     with open(cache_file_path, encoding="utf8") as f:
         try:
             cache_dictList = load(f)
-        except JSONDecodeError:
-            LOGGER.warn("读取缓存时出现错误，请重新启动程序。")
-            f.close()  # 不然文件句柄还占用——删不了文件
-            os.remove(cache_file_path)
-            raise SystemExit
-
-    cache_dict = {cache["index"]: cache for cache in cache_dictList}
+            cache_dict = {cache["index"]: cache for cache in cache_dictList}
+        except Exception as e:
+            f.close()
+            LOGGER.error(f"读取缓存{cache_file_path}时出现错误，请检查错误信息")
+            raise e
 
     for tran in trans_list:
         if tran.index not in cache_dict:  # 原句不在缓存

@@ -200,7 +200,17 @@ class CNormalDic:
             if dic.is_conditionaDic:
                 can_replace = False  # True代表本轮满足替换条件
                 # 取对应的查找关键字的句子
-                find_ifword_text: str = vars(input_tran)[dic.special_key]
+                match dic.special_key:
+                    case "pre_jp":
+                        find_ifword_text = input_tran.pre_jp
+                    case "post_jp":
+                        find_ifword_text = input_tran.post_jp
+                    case "pre_zh":
+                        find_ifword_text = input_tran.pre_zh
+                    case "post_zh":
+                        find_ifword_text = input_tran.post_zh
+                    case _:
+                        raise ValueError(f"不支持的条件字典关键字{dic.special_key}")
                 # 遍历if_word_list
                 for if_word in dic.if_word_list:
                     # 因为如果有stratwith的话需要修改word，所以要新建一份副本

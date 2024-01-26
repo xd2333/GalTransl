@@ -123,16 +123,21 @@ class CGPT4Translate:
         pass
 
     def init_chatbot(self, eng_type, config):
+        if val := config.getBackendConfigSection("GPT4")["rewriteModelName"]:
+            eng_name = val
+        else:
+            eng_name = ""
         if eng_type == "gpt4":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.token = self.tokenProvider.getToken(False, True)
+            eng_name = "gpt-4" if eng_name == "" else eng_name
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
                 temperature=0.4,
                 frequency_penalty=0.2,
                 system_prompt=GPT4_SYSTEM_PROMPT,
-                engine="gpt-4",
+                engine=eng_name,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
             )
@@ -145,14 +150,14 @@ class CGPT4Translate:
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.token = self.tokenProvider.getToken(False, True)
-
+            eng_name = "gpt-4-1106-preview" if eng_name == "" else eng_name
             system_prompt = GPT4Turbo_SYSTEM_PROMPT
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
                 temperature=0.4,
                 frequency_penalty=0.2,
                 system_prompt=system_prompt,
-                engine="gpt-4-1106-preview",
+                engine=eng_name,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
                 # response_format="json",

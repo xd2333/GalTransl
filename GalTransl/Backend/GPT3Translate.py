@@ -116,14 +116,20 @@ class CGPT35Translate:
         pass
 
     def init_chatbot(self, eng_type, config):
+        if val := config.getBackendConfigSection("GPT35")["rewriteModelName"]:
+            eng_name = val
+        else:
+            eng_name = ""
+
         if eng_type == "gpt35-0613":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.token = self.tokenProvider.getToken(True, False)
+            eng_name = "gpt-3.5-turbo-0613" if eng_name == "" else eng_name
             # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
-                engine="gpt-3.5-turbo-0613",
+                engine=eng_name,
                 system_prompt=GPT35_0613_SYSTEM_PROMPT,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
@@ -137,10 +143,11 @@ class CGPT35Translate:
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.token = self.tokenProvider.getToken(True, False)
+            eng_name = "gpt-3.5-turbo-1106" if eng_name == "" else eng_name
             # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
-                engine="gpt-3.5-turbo-1106",
+                engine=eng_name,
                 system_prompt=GPT35_1106_SYSTEM_PROMPT,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
@@ -262,11 +269,11 @@ class CGPT35Translate:
                 result_json = json.loads(result_text)  # 尝试解析json
                 if len(result_json) != len(input_list):  # 输出行数错误
                     LOGGER.error("-> 错误的输出行数：\n" + result_text + "\n")
-                    error_message="输出行数错误"
+                    error_message = "输出行数错误"
                     error_flag = True
             except:
                 LOGGER.error("-> 非json：\n" + result_text + "\n")
-                error_message="输出非json"
+                error_message = "输出非json"
                 error_flag = True
 
             if not error_flag:

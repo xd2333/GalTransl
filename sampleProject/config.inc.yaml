@@ -21,6 +21,12 @@ common:
   gpt.degradeBackend: false # (GPT3.5/4)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
   gpt.restoreContextMode: true # (GPT3.5/4)重启时恢复上一轮的译文前文。[True/False]
   gpt.fullContextMode: false # (GPT3.5/4)保留更多前文。开启提升效果，关闭节约数倍token消耗。[True/False]
+# 插件设置
+plugin:
+  filePlugin: file_galtransl_json # 文件格式插件，默认使用file_galtransl_json
+  textPlugins:
+    - (project_dir)myplugin
+    - text_common_normalfix
 # 代理设置
 proxy:
   enableProxy: false # 是否启用代理。[True/False]
@@ -55,6 +61,7 @@ backendSpecific:
       - token: sk-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
         endpoint: ""
     defaultEndpoint: https://api.openai.com # 默认 API 端点，一般不修改
+    rewriteModelName: "" # 强制使用指定的模型型号，一般不修改
   GPT4: # GPT4 官方 API
     tokens:
       - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -62,9 +69,7 @@ backendSpecific:
       - token: sk-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
         endpoint: ""
     defaultEndpoint: https://api.openai.com
-  ChatGPT: # ChatGPT / GPT3.5(4) 非官方 API，模拟网页操作模式（不可用）
-    access_tokens: 
-      - access_token: xxx
+    rewriteModelName: "" # 强制使用指定的模型型号，一般不修改
   bingGPT4:
     cookiePath:
       - newbing_cookies/cookie1.json # 你的 cookies 文件，相对于项目目录

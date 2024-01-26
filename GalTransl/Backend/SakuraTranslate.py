@@ -245,7 +245,7 @@ class CSakuraTranslate:
         trans_list: CTransList,
         num_pre_request: int,
         retry_failed: bool = False,
-        chatgpt_dict: CGptDict = None,
+        gpt_dic: CGptDict = None,
         proofread: bool = False,
         retran_key: str = "",
     ) -> CTransList:
@@ -275,8 +275,8 @@ class CSakuraTranslate:
 
             trans_list_split = trans_list_unhit[i : i + num_pre_request]
             dic_prompt = (
-                chatgpt_dict.gen_prompt(trans_list_split)
-                if chatgpt_dict != None
+                gpt_dic.gen_prompt(trans_list_split)
+                if gpt_dic != None
                 else ""
             )
             num, trans_result = await self.translate(trans_list_split, dic_prompt)

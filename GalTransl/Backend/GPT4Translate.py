@@ -401,7 +401,7 @@ class CGPT4Translate:
         trans_list: CTransList,
         num_pre_request: int,
         retry_failed: bool = False,
-        chatgpt_dict: CGptDict = None,
+        gpt_dic: CGptDict = None,
         proofread: bool = False,
         retran_key: str = "",
     ) -> CTransList:
@@ -444,8 +444,8 @@ class CGPT4Translate:
             )
 
             dic_prompt = (
-                chatgpt_dict.gen_prompt(trans_list_split)
-                if chatgpt_dict != None
+                gpt_dic.gen_prompt(trans_list_split)
+                if gpt_dic != None
                 else ""
             )
 

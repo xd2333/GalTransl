@@ -473,7 +473,7 @@ class CGPT35Translate:
         trans_list: CTransList,
         num_pre_req: int,
         retry_failed: bool = False,
-        gptdict: CGptDict = None,
+        gpt_dic: CGptDict = None,
         proofread: bool = False,
         retran_key: str = "",
     ) -> CTransList:
@@ -508,8 +508,8 @@ class CGPT35Translate:
             trans_list_split = trans_list_unhit[i : i + num_pre_req]
 
             dic_prompt = ""
-            if gptdict != None:
-                dic_prompt = gptdict.gen_prompt(trans_list_split)
+            if gpt_dic != None:
+                dic_prompt = gpt_dic.gen_prompt(trans_list_split)
             num, trans_result = await self.asyncTranslate(trans_list_split, dic_prompt)
             trans_result_list += trans_result
             i += num if num > 0 else 0

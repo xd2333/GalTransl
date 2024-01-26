@@ -467,6 +467,29 @@ class PluginManager(object):
 		if not hasattr(self, '_candidates'):
 			raise ValueError("locatePlugins must be called before removePluginCandidate")
 		self._candidates.append(candidateTuple)
+	
+	def clearPluginCandidates(self):
+		"""
+		Clear the list of plugins that should be loaded.
+
+		.. warning: ``locatePlugins`` must be called before !
+		"""
+		if not hasattr(self, '_candidates'):
+			raise ValueError("locatePlugins must be called before clearPluginCandidates")
+		self._candidates = []
+	
+	def setPluginCandidates(self, candidates):
+		"""
+		Set the list of plugins that should be loaded.
+
+		The candidates must be represented by the same tuples described
+		in ``getPluginCandidates``.
+
+		.. warning: ``locatePlugins`` must be called before !
+		"""
+		if not hasattr(self, '_candidates'):
+			raise ValueError("locatePlugins must be called before setPluginCandidates")
+		self._candidates = candidates
 
 	def locatePlugins(self):
 		"""
@@ -575,9 +598,9 @@ class PluginManager(object):
 		"""
 		# use imp to correctly load the plugin as a module
 		candidate_module = None
-		filepath_base = candidate_filepath.split('/')[-1]
+		filepath_base = candidate_filepath.split(os.sep)[-1]
 		if os.path.isdir(candidate_filepath):
-			location = candidate_filepath + '/__init__.py'
+			location = candidate_filepath +os.sep + '__init__.py'
 		else:
 			location = candidate_filepath + '.py'
 		spec = importlib.util.spec_from_file_location(filepath_base, location)

@@ -2,12 +2,10 @@
 # 通用（杂项）设置
 common:
   loggingLevel: info # 日志等级（未实现） [debug/info/warning/error]
-  # 多线程
-  workersPerProject: 1 # 同时翻译的文件数量（单个文件只能单线程）
+  workersPerProject: 1 # 多线程，同时翻译的文件数量（单文件只能单线程）
   # 通用设置
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
-  sourceLanguage: ja # 源语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
-  targetLanguage: zh-cn # 目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
+  language: ja2zh-cn # 源语言2(to)目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   skipRetry: false # 开启则解析结果出错时跳过循环重试，直接用"Fail Translation"占位。[True/False]
   retranslFail: false # 重启时重翻所有"Fail Translation"的句子。[True/False]
   retranslKey: "" # 重启时主动重翻在problem或pre_jp中包含此关键字的句子，例如"残留日文"
@@ -17,7 +15,6 @@ common:
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
   gpt.recordConfidence: false # (NewBing/GPT4)记录确信度、存疑句，GPT4 API关掉可节约token。[True/False]
   # GPT3.5/GPT4
-  gpt.translStyle: auto # (GPT3.5/4)GPT参数预设，precise更精确normal更随机，auto自动切换。[auto/precise/normal]
   gpt.degradeBackend: false # (GPT3.5/4)是否将 GPT4 的key用于 GPT3.5 的请求。[True/False]
   gpt.restoreContextMode: true # (GPT3.5/4)重启时恢复上一轮的译文前文。[True/False]
   gpt.fullContextMode: false # (GPT3.5/4)保留更多前文。开启提升效果，关闭节约数倍token消耗。[True/False]
@@ -78,27 +75,13 @@ backendSpecific:
     endpoint: http://127.0.0.1:8080
 # 问题分析机制配置
 problemAnalyze:
-  GPT35: # GPT35 / ChatGPT / Sakura
+  problemList: # GPT35 / ChatGPT / Sakura
     - 词频过高
     - 标点错漏
     - 残留日文
     - 丢失换行
     - 多加换行
     - 比日文长
-    - 字典使用
-  GPT4: # GPT4 / ChatGPT
-    - 词频过高
-    - 标点错漏
-    - 残留日文
-    - 丢失换行
-    - 多加换行
-    - 字典使用
-  bingGPT4: # NewBing
-    - 词频过高
-    - 标点错漏
-    - 残留日文
-    - 丢失换行
-    - 多加换行
     - 字典使用
   arinashiDict: # 格式为 aaa:<空格>bbb
     aaa: bbb

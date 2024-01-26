@@ -9,7 +9,6 @@ from GalTransl import (
     PROGRAM_SPLASH,
     TRANSLATOR_SUPPORTED,
 )
-from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.__main__ import worker
 
 
@@ -51,7 +50,6 @@ def main():
     config_file_name = CONFIG_FILENAME
     while True:
         print(PROGRAM_SPLASH)
-        print("------Translate your favorite Galgame------")
         print(f"Ver: {GALTRANSL_VERSION}")
         print(f"Author: {AUTHOR}")
         print(f"Contributors: {CONTRIBUTORS}\n")
@@ -60,10 +58,9 @@ def main():
             user_input, project_dir, config_file_name = get_user_input(
                 user_input, project_dir
             )
-            project_name = project_dir.split(os.sep)[-1]
             os.system("")  # 解决cmd的ANSI转义bug
             translator = BulletMenu(
-                f"请为『{project_name}』项目选择翻译器：", TRANSLATOR_SUPPORTED
+                f"请为『{project_dir.split(os.sep)[-1]}』项目选择翻译器：", TRANSLATOR_SUPPORTED
             ).run()
         except KeyboardInterrupt:
             print("\nGoodbye.")

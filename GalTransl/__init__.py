@@ -11,8 +11,9 @@ PROGRAM_SPLASH = """
   / ___| __ _| |_   _| __ __ _ _ __  ___| |
  | |  _ / _` | | | || '__/ _` | '_ \/ __| |
  | |_| | (_| | | | || | | (_| | | | \__ \ |
-  \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|                                           
-"""
+  \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|                 
+
+------Translate your favorite Galgame------"""
 
 GALTRANSL_VERSION = "4.0.0 Beta"
 AUTHOR = "cx2333"
@@ -28,9 +29,10 @@ TRANSLATOR_SUPPORTED = {
     "gpt4": "GPT4 API模式 -- 0613模型",
     "gpt4-turbo": "GPT4-Turbo API模式 -- 1106-preview模型",
     "newbing": "NewBing 模拟网页模式",
-    "sakura":"Sakura-13B-Galgame翻译模型 -- v0.9模型",
-    "rebuildr":"Rebuild结果 用译前译后字典+缓存刷写结果json -- 跳过翻译和写缓存",
-    "rebuilda":"Rebuild缓存 用译前译后字典刷写缓存post_jp和problem -- 跳过翻译",
+    "sakura": "Sakura-13B-Galgame翻译模型 -- v0.9模型",
+    "rebuildr": "重建结果 用译前译后字典通过缓存刷写结果json -- 跳过翻译和写缓存",
+    "rebuilda": "重建缓存 用译前译后字典刷写缓存+结果json -- 跳过翻译",
+    "showplugs": "显示全部插件列表",
 }
 LANG_SUPPORTED = {
     "zh-cn": "Simplified Chinese",

@@ -58,20 +58,21 @@ class CGPT4Translate:
             self.record_confidence = val
         else:
             self.record_confidence = False
-        # 源语言
-        if val := config.getKey("sourceLanguage"):
+        # 语言设置
+        if val := config.getKey("language"):
+            sp = val.split("2")
+            self.source_lang = sp[0]
+            self.target_lang = sp[1]
+        elif val := config.getKey("sourceLanguage"):  # 兼容旧版本配置
             self.source_lang = val
+            self.target_lang = config.getKey("targetLanguage")
         else:
             self.source_lang = "ja"
+            self.target_lang = "zh-cn"
         if self.source_lang not in LANG_SUPPORTED.keys():
             raise ValueError("错误的源语言代码：" + self.source_lang)
         else:
             self.source_lang = LANG_SUPPORTED[self.source_lang]
-        # 目标语言
-        if val := config.getKey("targetLanguage"):
-            self.target_lang = val
-        else:
-            self.target_lang = "zh-cn"
         if self.target_lang not in LANG_SUPPORTED.keys():
             raise ValueError("错误的目标语言代码：" + self.target_lang)
         else:
@@ -105,7 +106,7 @@ class CGPT4Translate:
         if val := config.getKey("gpt.translStyle"):
             self.transl_style = val
         else:
-            self.transl_style = "normal"
+            self.transl_style = "auto"
         self._current_style = ""
 
         self.init_chatbot(eng_type=eng_type, config=config)  # 模型选择

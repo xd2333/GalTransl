@@ -29,7 +29,7 @@ TRANSLATOR_SUPPORTED = {
     "gpt4": "GPT4 API模式 -- 0613模型",
     "gpt4-turbo": "GPT4-Turbo API模式 -- 1106-preview模型",
     "newbing": "NewBing 模拟网页模式",
-    "sakura": "Sakura-13B-Galgame翻译模型 -- v0.9模型",
+    "sakura0.9": "Sakura-13B-Galgame翻译模型 -- v0.9模型",
     "rebuildr": "重建结果 用译前译后字典通过缓存刷写结果json -- 跳过翻译和写缓存",
     "rebuilda": "重建缓存 用译前译后字典刷写缓存+结果json -- 跳过翻译",
     "showplugs": "显示全部插件列表",

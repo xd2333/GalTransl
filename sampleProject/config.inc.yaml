@@ -1,9 +1,8 @@
 ---
-# 通用（杂项）设置
+# 程序设置
 common:
   loggingLevel: info # 日志等级（未实现） [debug/info/warning/error]
   workersPerProject: 1 # 多线程，同时翻译的文件数量（单文件只能单线程）
-  # 通用设置
   gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
   language: ja2zh-cn # 源语言2(to)目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   skipRetry: false # 开启则解析结果出错时跳过循环重试，直接用"Fail Translation"占位。[True/False]
@@ -29,12 +28,13 @@ proxy:
   enableProxy: false # 是否启用代理。[True/False]
   proxies:
     - address: http://127.0.0.1:7890
-# 字典
+# 字典设置
 dictionary:
   defaultDictFolder: Dict # 通用字典文件夹，相对于程序目录，也可填入绝对路径
   usePreDictInName: false # 将译前字典用在name字段，可用于改名[True/False]
   usePostDictInName: false # 将译后字典用在name字段，可用于汉化name[True/False]
-  # 预处理字典，按字典顺序替换
+  # 所有字典将按顺序从上到下替换
+  # 译前字典
   preDict:
     - 01H字典_矫正_译前.txt # 用于口齿不清的矫正
     - 00通用字典_译前.txt
@@ -43,23 +43,22 @@ dictionary:
   gpt.dict:
     - GPT字典.txt
     - (project_dir)项目GPT字典.txt
-  # 后处理字典，按字典顺序替换
+  # 译后字典
   postDict:
     - 00通用字典_符号_译后.txt # 符号矫正
     - 00通用字典_译后.txt
     - (project_dir)项目字典_译后.txt
-# 与翻译后端所特定的设置
+# 翻译后端相关设置
 backendSpecific:
-  GPT35: # GPT3.5 官方 API
-    tokens: # 令牌列表
-      # 你的api key
+  GPT35: # GPT3.5 API
+    tokens: # api key列表
       - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        endpoint: https://api.openai.com # OPENAI API请求的域名，使用转发或第三方API时修改
+        endpoint: https://api.openai.com # OpenAI API请求的域名，使用转发或第三方API时修改
       - token: sk-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
         endpoint: ""
     defaultEndpoint: https://api.openai.com # 默认 API 端点，一般不修改
     rewriteModelName: "" # 强制使用指定的模型型号，一般不修改
-  GPT4: # GPT4 官方 API
+  GPT4: # GPT4 API
     tokens:
       - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         endpoint: ""
@@ -73,9 +72,9 @@ backendSpecific:
       - newbing_cookies/cookie2.json # 你的 cookies 文件2，会自动切换
   Sakura:
     endpoint: http://127.0.0.1:8080
-# 问题分析机制配置
-problemAnalyze:
-  problemList: # GPT35 / ChatGPT / Sakura
+# 自动问题分析配置
+problemAnalyze: 
+  problemList: # 要发现的问题清单
     - 词频过高
     - 标点错漏
     - 残留日文

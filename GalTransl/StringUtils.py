@@ -1,6 +1,7 @@
 """
-统计字符串的工具函数
+字符串工具函数
 """
+import os
 from typing import Tuple, List
 from collections import Counter
 from re import compile
@@ -62,7 +63,7 @@ def contains_japanese(text: str) -> bool:
     return False
 
 
-def extract_code_blocks(content):
+def extract_code_blocks(content: str) -> Tuple[List[str], List[str]]:
     # 匹配带语言标签的代码块
     pattern_with_lang = compile(r"```([\w]*)\n([\s\S]*?)\n```")
     matches_with_lang = pattern_with_lang.findall(content)
@@ -75,3 +76,12 @@ def extract_code_blocks(content):
         code_list.append(match[1])
 
     return lang_list, code_list
+
+
+def get_file_name(file_path: str) -> str:
+    """
+    获取文件名，不包含扩展名
+    """
+    base_name = os.path.basename(file_path)
+    file_name, _ = os.path.splitext(base_name)
+    return file_name

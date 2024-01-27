@@ -53,7 +53,7 @@ class CSakuraTranslate:
         pass
 
     def init_chatbot(self, eng_type, config: CProjectConfig):
-        if eng_type == "Sakura0.9":
+        if eng_type == "sakura0.9":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             endpoint = config.getBackendConfigSection("Sakura").get("endpoint")

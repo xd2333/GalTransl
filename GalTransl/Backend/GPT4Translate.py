@@ -124,10 +124,7 @@ class CGPT4Translate:
         pass
 
     def init_chatbot(self, eng_type, config):
-        if val := config.getBackendConfigSection("GPT4")["rewriteModelName"]:
-            eng_name = val
-        else:
-            eng_name = ""
+        eng_name = config.getBackendConfigSection("GPT35").get("rewriteModelName","")
         if eng_type == "gpt4":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 

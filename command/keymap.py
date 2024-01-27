@@ -95,6 +95,8 @@ def get_raw_chars():
 def get_character():
     "Gets a character from the keyboard and returns the key code"
     char = get_raw_chars()
+    if type(char) != str:
+        return KEYMAP["undefined"]
     if ord(char) in [KEYMAP["interrupt"], KEYMAP["newline"]]:
         return char
 

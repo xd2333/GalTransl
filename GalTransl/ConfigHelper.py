@@ -70,6 +70,18 @@ class CProjectConfig:
     def getProjectDir(self) -> str:
         return self.projectDir
 
+    def getTextPluginList(self) -> list:
+        if "plugin" not in self.projectConfig:
+            return []
+        else:
+            return self.projectConfig["plugin"]["textPlugins"]
+
+    def getFilePlugin(self) -> str:
+        if "plugin" not in self.projectConfig:
+            return "file_galtransl_json"
+        else:
+            return self.projectConfig["plugin"]["filePlugin"]
+
     def getInputPath(self) -> str:
         return self.inputPath
 
@@ -103,6 +115,8 @@ class CProjectConfig:
         return self.keyValues.get(key)
 
     def getProblemAnalyzeConfig(self, backendName: str) -> list[CTranslateProblem]:
+        if backendName not in self.projectConfig["problemAnalyze"]:
+            return []
         result: list[CTranslateProblem] = []
         for i in self.projectConfig["problemAnalyze"][backendName]:
             result.append(CTranslateProblem[i])

@@ -33,8 +33,8 @@ AUTHOR = "cx2333"
 CONTRIBUTORS = "ryank231231, Isotr0py, Noriverwater, pipixia244, gulaodeng"
 
 CONFIG_FILENAME = "config.yaml"
-INPUT_FOLDERNAME = "json_jp"
-OUTPUT_FOLDERNAME = "json_cn"
+INPUT_FOLDERNAME = "gt_input"
+OUTPUT_FOLDERNAME = "gt_output"
 CACHE_FOLDERNAME = "transl_cache"
 TRANSLATOR_SUPPORTED = {
     "gpt35-0613": "GPT3.5-Turbo API模式 -- 0613模型",

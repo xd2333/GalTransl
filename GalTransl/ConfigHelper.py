@@ -38,12 +38,14 @@ class CProjectConfig:
     def __init__(self, projectPath: str, config_name=CONFIG_FILENAME) -> None:
         self.projectConfig = loadConfigFile(path.join(projectPath, config_name))
         self.projectDir: str = projectPath
-        self.inputPath: str = str(
-            path.abspath(path.join(projectPath, INPUT_FOLDERNAME))
-        )
-        self.outputPath: str = str(
-            path.abspath(path.join(projectPath, OUTPUT_FOLDERNAME))
-        )
+        input_dir = path.abspath(path.join(projectPath, INPUT_FOLDERNAME))
+        if not path.exists(input_dir):
+            input_dir = path.abspath(path.join(projectPath, "json_jp"))  # 兼容旧版本
+        self.inputPath: str = str(input_dir)
+        output_dir = path.abspath(path.join(projectPath, OUTPUT_FOLDERNAME))
+        if not path.exists(output_dir):
+            output_dir = path.abspath(path.join(projectPath, "json_cn"))  # 兼容旧版本
+        self.outputPath: str = str(output_dir)
         self.cachePath: str = str(
             path.abspath(path.join(projectPath, CACHE_FOLDERNAME))
         )

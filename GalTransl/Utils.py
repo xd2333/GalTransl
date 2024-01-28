@@ -1,5 +1,5 @@
 """
-字符串工具函数
+工具函数
 """
 import os
 from typing import Tuple, List
@@ -85,3 +85,10 @@ def get_file_name(file_path: str) -> str:
     base_name = os.path.basename(file_path)
     file_name, _ = os.path.splitext(base_name)
     return file_name
+
+def get_file_list(directory: str):
+    file_list = []
+    for dirpath, dirnames, filenames in os.walk(directory):
+        for file in filenames:
+            file_list.append(os.path.join(dirpath, file))
+    return file_list

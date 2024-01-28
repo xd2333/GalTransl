@@ -12,7 +12,7 @@ from random import choice
 from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
-from GalTransl.StringUtils import extract_code_blocks
+from GalTransl.Utils import extract_code_blocks
 from GalTransl.Backend.Prompts import (
     GPT4_CONF_PROMPT,
     GPT4_TRANS_PROMPT,

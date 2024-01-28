@@ -16,7 +16,7 @@ from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Backend.revChatGPT.typings import APIConnectionError
-from GalTransl.StringUtils import extract_code_blocks
+from GalTransl.Utils import extract_code_blocks
 from httpx import ProtocolError
 from GalTransl import LOGGER, LANG_SUPPORTED
 from GalTransl.Backend.Prompts import (

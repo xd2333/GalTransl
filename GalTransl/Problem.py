@@ -2,7 +2,7 @@
 分析问题
 """
 from GalTransl.CSentense import CTransList
-from GalTransl.StringUtils import get_most_common_char, contains_japanese
+from GalTransl.Utils import get_most_common_char, contains_japanese
 from GalTransl.Dictionary import CGptDict
 from enum import Enum
 

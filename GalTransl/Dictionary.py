@@ -326,22 +326,33 @@ class CGptDict:
             normalDic_count += 1
         LOGGER.info(f"载入 GPT字典: {path.basename(dic_path)} {normalDic_count}普通词条")
 
-    def gen_prompt(self, trans_list: CTransList):
+    def gen_prompt(self, trans_list: CTransList,type="gpt"):
         promt = ""
-        for dic in self._dic_list:
-            if dic.startswith_flag or dic.search_word in "\n".join(
-                [f"{tran.speaker}:{tran.post_jp}" for tran in trans_list]
-            ):
-                promt += f"| {dic.search_word} | {dic.replace_word} |"
-                if dic.note != "":
-                    promt += f" {dic.note}"
-                promt += " |\n"
+        if type == "gpt":
+            for dic in self._dic_list:
+                if dic.startswith_flag or dic.search_word in "\n".join(
+                    [f"{tran.speaker}:{tran.post_jp}" for tran in trans_list]
+                ):
+                    promt += f"| {dic.search_word} | {dic.replace_word} |"
+                    if dic.note != "":
+                        promt += f" {dic.note}"
+                    promt += " |\n"
 
-        if promt != "":
-            promt = (
-                "# Glossary\n| Src | Dst(/Dst2/..) | Note |\n| --- | --- | --- |\n"
-                + promt
-            )
+            if promt != "":
+                promt = (
+                    "# Glossary\n| Src | Dst(/Dst2/..) | Note |\n| --- | --- | --- |\n"
+                    + promt
+                )
+        elif type == "sakura":
+            for dic in self._dic_list:
+                if dic.startswith_flag or dic.search_word in "\n".join(
+                    [f"{tran.speaker}:{tran.post_jp}" for tran in trans_list]
+                ):
+                    promt += f"{dic.search_word}->{dic.replace_word}"
+                    if dic.note != "":
+                        promt += f" #{dic.note}"
+                    promt += "\n"
+                    
         return promt
 
     def check_dic_use(self, find_from_str: str, tran: CSentense):

@@ -99,7 +99,7 @@ class CSakuraTranslate:
 
         while True:  # 一直循环，直到得到数据
             try:
-                LOGGER.info("->输入：\n" + input_str + "\n")
+                LOGGER.info("->输入：\n" + prompt_req + "\n")
                 resp = ""
                 last_data = ""
                 repetition_cnt = 0
@@ -275,7 +275,7 @@ class CSakuraTranslate:
 
             trans_list_split = trans_list_unhit[i : i + num_pre_request]
             dic_prompt = (
-                gpt_dic.gen_prompt(trans_list_split)
+                gpt_dic.gen_prompt(trans_list_split,type="sakura")
                 if gpt_dic != None
                 else ""
             )

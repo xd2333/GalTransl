@@ -208,6 +208,8 @@ def initDictList(config: dict, dictDir: str, projectDir: str) -> Optional[list[s
     """
     处理字典设置项
     """
+    if not config:
+        return []
     result: list[str] = []
     for entry in config:
         if entry.startswith("(project_dir)"):

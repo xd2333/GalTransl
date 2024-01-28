@@ -63,6 +63,8 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     proxyPool = CProxyPool(cfg) if cfg.getKey("internals.enableProxy") else None
     if proxyPool and translator != "Rebuild":
         await proxyPool.checkAvailablity()
+        if not proxyPool.proxies:
+            raise Exception("没有可用的代理，请检查代理设置")
 
     # OpenAITokenPool初始化
     if "gpt" in translator:

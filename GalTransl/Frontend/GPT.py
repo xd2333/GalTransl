@@ -152,8 +152,6 @@ async def doLLMTranslate(
     gtplugins: list,
     eng_type="offapi",
 ) -> bool:
-    print(projectConfig.getKey("internals.enableProxy"))
-
     pre_dic_dir = projectConfig.getDictCfgSection()["preDict"]
     post_dic_dir = projectConfig.getDictCfgSection()["postDict"]
     gpt_dic_dir = projectConfig.getDictCfgSection()["gpt.dict"]

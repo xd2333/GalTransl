@@ -1,4 +1,5 @@
 import logging
+from time import localtime
 
 logging.basicConfig(
     format="[%(asctime)s][%(levelname)s]%(message)s", level=logging.INFO
@@ -6,7 +7,7 @@ logging.basicConfig(
 
 LOGGER = logging.getLogger(__name__)
 
-PROGRAM_SPLASH = """
+PROGRAM_SPLASH1 = """
    ____       _ _____                    _ 
   / ___| __ _| |_   _| __ __ _ _ __  ___| |
  | |  _ / _` | | | || '__/ _` | '_ \/ __| |
@@ -14,6 +15,18 @@ PROGRAM_SPLASH = """
   \____|\__,_|_| |_||_|  \__,_|_| |_|___/_|                 
 
 ------Translate your favorite Galgame------"""
+
+PROGRAM_SPLASH2 = """
+   ______      ________                      __
+  / ____/___ _/ /_  __/________ _____  _____/ /
+ / / __/ __ `/ / / / / ___/ __ `/ __ \/ ___/ / 
+/ /_/ / /_/ / / / / / /  / /_/ / / / (__  ) /  
+\____/\__,_/_/ /_/ /_/   \__,_/_/ /_/____/_/   
+                                             
+-------Translate your favorite Galgame-------                                        
+"""
+ALL_BANNERS = [PROGRAM_SPLASH1, PROGRAM_SPLASH2]
+PROGRAM_SPLASH = ALL_BANNERS[localtime().tm_mday % 2]
 
 GALTRANSL_VERSION = "4.0.0 Beta"
 AUTHOR = "cx2333"

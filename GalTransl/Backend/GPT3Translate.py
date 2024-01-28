@@ -155,21 +155,6 @@ class CGPT35Translate:
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
             )
-        elif eng_type == "unoffapi":
-            from GalTransl.Backend.revChatGPT.V1 import AsyncChatbot as ChatbotV1
-
-            gpt_config = {
-                "access_token": choice(
-                    config.getBackendConfigSection("ChatGPT")["access_tokens"]
-                )["access_token"],
-                "proxy": self.proxyProvider.getProxy().addr
-                if self.proxyProvider
-                else "",
-            }
-            if gpt_config["proxy"] == "":
-                del gpt_config["proxy"]
-            self.chatbot = ChatbotV1(config=gpt_config)
-            self.chatbot.clear_conversations()
 
         if self.transl_style == "auto":
             self._set_gpt_style("precise")

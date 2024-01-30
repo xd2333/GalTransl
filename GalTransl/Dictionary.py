@@ -327,7 +327,7 @@ class CGptDict:
         if type == "gpt":
             for i, dic in enumerate(self._dic_list):
                 prev_dic = self._dic_list[i - 1] if i > 0 else None
-                if dic.search_word in prev_dic.search_word:
+                if prev_dic and dic.search_word in prev_dic.search_word:
                     input_text = input_text.replace(prev_dic.search_word, "")
                 if dic.startswith_flag or dic.search_word in input_text:
                     promt += f"| {dic.search_word} | {dic.replace_word} |"
@@ -343,7 +343,7 @@ class CGptDict:
         elif type == "sakura":
             for i, dic in enumerate(self._dic_list):
                 prev_dic = self._dic_list[i - 1] if i > 0 else None
-                if dic.search_word in prev_dic.search_word:
+                if prev_dic and dic.search_word in prev_dic.search_word:
                     input_text = input_text.replace(prev_dic.search_word, "")
                 if dic.startswith_flag or dic.search_word in input_text:
                     promt += f"{dic.search_word}->{dic.replace_word}"

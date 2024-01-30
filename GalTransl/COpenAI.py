@@ -2,7 +2,7 @@
 CloseAI related classes
 """
 from httpx import AsyncClient
-from asyncio import gather
+from tqdm.asyncio import tqdm
 from time import time
 from GalTransl import LOGGER
 from GalTransl.ConfigHelper import CProjectConfig, CProxy
@@ -139,10 +139,11 @@ class COpenAITokenPool:
         """
         检测令牌有效性
         """
+        LOGGER.info(f"测试key是否能调用{eng_type}模型...")
         fs = []
         for _, token in self.tokens:
             fs.append(self._isTokenAvailable(token, proxy if proxy else None, eng_type))
-        result: list[tuple[bool, bool, bool, COpenAIToken]] = await gather(*fs)
+        result: list[tuple[bool, bool, bool, COpenAIToken]] = await tqdm.gather(*fs,ncols=80)
 
         # replace list with new one
         newList: list[tuple[bool, COpenAIToken]] = []

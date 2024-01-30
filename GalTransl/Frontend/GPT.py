@@ -3,7 +3,7 @@ GPT3.5 / 4 / New Bing 前端翻译的控制逻辑
 """
 from os.path import join as joinpath
 from os.path import exists as isPathExists
-from os import makedirs as mkdir
+from os.path import getsize as getFileSize
 from os import listdir
 from typing import Optional
 from asyncio import Semaphore, gather
@@ -43,13 +43,19 @@ async def doLLMTranslateSingleFile(
         # 1、初始化trans_list
         origin_input = ""
         input_file_path = joinpath(projectConfig.getInputPath(), file_name)
+        if getFileSize(input_file_path) == 0:
+            return True
         for plugin in fPlugins:
             try:
                 origin_input = plugin.plugin_object.load_file(input_file_path)
                 save_func = plugin.plugin_object.save_file
                 break
+            except TypeError:
+                LOGGER.error(f"{file_name} 不是插件 {plugin.name} 支持的格式，跳过翻译")
+                return False
             except Exception as e:
-                LOGGER.warning(f"插件 {plugin.name} 无法读取文件 {file_name}: {e}")
+                LOGGER.error(f"插件 {plugin.name} 读取文件 {file_name} 出错: {e}")
+                return False
         if not origin_input:
             origin_input = input_file_path
             save_func = save_json

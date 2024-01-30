@@ -39,12 +39,14 @@ class CProjectConfig:
         self.projectConfig = loadConfigFile(path.join(projectPath, config_name))
         self.projectDir: str = projectPath
         input_dir = path.abspath(path.join(projectPath, INPUT_FOLDERNAME))
-        if not path.exists(input_dir):
-            input_dir = path.abspath(path.join(projectPath, "json_jp"))  # 兼容旧版本
+        path_json_jp = path.abspath(path.join(projectPath, "json_jp"))
+        if not path.exists(input_dir) and path.exists(path_json_jp):
+            input_dir = path_json_jp  # 兼容旧版本
         self.inputPath: str = str(input_dir)
         output_dir = path.abspath(path.join(projectPath, OUTPUT_FOLDERNAME))
-        if not path.exists(output_dir):
-            output_dir = path.abspath(path.join(projectPath, "json_cn"))  # 兼容旧版本
+        path_json_cn = path.abspath(path.join(projectPath, "json_cn"))
+        if not path.exists(output_dir) and path.exists(path_json_cn):
+            output_dir = path_json_cn  # 兼容旧版本
         self.outputPath: str = str(output_dir)
         self.cachePath: str = str(
             path.abspath(path.join(projectPath, CACHE_FOLDERNAME))

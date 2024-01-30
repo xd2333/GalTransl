@@ -1,13 +1,14 @@
 ---
 # 程序设置
 common:
-  loggingLevel: info # 日志等级（未实现） [debug/info/warning/error]
+  loggingLevel: "info" # 日志等级（未实现） [debug/info/warning/error]
   workersPerProject: 1 # 多线程，同时翻译的文件数量（单文件只能单线程）
-  gpt.numPerRequestTranslate: 9 # 单次翻译句子数量，不建议太大
-  language: ja2zh-cn # 源语言2(to)目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
+  language: "ja2zh-cn" # 源语言2(to)目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
+  linebreakSymbol: "\r\n" # 这个项目在post_jp中使用的换行符，找问题和自动修复时用到，不影响翻译。
   skipRetry: false # 开启则解析结果出错时跳过循环重试，直接用"Fail Translation"占位。[True/False]
   retranslFail: false # 重启时重翻所有"Fail Translation"的句子。[True/False]
   retranslKey: "" # 重启时主动重翻在problem或pre_jp中包含此关键字的句子，例如"残留日文"
+  gpt.numPerRequestTranslate: 10 # 单次翻译句子数量，推荐值 < 15
   gpt.streamOutputMode: true # 流式输出效果。[True/False]
   # NewBing/GPT4
   gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。[True/False]

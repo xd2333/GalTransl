@@ -20,6 +20,21 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         else:
             return os.path.join(os.path.abspath("plugins"), name, f"{name}.yaml")
 
+    def print_plugin_list(plugin_manager: PluginManager):
+        LOGGER.info("插件列表:")
+        for candidate in plugin_manager.getPluginCandidates():
+            plug_path = os.path.dirname(candidate[1])
+            plug_name = os.path.basename(plug_path)
+            plug_info = candidate[2]
+            plug_type = plug_info.yaml_dict["Core"].get("Type", "unknown").lower()
+            if PROJECT_DIR in plug_path:
+                plug_type = "Project-local " + plug_type
+            LOGGER.info(f" {plug_name} ({plug_type} Plugin)")
+            LOGGER.info(f"  > {plug_info.name} v{plug_info.version} by {plug_info.author}")
+            LOGGER.info(f"    描述: {plug_info.description}")
+            LOGGER.info(f"    路径: {plug_path}")
+            LOGGER.info("---------------------------------")
+
     start_time = time.time()
 
     if translator not in TRANSLATOR_SUPPORTED.keys():
@@ -39,6 +54,10 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         ["plugins", os.path.join(PROJECT_DIR, "plugins")],
     )
     plugin_manager.locatePlugins()
+    # 打印插件列表
+    if translator == "showplugs":
+        print_plugin_list(plugin_manager)
+        return
     new_candidates = []
     for tname in cfg.getTextPluginList():
         info_path = get_pluginInfo_path(tname)
@@ -96,3 +115,5 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
 
     end_time = time.time()
     LOGGER.info(f"总耗时: {end_time-start_time:.3f}s")
+
+

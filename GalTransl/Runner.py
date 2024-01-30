@@ -46,15 +46,14 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         if candidate:
             new_candidates.append(candidate)
         else:
-            LOGGER.warning(f"未找到文本插件: {tname}，跳过加载该插件")
+            LOGGER.warning(f"未找到文本插件: {tname}，跳过该插件")
     fname = cfg.getFilePlugin()
     if fname and fname != "file_galtransl_json":
         info_path = get_pluginInfo_path(fname)
         candidate = plugin_manager.getPluginCandidateByInfoPath(info_path)
-        if candidate:
-            new_candidates.append(candidate)
-        else:
-            raise Exception(f"未找到文件插件: {fname}，请检查设置")
+        assert candidate, f"未找到文件插件: {fname}，请检查设置"
+        new_candidates.append(candidate)
+
     plugin_manager.setPluginCandidates(new_candidates)
     plugin_manager.loadPlugins()
     text_plugins = plugin_manager.getPluginsOfCategory("GTextPlugin")
@@ -63,10 +62,14 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         plugin_conf = plugin.yaml_dict
         project_conf = cfg.getCommonConfigSection()
         try:
-            LOGGER.info(f'加载插件"{plugin.name}"')
+            LOGGER.info(f'加载插件"{plugin.name}"...')
             plugin.plugin_object.gtp_init(plugin_conf, project_conf)
         except Exception as e:
             LOGGER.error(f'插件"{plugin.name}"加载失败: {e}')
+            if plugin in text_plugins:
+                text_plugins.remove(plugin)
+            elif plugin in file_plugins:
+                file_plugins.remove(plugin)
 
     # proxyPool初始化
     proxyPool = CProxyPool(cfg) if cfg.getKey("internals.enableProxy") else None

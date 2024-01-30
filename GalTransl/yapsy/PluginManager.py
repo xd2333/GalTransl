@@ -441,6 +441,22 @@ class PluginManager(object):
 		if not hasattr(self, '_candidates'):
 			raise RuntimeError("locatePlugins must be called before getPluginCandidates")
 		return self._candidates[:]
+	
+	def getPluginCandidateByInfoPath(self, info_path):
+		"""
+		Return the candidate plugin whose info file path matches the given one.
+
+		The candidate plugin is described by a 3-uple:
+		(info file path, python file path, plugin info instance)
+
+		.. warning: ``locatePlugins`` must be called before !
+		"""
+		if not hasattr(self, '_candidates'):
+			raise ValueError("locatePlugins must be called before getPluginCandidateByInfoPath")
+		for candidate in self._candidates:
+			if candidate[0] == info_path:
+				return candidate
+		return None
 
 	def removePluginCandidate(self,candidateTuple):
 		"""

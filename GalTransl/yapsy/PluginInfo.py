@@ -64,6 +64,7 @@ class PluginInfo(object):
 		self.plugin_object = None
 		self.categories    = []
 		self.error = None
+		self.yaml_dict = None
 
 
 	def __setDetails(self,cfDetails):

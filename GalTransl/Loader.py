@@ -4,24 +4,22 @@ from os import path
 from json import loads
 
 
-def load_transList_from_json_jp(json_str_or_list: str):
+def load_transList(json_path_or_list: str | list) -> tuple[CTransList, list]:
     """
     从json文件路径、json字符串、json list中载入待翻译列表
     json格式为[{"name":xx/"names":[],"message/pre_jp":"xx"},...]
     """
     trans_list: CTransList = []
 
-    if isinstance(json_str_or_list, str):
-        if path.exists(json_str_or_list):
-            with open(json_str_or_list, "r", encoding="utf-8") as f:
-                json_str_or_list = f.read()
-        json_list = loads(json_str_or_list)
-    elif isinstance(json_str_or_list, list):
-        json_list = json_str_or_list
+    if isinstance(json_path_or_list, str):
+        assert path.exists(json_path_or_list), f"{json_path_or_list}不存在"
+        with open(json_path_or_list, "r", encoding="utf-8") as f:
+            json_list = loads(f.read())
+    elif isinstance(json_path_or_list, list):
+        json_list = json_path_or_list
 
     for i, item in enumerate(json_list):
-        if "message" not in item:
-            raise ValueError(f"json文件格式不正确，缺少message字段")
+        assert "message" in item, f"json格式不正确，{i+1}object缺少message字段"
 
         name = (
             item["name"] if "name" in item else item["names"] if "names" in item else ""
@@ -35,4 +33,4 @@ def load_transList_from_json_jp(json_str_or_list: str):
             trans_list[-1].next_tran = tmp_tran
         trans_list.append(tmp_tran)
 
-    return trans_list
+    return trans_list, json_list

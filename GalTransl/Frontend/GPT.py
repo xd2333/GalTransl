@@ -15,12 +15,12 @@ from GalTransl.Backend.BingGPT4Translate import CBingGPT4Translate
 from GalTransl.Backend.SakuraTranslate import CSakuraTranslate
 from GalTransl.Backend.RebuildTranslate import CRebuildTranslate
 from GalTransl.ConfigHelper import initDictList
-from GalTransl.Loader import load_transList_from_json_jp
+from GalTransl.Loader import load_transList
 from GalTransl.Dictionary import CGptDict, CNormalDic
 from GalTransl.Problem import find_problems
 from GalTransl.Cache import save_transCache_to_json
 from GalTransl.Name import load_name_table
-from GalTransl.CSerialize import update_json_with_transList
+from GalTransl.CSerialize import update_json_with_transList, save_json
 from GalTransl.Dictionary import CNormalDic, CGptDict
 from GalTransl.ConfigHelper import CProjectConfig, initDictList, CProxyPool
 from GalTransl.COpenAI import COpenAITokenPool
@@ -34,19 +34,30 @@ async def doLLMTranslateSingleFile(
     pre_dic: CNormalDic,
     post_dic: CNormalDic,
     gpt_dic: CGptDict,
-    gtplugins: list,
+    tlugins: list,
+    fPlugins: list,
     gptapi,
 ) -> bool:
     async with semaphore:
         st = time()
         # 1、初始化trans_list
-        trans_list = load_transList_from_json_jp(
-            joinpath(projectConfig.getInputPath(), file_name)
-        )
+        origin_input = ""
+        input_file_path = joinpath(projectConfig.getInputPath(), file_name)
+        for plugin in fPlugins:
+            try:
+                origin_input = plugin.plugin_object.load_file(input_file_path)
+                save_func = plugin.plugin_object.save_file
+                break
+            except Exception as e:
+                LOGGER.warning(f"插件 {plugin.name} 无法读取文件 {file_name}: {e}")
+        if not origin_input:
+            origin_input = input_file_path
+            save_func = save_json
+        trans_list, json_list = load_transList(origin_input)
 
         # 2、翻译前处理
         for i, tran in enumerate(trans_list):
-            for plugin in gtplugins:
+            for plugin in tlugins:
                 try:
                     tran = plugin.plugin_object.before_src_processed(tran)
                 except Exception as e:
@@ -57,7 +68,7 @@ async def doLLMTranslateSingleFile(
             if projectConfig.getDictCfgSection("usePreDictInName"):  # 译前name替换
                 if type(tran.speaker) == type(tran._speaker) == str:
                     tran.speaker = pre_dic.do_replace(tran.speaker, tran)
-            for plugin in gtplugins:
+            for plugin in tlugins:
                 try:
                     tran = plugin.plugin_object.after_src_processed(tran)
                 except Exception as e:
@@ -92,7 +103,7 @@ async def doLLMTranslateSingleFile(
 
         # 4、翻译后处理
         for i, tran in enumerate(trans_list):
-            for plugin in gtplugins:
+            for plugin in tlugins:
                 try:
                     tran = plugin.plugin_object.before_dst_processed(tran)
                 except:
@@ -108,7 +119,7 @@ async def doLLMTranslateSingleFile(
                         ]
                     elif type(tran.speaker) == type(tran._speaker) == str:
                         tran._speaker = post_dic.do_replace(tran.speaker, tran)
-            for plugin in gtplugins:
+            for plugin in tlugins:
                 try:
                     tran = plugin.plugin_object.after_dst_processed(tran)
                 except:
@@ -135,12 +146,10 @@ async def doLLMTranslateSingleFile(
         )
     else:
         name_dict = {}
-    update_json_with_transList(
-        trans_list,
-        joinpath(projectConfig.getInputPath(), file_name),
-        joinpath(projectConfig.getOutputPath(), file_name),
-        name_dict,
-    )
+
+    new_json_list = update_json_with_transList(trans_list, json_list, name_dict)
+    save_func(joinpath(projectConfig.getOutputPath(), file_name), new_json_list)
+
     et = time()
     LOGGER.info(f"文件 {file_name} 翻译完成，用时 {et-st:.3f}s.")
 
@@ -149,7 +158,8 @@ async def doLLMTranslate(
     projectConfig: CProjectConfig,
     tokenPool: COpenAITokenPool,
     proxyPool: Optional[CProxyPool],
-    gtplugins: list,
+    tPlugins: list,
+    fPlugins: list,
     eng_type="offapi",
 ) -> bool:
     pre_dic_dir = projectConfig.getDictCfgSection()["preDict"]
@@ -186,7 +196,8 @@ async def doLLMTranslate(
             pre_dic,
             post_dic,
             gpt_dic,
-            gtplugins,
+            tPlugins,
+            fPlugins,
             gptapi,
         )
         for file_name in listdir(projectConfig.getInputPath())

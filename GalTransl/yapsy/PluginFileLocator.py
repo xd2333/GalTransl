@@ -189,6 +189,7 @@ class PluginFileAnalyzerWithInfoFile(IPluginFileAnalyzer):
             pass
         if yaml_dict:
             config_parser.read_dict(yaml_dict)
+            self.yaml_dict = yaml_dict
         else:
             try:
                 config_parser.read_file(infoFileObject)
@@ -420,6 +421,7 @@ class PluginFileLocator(IPluginLocator):
             plugin_info_dict["name"], plugin_info_dict["path"]
         )
         plugin_info.details = config_parser
+        plugin_info.yaml_dict = analyzer.yaml_dict
         return plugin_info
 
     def locatePlugins(self):

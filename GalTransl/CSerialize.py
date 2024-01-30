@@ -25,15 +25,11 @@ def save_transList_to_json_cn(trans_list: CTransList, save_path: str, name_dict=
 
 
 def update_json_with_transList(
-    trans_list: CTransList, old_json_path: str, save_path: str, name_dict={}
-):
-    # life is short, gpt4 is good
-    # Load the old JSON file
-    with open(old_json_path, "r", encoding="utf8") as f:
-        data = json.load(f)
-
+    trans_list: CTransList, old_json_list: list, name_dict={}
+) -> list:
+    result_json_list = old_json_list.copy()
     # Iterate over the old JSON data and the trans_list simultaneously
-    for old_item, tran in zip(data, trans_list):
+    for old_item, tran in zip(result_json_list, trans_list):
         # Check if the 'message' in the old JSON data matches with 'pre_jp' in the tran
         if old_item.get("message") == tran.pre_jp:
             # Update the 'message' field
@@ -54,6 +50,9 @@ def update_json_with_transList(
                     for name in tran._speaker
                 ]
 
-    # Write the updated JSON data to the save_path
-    with open(save_path, "w", encoding="utf8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    return result_json_list
+
+
+def save_json(file_path: str, result_json: list):
+    with open(file_path, "w", encoding="utf8") as f:
+        json.dump(result_json, f, ensure_ascii=False, indent=4)

@@ -425,7 +425,7 @@ class Chatbot:
                 keys.remove("aclient")
             self.__dict__.update({key: loaded_config[key] for key in keys})
 
-    def chenge_api_addr(self, new_api_addr: str) -> None:
+    def set_api_addr(self, new_api_addr: str) -> None:
         self.api_address = new_api_addr
 
     def set_api_key(self, new_api_key: str) -> None:

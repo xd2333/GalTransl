@@ -117,7 +117,7 @@ class CGPT35Translate:
         pass
 
     def init_chatbot(self, eng_type, config):
-        eng_name = config.getBackendConfigSection("GPT35").get("rewriteModelName","")
+        eng_name = config.getBackendConfigSection("GPT35").get("rewriteModelName", "")
 
         if eng_type == "gpt35-0613":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
@@ -191,6 +191,9 @@ class CGPT35Translate:
                 if self.eng_type != "unoffapi":
                     self.token = self.tokenProvider.getToken(True, False)
                     self.chatbot.set_api_key(self.token.token)
+                    self.chatbot.set_api_addr(
+                        f"{self.token.domain}/v1/chat/completions"
+                    )
                 LOGGER.info(f"-> 翻译输入：\n{gptdict}\n{input_json}\n")
                 if self.streamOutputMode:
                     LOGGER.info("-> 输出：\n")

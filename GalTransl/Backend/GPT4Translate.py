@@ -124,7 +124,7 @@ class CGPT4Translate:
         pass
 
     def init_chatbot(self, eng_type, config):
-        eng_name = config.getBackendConfigSection("GPT35").get("rewriteModelName","")
+        eng_name = config.getBackendConfigSection("GPT35").get("rewriteModelName", "")
         if eng_type == "gpt4":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
@@ -217,8 +217,11 @@ class CGPT4Translate:
             try:
                 # change token
                 if self.eng_type != "unoffapi":
-                    self.token = self.tokenProvider.getToken(False, True)
+                    self.token = self.tokenProvider.getToken(True, False)
                     self.chatbot.set_api_key(self.token.token)
+                    self.chatbot.set_api_addr(
+                        f"{self.token.domain}/v1/chat/completions"
+                    )
                 # LOGGER.info("->输入：\n" + prompt_req + "\n")
                 LOGGER.info(
                     f"->{'翻译输入' if not proofread else '校对输入'}：{gptdict}\n{input_json}\n"
@@ -425,11 +428,7 @@ class CGPT4Translate:
                 else trans_list_unhit[i:]
             )
 
-            dic_prompt = (
-                gpt_dic.gen_prompt(trans_list_split)
-                if gpt_dic != None
-                else ""
-            )
+            dic_prompt = gpt_dic.gen_prompt(trans_list_split) if gpt_dic != None else ""
 
             num, trans_result = await self.translate(
                 trans_list_split, dic_prompt, proofread=proofread

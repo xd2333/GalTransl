@@ -1,10 +1,9 @@
-import json,re
+import json, re
 from GalTransl import LOGGER
 from GalTransl.GTPlugin import GFilePlugin
 
 
 class text_common_normalfix(GFilePlugin):
-
     def gtp_init(self, plugin_conf: dict, project_conf: dict):
         """
         This method is called when the plugin is loaded.
@@ -14,22 +13,26 @@ class text_common_normalfix(GFilePlugin):
         :param plugin_conf: The settings for the plugin.
         :param project_conf: The settings for the project.
         """
-        self.pattern = re.compile(r'(\d+)\n([\d:,]+ --> [\d:,]+)\n(.+?)(?=\n\d+|\Z)', re.DOTALL)
-        
+        self.pattern = re.compile(
+            r"(\d+)\n([\d:,]+ --> [\d:,]+)\n(.+?)(?=\n\d+|\Z)", re.DOTALL
+        )
 
-    def load_file(self, file_path: str)->list:
+    def load_file(self, file_path: str) -> list:
         """
         This method is called to load a file.
         加载文件时被调用。
         :param file_path: The path of the file to load.
         :return: A list of CSentense objects.
         """
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             srt_text = file.read()
-        
+
         try:
             matches = self.pattern.findall(srt_text)
-            result = [{"index": int(m[0]), "timestamp": m[1], "message": m[2].strip()} for m in matches]
+            result = [
+                {"index": int(m[0]), "timestamp": m[1], "message": m[2].strip()}
+                for m in matches
+            ]
         except Exception as e:
             LOGGER.error(f"Error parsing srt file: {e}")
             raise e
@@ -48,11 +51,9 @@ class text_common_normalfix(GFilePlugin):
         for item in result_json:
             result += f"{item['index']}\n{item['timestamp']}\n{item['message']}\n\n"
 
-        with open(file_path, 'w', encoding='utf-8') as file:
+        with open(file_path, "w", encoding="utf-8") as file:
             file.write(result.strip())
 
-
-    
     def gtp_final(self):
         """
         This method is called after all translations are done.

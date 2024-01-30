@@ -165,22 +165,6 @@ class CGPT4Translate:
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None
             )
-        elif eng_type == "unoffapi":
-            from GalTransl.Backend.revChatGPT.V1 import Chatbot as ChatbotV1
-
-            gpt_config = {
-                "model": "gpt-4",
-                "paid": True,
-                "access_token": choice(
-                    config.getBackendConfigSection("ChatGPT")["access_tokens"]
-                )["access_token"],
-                "proxy": self.proxyProvider.getProxy().addr if self.proxies else None,
-            }
-            if gpt_config["proxy"] == "":
-                del gpt_config["proxy"]
-            self.chatbot = ChatbotV1(config=gpt_config)
-            self.chatbot.trans_prompt = GPT4_TRANS_PROMPT
-            self.chatbot.clear_conversations()
 
     async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
         input_list = []
@@ -271,8 +255,8 @@ class CGPT4Translate:
                     self.token = self.tokenProvider.getToken(False, True)
                     self.chatbot.set_api_key(self.token.token)
                 elif "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.warning("-> 请求受限，5分钟后继续尝试")
-                    await asyncio.sleep(300)
+                    LOGGER.warning("-> 请求受限，1分钟后继续尝试")
+                    await asyncio.sleep(60)
                     continue
                 elif "expired" in str_ex:
                     LOGGER.error("-> access_token过期，请更换")

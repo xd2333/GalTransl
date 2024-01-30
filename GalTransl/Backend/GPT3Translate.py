@@ -221,8 +221,8 @@ class CGPT35Translate:
                     self.token = self.tokenProvider.getToken(True, False)
                     self.chatbot.set_api_key(self.token.token)
                 elif "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.warning("-> 请求受限，5分钟后继续尝试")
-                    await asyncio.sleep(300)
+                    LOGGER.warning("-> 请求受限，1分钟后继续尝试")
+                    await asyncio.sleep(60)
                     continue
                 elif "expired" in str_ex:
                     LOGGER.error("-> access_token过期，请更换")

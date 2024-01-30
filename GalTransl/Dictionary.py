@@ -278,8 +278,6 @@ class CNormalDic:
 
 
 class CGptDict:
-    conditionaDic_key = ["pre_jp", "post_jp", "pre_zh", "post_zh"]  # 条件字典关键字
-
     def __init__(self, dic_list: list) -> None:
         self._dic_list: List[CBasicDicElement] = []
         for dic_path in dic_list:
@@ -305,20 +303,15 @@ class CGptDict:
 
             # 四个空格换成Tab
             line = line.replace("    ", "\t")
-            
+
             sp = line.rstrip("\r\n").split("\t")  # 去多余换行符，Tab分割
             len_sp = len(sp)
 
             if len_sp < 2:  # 至少是2个元素
                 continue
 
-            # 条件字典判断
-            is_conditionaDic_line = True if sp[0] in self.conditionaDic_key else False
-            if is_conditionaDic_line and len_sp < 4:
-                continue
-
             dic = CBasicDicElement(sp[0], sp[1])
-            if len_sp > 2 and sp[2] != None:
+            if len_sp > 2 and sp[2]:
                 dic.note = sp[2]
             else:
                 dic.note = ""
@@ -326,13 +319,17 @@ class CGptDict:
             normalDic_count += 1
         LOGGER.info(f"载入 GPT字典: {path.basename(dic_path)} {normalDic_count}普通词条")
 
-    def gen_prompt(self, trans_list: CTransList,type="gpt"):
+    def gen_prompt(self, trans_list: CTransList, type="gpt"):
         promt = ""
+        input_text = "\n".join(
+            [f"{tran.speaker}:{tran.post_jp}" for tran in trans_list]
+        )
         if type == "gpt":
-            for dic in self._dic_list:
-                if dic.startswith_flag or dic.search_word in "\n".join(
-                    [f"{tran.speaker}:{tran.post_jp}" for tran in trans_list]
-                ):
+            for i, dic in enumerate(self._dic_list):
+                prev_dic = self._dic_list[i - 1] if i > 0 else None
+                if dic.search_word in prev_dic.search_word:
+                    input_text = input_text.replace(prev_dic.search_word, "")
+                if dic.startswith_flag or dic.search_word in input_text:
                     promt += f"| {dic.search_word} | {dic.replace_word} |"
                     if dic.note != "":
                         promt += f" {dic.note}"
@@ -344,15 +341,16 @@ class CGptDict:
                     + promt
                 )
         elif type == "sakura":
-            for dic in self._dic_list:
-                if dic.startswith_flag or dic.search_word in "\n".join(
-                    [f"{tran.speaker}:{tran.post_jp}" for tran in trans_list]
-                ):
+            for i, dic in enumerate(self._dic_list):
+                prev_dic = self._dic_list[i - 1] if i > 0 else None
+                if dic.search_word in prev_dic.search_word:
+                    input_text = input_text.replace(prev_dic.search_word, "")
+                if dic.startswith_flag or dic.search_word in input_text:
                     promt += f"{dic.search_word}->{dic.replace_word}"
                     if dic.note != "":
                         promt += f" #{dic.note}"
                     promt += "\n"
-                    
+
         return promt
 
     def check_dic_use(self, find_from_str: str, tran: CSentense):

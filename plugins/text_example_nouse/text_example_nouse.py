@@ -1,28 +1,31 @@
-from configparser import SectionProxy
 from GalTransl import LOGGER
 from GalTransl.CSentense import *
-from GalTransl.GTPlugin import GTTextPlugin
+from GalTransl.GTPlugin import GTextPlugin
 
 
-class ExampleNoUse(GTTextPlugin):
-    def gtp_init(self, settings: SectionProxy = None):
+class ExampleNoUse(GTextPlugin):
+    def gtp_init(self, plugin_conf: dict, project_conf: dict):
         """
         This method is called when the plugin is loaded.
         在插件加载时被调用。
-        如果配置文件中有Settings，则会传入用于初始化插件设置。
-        :param settings: The settings for the plugin.
+        plugin_conf为插件yaml所有项目转换后的字典。
+        project_conf为项目yaml中common下的项目转换后的字典。
+        :param plugin_conf: The settings for the plugin.
+        :param project_conf: The settings for the project.
         """
         # 打印提示的方法，打印时请带上模块名，以便区分日志。
-        LOGGER.info("[样例插件] 寄寄子·启动！")
-        LOGGER.info(f"[样例插件] set_bool:{settings.getboolean('set_bool', True)}")
-        LOGGER.info(f"[样例插件] set_int:{settings.getint('set_int', 10)}")
-        LOGGER.info(f"[样例插件] set_str:{settings.get('set_string', 'default_str')}")
-        LOGGER.info(f"[样例插件] 设置样例4:{settings.getboolean('设置样例4', True)}")
+        plug_name=plugin_conf["Core"].get("Name","")
+        settings = plugin_conf["Settings"]
+        LOGGER.info(f"[{plug_name}] 寄寄子·启动！")
+        LOGGER.info(f"[{plug_name}] set_bool:{settings.get('set_bool', True)}")
+        LOGGER.info(f"[{plug_name}] set_int:{settings.get('set_int', 10)}")
+        LOGGER.info(f"[{plug_name}] set_str:{settings.get('set_string', 'default_str')}")
+        LOGGER.info(f"[{plug_name}] 设置样例4:{settings.get('设置样例4', True)}")
         # 读取配置文件中的设置，并保存到变量中。
-        self.set_bool = settings.getboolean("set_bool", True)
-        self.set_int = settings.getint("set_int", 10)
+        self.set_bool = settings.get("set_bool", True)
+        self.set_int = settings.get("set_int", 10)
         self.set_str = settings.get("set_string", "default_str")
-        self.设置样例4 = settings.getboolean("设置样例4", True)
+        self.设置样例4 = settings.get("设置样例4", True)
 
     def before_src_processed(self, tran: CSentense) -> CSentense:
         """

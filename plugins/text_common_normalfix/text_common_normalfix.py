@@ -1,8 +1,8 @@
 from GalTransl.CSentense import *
-from GalTransl.GTPlugin import GTTextPlugin
+from GalTransl.GTPlugin import GTextPlugin
 
 
-class text_common_normalfix(GTTextPlugin):
+class text_common_normalfix(GTextPlugin):
 
     def before_src_processed(self, tran: CSentense) -> CSentense:
         return tran

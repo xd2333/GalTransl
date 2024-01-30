@@ -1,0 +1,8 @@
+Core:
+  Name: srt字幕文件读取
+  Module: file_subtitle_srt
+
+Documentation:
+  Author: cx2333
+  Version: 0.1
+  Description: 支持直接读取.srt字幕文件并翻译。

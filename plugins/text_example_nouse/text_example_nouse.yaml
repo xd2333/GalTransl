@@ -5,7 +5,7 @@ Core:
 Documentation:
   Author: cx2333
   Version: 0.1
-  Description: 这是个样例插件，任何项目都不应该使用本插件
+  Description: 这是个样例文本插件，任何项目都不应该使用本插件
 
 Settings: # 这里存放插件的设置
   set_int: 123

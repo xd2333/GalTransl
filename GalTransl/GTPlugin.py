@@ -1,16 +1,17 @@
-from configparser import SectionProxy
 from GalTransl import LOGGER
 from GalTransl.yapsy.IPlugin import IPlugin
 from GalTransl.CSentense import CSentense
 
 
-class GTTextPlugin(IPlugin):
-    def gtp_init(self, settings: SectionProxy):
+class GTextPlugin(IPlugin):
+    def gtp_init(self, plugin_conf: dict, project_conf: dict):
         """
         This method is called when the plugin is loaded.
         在插件加载时被调用。
-        如果配置文件中有Settings，则会传入用于初始化插件设置。
-        :param settings: The settings for the plugin.
+        plugin_conf为插件yaml所有项目转换后的字典。
+        project_conf为项目yaml中common下的项目转换后的字典。
+        :param plugin_conf: The settings for the plugin.
+        :param project_conf: The settings for the project.
         """
         pass
 
@@ -56,16 +57,37 @@ class GTTextPlugin(IPlugin):
         """
         pass
 
-class GTFilePlugin(IPlugin):
-    def gtp_init(self, settings: SectionProxy):
+
+class GFilePlugin(IPlugin):
+    def gtp_init(self, plugin_conf: dict, project_conf: dict):
         """
         This method is called when the plugin is loaded.
         在插件加载时被调用。
-        如果配置文件中有Settings，则会传入用于初始化插件设置。
-        :param settings: The settings for the plugin.
+        plugin_conf为插件yaml中Settings下的设置。
+        project_conf为项目yaml中common下的设置。
+        :param plugin_conf: The settings for the plugin.
+        :param project_conf: The settings for the project.
         """
         pass
-    
+
+    def load_file(self, file_path: str) -> list:
+        """
+        This method is called to load a file.
+        加载文件时被调用。
+        :param file_path: The path of the file to load.
+        :return: A list of CSentense objects.
+        """
+        raise NotImplementedError("This method must be implemented by the plugin.")
+
+    def save_file(self, file_path: str, result_json: list):
+        """
+        This method is called to save a file.
+        保存文件时被调用。
+        :param file_path: The path of the file to save.
+        :param sentenses: A list of CSentense objects to save.
+        """
+        raise NotImplementedError("This method must be implemented by the plugin.")
+
     def gtp_final(self):
         """
         This method is called after all translations are done.

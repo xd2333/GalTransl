@@ -1,9 +1,0 @@
-Core:
-  Name: mtool_json
-  Type: file
-  Module: file_mtool_json
-
-Documentation:
-  Author: cx2333
-  Version: 1.0
-  Description: 可以直接处理mtool导出的json文件，但不带人名信息。

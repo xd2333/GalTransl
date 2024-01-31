@@ -50,8 +50,8 @@ async def doLLMTranslateSingleFile(
                 origin_input = plugin.plugin_object.load_file(input_file_path)
                 save_func = plugin.plugin_object.save_file
                 break
-            except TypeError:
-                LOGGER.error(f"{file_name} 不是插件 {plugin.name} 支持的格式，跳过翻译")
+            except TypeError as e:
+                LOGGER.error(f"{file_name} 不是插件 {plugin.name} 支持的格式：{e}")
                 return False
             except Exception as e:
                 LOGGER.error(f"插件 {plugin.name} 读取文件 {file_name} 出错: {e}")

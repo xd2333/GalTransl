@@ -6,12 +6,9 @@ from GalTransl.GTPlugin import GFilePlugin
 class file_plugin(GFilePlugin):
     def gtp_init(self, plugin_conf: dict, project_conf: dict):
         """
-        This method is called when the plugin is loaded.
-        在插件加载时被调用。
-        plugin_conf为插件yaml中Settings下的设置。
-        project_conf为项目yaml中common下的设置。
-        :param plugin_conf: The settings for the plugin.
-        :param project_conf: The settings for the project.
+        This method is called when the plugin is loaded.在插件加载时被调用。
+        :param plugin_conf: The settings for the plugin.插件yaml中所有设置的dict。
+        :param project_conf: The settings for the project.项目yaml中common下设置的dict。
         """
         self.pattern = re.compile(
             r"(\d+)\n([\d:,]+ --> [\d:,]+)\n(.+?)(?=\n\d+|\Z)", re.DOTALL
@@ -34,7 +31,6 @@ class file_plugin(GFilePlugin):
                 for m in matches
             ]
         except Exception as e:
-            LOGGER.error(f"Error parsing srt file: {e}")
             raise e
 
         return result

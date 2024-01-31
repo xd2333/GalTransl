@@ -130,6 +130,7 @@ import sys
 import os
 import importlib
 
+from GalTransl import LOGGER
 from GalTransl.yapsy import log
 from GalTransl.yapsy import NormalizePluginNameForModuleName
 
@@ -554,7 +555,7 @@ class PluginManager(object):
 				candidate_module = PluginManager._importModule(plugin_module_name, candidate_filepath)
 			except Exception:
 				exc_info = sys.exc_info()
-				log.error("Unable to import plugin: %s" % candidate_filepath, exc_info=exc_info)
+				LOGGER.error("加载插件出错: %s" % candidate_filepath, exc_info=exc_info)
 				plugin_info.error = exc_info
 				processed_plugins.append(plugin_info)
 				continue

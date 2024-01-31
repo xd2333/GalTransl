@@ -6,12 +6,9 @@ from GalTransl.CSentense import CSentense
 class GTextPlugin(IPlugin):
     def gtp_init(self, plugin_conf: dict, project_conf: dict):
         """
-        This method is called when the plugin is loaded.
-        在插件加载时被调用。
-        plugin_conf为插件yaml所有项目转换后的字典。
-        project_conf为项目yaml中common下的项目转换后的字典。
-        :param plugin_conf: The settings for the plugin.
-        :param project_conf: The settings for the project.
+        This method is called when the plugin is loaded.在插件加载时被调用。
+        :param plugin_conf: The settings for the plugin.插件yaml中所有设置的dict。
+        :param project_conf: The settings for the project.项目yaml中common下设置的dict。
         """
         pass
 
@@ -61,12 +58,9 @@ class GTextPlugin(IPlugin):
 class GFilePlugin(IPlugin):
     def gtp_init(self, plugin_conf: dict, project_conf: dict):
         """
-        This method is called when the plugin is loaded.
-        在插件加载时被调用。
-        plugin_conf为插件yaml中Settings下的设置。
-        project_conf为项目yaml中common下的设置。
-        :param plugin_conf: The settings for the plugin.
-        :param project_conf: The settings for the project.
+        This method is called when the plugin is loaded.在插件加载时被调用。
+        :param plugin_conf: The settings for the plugin.插件yaml中所有设置的dict。
+        :param project_conf: The settings for the project.项目yaml中common下设置的dict。
         """
         pass
 
@@ -74,17 +68,18 @@ class GFilePlugin(IPlugin):
         """
         This method is called to load a file.
         加载文件时被调用。
-        :param file_path: The path of the file to load.
-        :return: A list of CSentense objects.
+        :param file_path: The path of the file to load.加载文件路径。
+        :return: A list of objects with message and name(optional).返回一个包含message和name(可空)的对象列表。
         """
         raise NotImplementedError("This method must be implemented by the plugin.")
 
-    def save_file(self, file_path: str, result_json: list):
+    def save_file(self, file_path: str, transl_json: list):
         """
         This method is called to save a file.
         保存文件时被调用。
-        :param file_path: The path of the file to save.
-        :param sentenses: A list of CSentense objects to save.
+        :param file_path: The path of the file to save.保存文件路径
+        :param transl_json: A list of objects same as the return of load_file().load_file提供的json在翻译message和name后的结果。
+        :return: None.
         """
         raise NotImplementedError("This method must be implemented by the plugin.")
 

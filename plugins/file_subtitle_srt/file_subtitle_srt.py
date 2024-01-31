@@ -3,7 +3,7 @@ from GalTransl import LOGGER
 from GalTransl.GTPlugin import GFilePlugin
 
 
-class text_common_normalfix(GFilePlugin):
+class file_plugin(GFilePlugin):
     def gtp_init(self, plugin_conf: dict, project_conf: dict):
         """
         This method is called when the plugin is loaded.
@@ -39,16 +39,17 @@ class text_common_normalfix(GFilePlugin):
 
         return result
 
-    def save_file(self, file_path: str, result_json: list):
+    def save_file(self, file_path: str, transl_json: list):
         """
         This method is called to save a file.
         保存文件时被调用。
-        :param file_path: The path of the file to save.
-        :param sentenses: A list of CSentense objects to save.
+        :param file_path: The path of the file to save.保存文件路径
+        :param transl_json: A list of objects same as the return of load_file().load_file提供的json在翻译message和name后的结果。
+        :return: None.
         """
 
         result = ""
-        for item in result_json:
+        for item in transl_json:
             result += f"{item['index']}\n{item['timestamp']}\n{item['message']}\n\n"
 
         with open(file_path, "w", encoding="utf-8") as file:

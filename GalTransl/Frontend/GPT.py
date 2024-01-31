@@ -158,6 +158,7 @@ async def doLLMTranslateSingleFile(
 
     et = time()
     LOGGER.info(f"文件 {file_name} 翻译完成，用时 {et-st:.3f}s.")
+    return True
 
 
 async def doLLMTranslate(
@@ -178,6 +179,7 @@ async def doLLMTranslate(
     post_dic = CNormalDic(initDictList(post_dic_dir, default_dic_dir, project_dir))
     gpt_dic = CGptDict(initDictList(gpt_dic_dir, default_dic_dir, project_dir))
 
+    workersPerProject = projectConfig.getKey("workersPerProject")
     match eng_type:
         case "gpt35-0613" | "gpt35-1106":
             gptapi = CGPT35Translate(projectConfig, eng_type, proxyPool, tokenPool)
@@ -187,12 +189,13 @@ async def doLLMTranslate(
             gptapi = CBingGPT4Translate(projectConfig, eng_type, proxyPool)
         case "sakura0.9":
             gptapi = CSakuraTranslate(projectConfig, eng_type, proxyPool)
+            workersPerProject = 1
         case "rebuildr" | "rebuilda":
             gptapi = CRebuildTranslate(projectConfig, eng_type)
         case _:
             raise ValueError(f"不支持的翻译引擎类型 {eng_type}")
 
-    semaphore = Semaphore(projectConfig.getKey("workersPerProject"))
+    semaphore = Semaphore(workersPerProject)
     tasks = [
         doLLMTranslateSingleFile(
             semaphore,

@@ -110,6 +110,7 @@ class COpenAITokenPool:
                         "messages": [{"role": "user", "content": "Echo OK"}],
                         "temperature": 0.7,
                     },
+                    timeout=10,
                 )
                 if chatResponse.status_code != 200:
                     # token not available, may token has been revoked

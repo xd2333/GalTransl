@@ -217,7 +217,7 @@ class CGPT4Translate:
             try:
                 # change token
                 if self.eng_type != "unoffapi":
-                    self.token = self.tokenProvider.getToken(True, False)
+                    self.token = self.tokenProvider.getToken(False, True)
                     self.chatbot.set_api_key(self.token.token)
                     self.chatbot.set_api_addr(
                         f"{self.token.domain}/v1/chat/completions"
@@ -248,6 +248,8 @@ class CGPT4Translate:
                 else:
                     print("")
             except asyncio.CancelledError:
+                raise
+            except RuntimeError:
                 raise
             except Exception as ex:
                 str_ex = str(ex).lower()

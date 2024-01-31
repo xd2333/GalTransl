@@ -186,7 +186,10 @@ async def doLLMTranslate(
         case "gpt4" | "gpt4-turbo":
             gptapi = CGPT4Translate(projectConfig, eng_type, proxyPool, tokenPool)
         case "newbing":
-            gptapi = CBingGPT4Translate(projectConfig, eng_type, proxyPool)
+            cookiePool: list[str] = []
+            for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
+                cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
+            gptapi = CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
         case "sakura0.9":
             gptapi = CSakuraTranslate(projectConfig, eng_type, proxyPool)
             workersPerProject = 1

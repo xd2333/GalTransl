@@ -9,6 +9,14 @@ from GalTransl.ConfigHelper import CProjectConfig, CProxy
 from typing import Optional, Tuple
 from random import choice
 
+TRANSLATOR_ENGINE = {
+    "gpt35": "gpt-3.5-turbo",
+    "gpt35-0613": "gpt-3.5-turbo-0613",
+    "gpt35-1106": "gpt-3.5-turbo-1106",
+    "gpt4": "gpt-4",
+    "gpt4-turbo": "gpt-4-0125-preview",
+}
+
 
 class COpenAIToken:
     """
@@ -95,12 +103,7 @@ class COpenAITokenPool:
                 proxies={"https://": proxy.addr} if proxy else None
             ) as client:
                 auth = {"Authorization": "Bearer " + token.token}
-                if "gpt35" in eng_type:
-                    model_name = "gpt-3.5-turbo"
-                if "gpt4" in eng_type:
-                    model_name = "gpt-4"
-                if "gpt4-turbo" in eng_type:
-                    model_name = "gpt-4-0125-preview"
+                model_name = TRANSLATOR_ENGINE.get(eng_type, "gpt-3.5-turbo")
                 # test if have balance
                 chatResponse = await client.post(
                     token.domain + "/v1/chat/completions",
@@ -144,7 +147,9 @@ class COpenAITokenPool:
         fs = []
         for _, token in self.tokens:
             fs.append(self._isTokenAvailable(token, proxy if proxy else None, eng_type))
-        result: list[tuple[bool, bool, bool, COpenAIToken]] = await tqdm.gather(*fs,ncols=80)
+        result: list[tuple[bool, bool, bool, COpenAIToken]] = await tqdm.gather(
+            *fs, ncols=80
+        )
 
         # replace list with new one
         newList: list[tuple[bool, COpenAIToken]] = []

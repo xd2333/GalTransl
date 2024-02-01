@@ -2,6 +2,7 @@ from typing import List
 from os import path
 from GalTransl.CSentense import CSentense, CTransList
 from GalTransl import LOGGER
+from GalTransl.Utils import process_escape
 
 
 class ifWord:

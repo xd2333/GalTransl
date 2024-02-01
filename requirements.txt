@@ -7,3 +7,5 @@ re_edge_gpt
 Requests
 tenacity
 tiktoken
+tqdm
+colorlog

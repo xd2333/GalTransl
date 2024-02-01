@@ -2,26 +2,9 @@
 分析问题
 """
 from GalTransl.CSentense import CTransList
-from GalTransl.ConfigHelper import CProjectConfig
+from GalTransl.ConfigHelper import CProjectConfig, CProblemType
 from GalTransl.Utils import get_most_common_char, contains_japanese
 from GalTransl.Dictionary import CGptDict
-from enum import Enum
-
-
-class CTranslateProblem(Enum):
-    """
-    问题类型
-    """
-
-    词频过高 = 1
-    标点错漏 = 2
-    本无括号 = 2
-    本无引号 = 2
-    残留日文 = 3
-    丢失换行 = 4
-    多加换行 = 5
-    比日文长 = 6
-    字典使用 = 7
 
 
 def find_problems(
@@ -44,20 +27,20 @@ def find_problems(
     find_type = projectConfig.getProblemAnalyzeConfig("problemList")
     if not find_type:
         find_type = projectConfig.getProblemAnalyzeConfig("GPT35")  # 兼容旧版
-    lb_symbol=projectConfig.getlbSymbol()
+    lb_symbol = projectConfig.getlbSymbol()
 
     for tran in trans_list:
         pre_jp = tran.pre_jp
         post_jp = tran.post_jp
         pre_zh = tran.pre_zh
         post_zh = tran.post_zh
-        
+
         problem_list = []
-        if CTranslateProblem.词频过高 in find_type:
+        if CProblemType.词频过高 in find_type:
             most_word, word_count = get_most_common_char(post_zh)
             if word_count > 20 and most_word != ".":
                 problem_list.append(f"词频过高-'{most_word}'{str(word_count)}次")
-        if CTranslateProblem.标点错漏 in find_type:
+        if CProblemType.标点错漏 in find_type:
             char_to_error = {
                 ("（", ")"): "括号",
                 "：": "冒号",
@@ -80,21 +63,21 @@ def find_problems(
                     elif chars in pre_jp:
                         if chars not in post_zh:
                             problem_list.append(f"本有{error}")
-        if CTranslateProblem.残留日文 in find_type:
+        if CProblemType.残留日文 in find_type:
             if contains_japanese(post_zh):
                 problem_list.append("残留日文")
-        if CTranslateProblem.丢失换行 in find_type:
+        if CProblemType.丢失换行 in find_type:
             if post_jp.count(lb_symbol) > pre_zh.count(lb_symbol):
                 problem_list.append("丢失换行")
-        if CTranslateProblem.多加换行 in find_type:
+        if CProblemType.多加换行 in find_type:
             if post_jp.count(lb_symbol) < pre_zh.count(lb_symbol):
                 problem_list.append("多加换行")
-        if CTranslateProblem.比日文长 in find_type:
+        if CProblemType.比日文长 in find_type:
             if len(post_zh) > len(pre_jp) * 1.3:
                 problem_list.append(
                     f"比日文长{round(len(post_zh)/max(len(pre_jp),0.1),1)}倍"
                 )
-        if CTranslateProblem.字典使用 in find_type:
+        if CProblemType.字典使用 in find_type:
             if val := gpt_dict.check_dic_use(post_zh, tran):
                 problem_list.append(val)
         if arinashi_dict != {}:

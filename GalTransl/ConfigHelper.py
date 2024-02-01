@@ -8,9 +8,6 @@ from GalTransl import (
     OUTPUT_FOLDERNAME,
     CACHE_FOLDERNAME,
 )
-
-# from GalTransl.COpenAI import COpenAIToken
-from GalTransl.Problem import CTranslateProblem
 from asyncio import gather
 from tenacity import retry, stop_after_attempt, wait_fixed
 from httpx import AsyncClient, TimeoutException
@@ -19,6 +16,7 @@ from typing import Optional
 from random import choice
 from yaml import safe_load
 from os import path, sep
+from enum import Enum
 
 
 class CProxy:
@@ -32,6 +30,22 @@ class CProxy:
         self.username = username
         self.pw = password
         pass
+
+
+class CProblemType(Enum):
+    """
+    问题类型
+    """
+
+    词频过高 = 1
+    标点错漏 = 2
+    本无括号 = 2
+    本无引号 = 2
+    残留日文 = 3
+    丢失换行 = 4
+    多加换行 = 5
+    比日文长 = 6
+    字典使用 = 7
 
 
 class CProjectConfig:
@@ -122,12 +136,12 @@ class CProjectConfig:
     def getKey(self, key: str) -> str | bool | int | None:
         return self.keyValues.get(key)
 
-    def getProblemAnalyzeConfig(self, backendName: str) -> list[CTranslateProblem]:
+    def getProblemAnalyzeConfig(self, backendName: str) -> list[CProblemType]:
         if backendName not in self.projectConfig["problemAnalyze"]:
             return []
-        result: list[CTranslateProblem] = []
+        result: list[CProblemType] = []
         for i in self.projectConfig["problemAnalyze"][backendName]:
-            result.append(CTranslateProblem[i])
+            result.append(CProblemType[i])
 
         return result
 

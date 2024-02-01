@@ -95,14 +95,9 @@ def get_transCache_from_json(
         if tran.index not in cache_dict:
             trans_list_unhit.append(tran)
             continue
-        # 忽略pre_jp为空的句子
-        if tran.pre_jp == "":
+        # 忽略jp为空的句子
+        if tran.pre_jp == "" or tran.post_jp == "":
             tran.pre_zh, tran.post_zh = "", ""
-            trans_list_hit.append(tran)
-            continue
-        # 忽略post_jp为空的句子
-        if tran.post_jp == "":
-            tran.pre_zh, tran.post_zh = tran.pre_jp, tran.pre_jp
             trans_list_hit.append(tran)
             continue
         # 忽略在读取缓存前pre_zh就有值的句子

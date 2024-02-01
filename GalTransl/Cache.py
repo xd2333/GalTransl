@@ -76,25 +76,23 @@ def get_transCache_from_json(
     Returns:
         Tuple[List[CTrans], List[CTrans]]: 包含两个列表的元组：击中缓存的翻译列表和未击中缓存的翻译列表。
     """
-    if not os.path.exists(cache_file_path):
-        return [], trans_list
 
     trans_list_hit = []
     trans_list_unhit = []
-    with open(cache_file_path, encoding="utf8") as f:
-        try:
-            cache_dictList = load(f)
-            cache_dict = {cache["index"]: cache for cache in cache_dictList}
-        except Exception as e:
-            f.close()
-            LOGGER.error(f"读取缓存{cache_file_path}时出现错误，请检查错误信息")
-            raise e
+
+    if os.path.exists(cache_file_path):
+        with open(cache_file_path, encoding="utf8") as f:
+            try:
+                cache_dictList = load(f)
+                cache_dict = {cache["index"]: cache for cache in cache_dictList}
+            except Exception as e:
+                f.close()
+                LOGGER.error(f"读取缓存{cache_file_path}时出现错误，请检查错误信息")
+                raise e
+    else:
+        cache_dict = {}
 
     for tran in trans_list:
-        # index不在缓存
-        if tran.index not in cache_dict:
-            trans_list_unhit.append(tran)
-            continue
         # 忽略jp为空的句子
         if tran.pre_jp == "" or tran.post_jp == "":
             tran.pre_zh, tran.post_zh = "", ""
@@ -104,6 +102,10 @@ def get_transCache_from_json(
         if tran.pre_zh != "":
             tran.post_zh = tran.pre_zh
             trans_list_hit.append(tran)
+            continue
+        # index不在缓存
+        if tran.index not in cache_dict:
+            trans_list_unhit.append(tran)
             continue
         # post_jp被改变
         if load_post_jp == ignr_post_jp == False:

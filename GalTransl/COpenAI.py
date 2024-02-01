@@ -100,7 +100,7 @@ class COpenAITokenPool:
                 if "gpt4" in eng_type:
                     model_name = "gpt-4"
                 if "gpt4-turbo" in eng_type:
-                    model_name = "gpt-4-preview"
+                    model_name = "gpt-4-0125-preview"
                 # test if have balance
                 chatResponse = await client.post(
                     token.domain + "/v1/chat/completions",

@@ -276,7 +276,12 @@ class CGPT4Translate:
                 await asyncio.sleep(5)
                 continue
 
-            result_text = resp[resp.find('{"id') :]
+            result_text = resp
+            if "```json" in result_text:
+                lang_list, code_list = extract_code_blocks(result_text)
+                if len(lang_list) > 0 and len(code_list) > 0:
+                    result_text = code_list[0]
+            result_text = result_text[result_text.find('{"id') :]
 
             result_text = (
                 result_text.replace(", doub:", ', "doub":')

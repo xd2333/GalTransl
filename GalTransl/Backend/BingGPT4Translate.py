@@ -14,6 +14,7 @@ from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.CSentense import CTransList, CSentense
 from GalTransl.Dictionary import CGptDict
+from GalTransl.Utils import extract_code_blocks
 from GalTransl.Backend.Prompts import (
     NewBing_CONF_PROMPT,
     NewBing_FORCE_PROMPT,
@@ -207,6 +208,10 @@ class CBingGPT4Translate:
                 LOGGER.info(result_text)
             else:
                 print("")
+            if "```json" in result_text:
+                lang_list, code_list = extract_code_blocks(result_text)
+                if len(lang_list) > 0 and len(code_list) > 0:
+                    result_text = code_list[0]
             result_text = result_text[result_text.find('{"id') :]
             # 修复丢冒号
             result_text = (
@@ -233,7 +238,6 @@ class CBingGPT4Translate:
                         )
                         break
                     else:
-                        LOGGER.warning("NB输出格式异常")
                         continue
                 error_flag = False
                 # 本行输出不正常

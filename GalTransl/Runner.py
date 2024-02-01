@@ -63,7 +63,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     handler = logging.StreamHandler()
     handler.setFormatter(CONSOLE_FORMAT)
     LOGGER.addHandler(handler)
-    if cfg.getCommonConfigSection().get("fileLog", False):
+    if cfg.getCommonConfigSection().get("saveLog", False):
         log_path = os.path.join(PROJECT_DIR, "GalTransl.log")
         file_handler = logging.FileHandler(log_path, encoding="utf-8")
         file_handler.setFormatter(File_FORMAT)

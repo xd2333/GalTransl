@@ -1,13 +1,28 @@
 import os, time
 from os.path import exists as isPathExists
 from os import makedirs as mkdir
-
+import logging, colorlog
 from GalTransl import LOGGER, TRANSLATOR_SUPPORTED
 from GalTransl.GTPlugin import GTextPlugin, GFilePlugin
 from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl.yapsy.PluginManager import PluginManager
 from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.Frontend.GPT import doLLMTranslate
+
+CONSOLE_FORMAT = colorlog.ColoredFormatter(
+    "[%(asctime)s]%(log_color)s[%(levelname)s]%(reset)s%(message)s",
+    datefmt="%m-%d %H:%M:%S",
+    log_colors={
+        "DEBUG": "white",
+        "INFO": "white",
+        "WARNING": "yellow",
+        "ERROR": "red",
+        "CRITICAL": "bold_red",
+    },
+)
+File_FORMAT = logging.Formatter(
+    "[%(asctime)s][%(levelname)s] %(message)s", datefmt="%m-%d %H:%M:%S"
+)
 
 
 async def run_galtransl(cfg: CProjectConfig, translator: str):
@@ -30,7 +45,9 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
             if PROJECT_DIR in plug_path:
                 plug_type = "Project-local " + plug_type
             LOGGER.info(f" {plug_name} ({plug_type} Plugin)")
-            LOGGER.info(f"  > {plug_info.name} v{plug_info.version} by {plug_info.author}")
+            LOGGER.info(
+                f"  > {plug_info.name} v{plug_info.version} by {plug_info.author}"
+            )
             LOGGER.info(f"    描述: {plug_info.description}")
             LOGGER.info(f"    路径: {plug_path}")
             LOGGER.info("---------------------------------")
@@ -39,6 +56,19 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
 
     if translator not in TRANSLATOR_SUPPORTED.keys():
         raise Exception(f"不支持的翻译器: {translator}")
+
+    # 日志初始化
+    for handler in LOGGER.handlers:
+        LOGGER.removeHandler(handler)
+    handler = logging.StreamHandler()
+    handler.setFormatter(CONSOLE_FORMAT)
+    LOGGER.addHandler(handler)
+    if cfg.getCommonConfigSection().get("fileLog", False):
+        log_path = os.path.join(PROJECT_DIR, "GalTransl.log")
+        file_handler = logging.FileHandler(log_path, encoding="utf-8")
+        file_handler.setFormatter(File_FORMAT)
+        LOGGER.addHandler(file_handler)
+
     # 目录初始化
     for dir_path in [
         cfg.getInputPath(),
@@ -115,5 +145,3 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
 
     end_time = time.time()
     LOGGER.info(f"总耗时: {end_time-start_time:.3f}s")
-
-

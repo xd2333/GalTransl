@@ -1,24 +1,8 @@
-import logging, colorlog
+import logging
 from time import localtime
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-handler.setFormatter(
-    colorlog.ColoredFormatter(
-        "[%(asctime)s]%(log_color)s[%(levelname)s]%(reset)s%(message)s",
-        datefmt="%m-%d %H:%M:%S",
-        log_colors={
-            "DEBUG": "white",
-            "INFO": "white",
-            "WARNING": "yellow",
-            "ERROR": "red",
-            "CRITICAL": "bold_red",
-        },
-    )
-)
-logger.addHandler(handler)
-LOGGER = logger
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.INFO)
 
 PROGRAM_SPLASH1 = """
    ____       _ _____                    _ 

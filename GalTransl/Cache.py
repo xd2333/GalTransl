@@ -91,18 +91,36 @@ def get_transCache_from_json(
             raise e
 
     for tran in trans_list:
-        if tran.index not in cache_dict:  # 原句不在缓存
+        # index不在缓存
+        if tran.index not in cache_dict:
             trans_list_unhit.append(tran)
             continue
+        # 忽略pre_jp为空的句子
+        if tran.pre_jp == "":
+            tran.pre_zh, tran.post_zh = "", ""
+            trans_list_hit.append(tran)
+            continue
+        # 忽略post_jp为空的句子
+        if tran.post_jp == "":
+            tran.pre_zh, tran.post_zh = tran.pre_jp, tran.pre_jp
+            trans_list_hit.append(tran)
+            continue
+        # 忽略在读取缓存前pre_zh就有值的句子
+        if tran.pre_zh != "":
+            tran.post_zh = tran.pre_zh
+            trans_list_hit.append(tran)
+            continue
+        # post_jp被改变
         if load_post_jp == ignr_post_jp == False:
-            if tran.post_jp != cache_dict[tran.index]["post_jp"]:  # 前润被改变
+            if tran.post_jp != cache_dict[tran.index]["post_jp"]:
                 trans_list_unhit.append(tran)
                 continue
+        # pre_zh为空
         if tran.post_jp != "":
             if (
                 "pre_zh" not in cache_dict[tran.index]
                 or cache_dict[tran.index]["pre_zh"] == ""
-            ):  # 后原为空
+            ):
                 trans_list_unhit.append(tran)
                 continue
         # 重试失败的
@@ -124,7 +142,7 @@ def get_transCache_from_json(
                 trans_list_unhit.append(tran)
                 continue
 
-        # 剩下的都是击中缓存的,post_zh初始值赋pre_zh
+        # 击中缓存的,post_zh初始值赋pre_zh
         tran.pre_zh = cache_dict[tran.index]["pre_zh"]
         if "trans_by" in cache_dict[tran.index]:
             tran.trans_by = cache_dict[tran.index]["trans_by"]
@@ -138,18 +156,20 @@ def get_transCache_from_json(
             tran.doub_content = cache_dict[tran.index]["doub_content"]
         if "unknown_proper_noun" in cache_dict[tran.index]:
             tran.unknown_proper_noun = cache_dict[tran.index]["unknown_proper_noun"]
-        if "problem" in cache_dict[tran.index]:
-            tran.problem = cache_dict[tran.index]["problem"]
+        # if "problem" in cache_dict[tran.index]:
+        #    tran.problem = cache_dict[tran.index]["problem"]
 
         if tran.proofread_zh != "":
             tran.post_zh = tran.proofread_zh
         else:
             tran.post_zh = tran.pre_zh
 
+        # 校对模式下，未校对的
         if proofread and tran.proofread_zh == "":
             trans_list_unhit.append(tran)
             continue
 
+        # 不检查post_jp是否被改变, 且直接使用cache的post_jp
         if load_post_jp:
             tran.post_jp = cache_dict[tran.index]["post_jp"]
 

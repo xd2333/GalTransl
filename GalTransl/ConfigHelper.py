@@ -98,6 +98,10 @@ class CProjectConfig:
     def getCommonConfigSection(self) -> dict:
         return self.projectConfig["common"]
 
+    def getlbSymbol(self) -> str:
+        lbSymbol = self.projectConfig["common"].get("linebreakSymbol", "\r\n")
+        return lbSymbol
+
     def getProxyConfigSection(self) -> dict:
         return self.projectConfig["proxy"]["proxies"]
 

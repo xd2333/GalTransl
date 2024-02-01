@@ -6,7 +6,7 @@ Core:
 Documentation:
   Author: cx2333
   Version: 1.0
-  Description: 跳过只有数字、字母、标点符号的行
+  Description: 跳过不包含日文的行
 
 Settings: # 这里存放插件的设置
   set_int: 123

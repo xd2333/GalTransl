@@ -372,6 +372,6 @@ class CGptDict:
                     break
 
             if not flag:
-                problem_list.append(f"字典 {dic.search_word}={dic.replace_word} 未使用")
+                problem_list.append(f"GPT字典 {dic.search_word} -> {dic.replace_word} 未使用")
 
         return ", ".join(problem_list)

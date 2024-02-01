@@ -48,6 +48,7 @@ def main():
     user_input = ""
     project_dir = ""
     config_file_name = CONFIG_FILENAME
+    translator = ""
     while True:
         print(PROGRAM_SPLASH)
         print(f"Ver: {GALTRANSL_VERSION}")
@@ -58,10 +59,14 @@ def main():
             user_input, project_dir, config_file_name = get_user_input(
                 user_input, project_dir
             )
+            if translator != "":
+                default_choice = list(TRANSLATOR_SUPPORTED.keys()).index(translator)
+            else:
+                default_choice = 0
             os.system("")  # 解决cmd的ANSI转义bug
             translator = BulletMenu(
                 f"请为『{project_dir.split(os.sep)[-1]}』项目选择翻译器：", TRANSLATOR_SUPPORTED
-            ).run()
+            ).run(default_choice)
         except KeyboardInterrupt:
             print("\nGoodbye.")
             sys.exit(0)

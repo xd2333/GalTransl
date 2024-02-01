@@ -133,18 +133,10 @@ async def doLLMTranslateSingleFile(
                     raise e
 
     if eng_type != "rebuildr":
+        find_problems(trans_list, projectConfig, gpt_dic)
         # 用于保存problems
-        arinashi_dict = projectConfig.getProblemAnalyzeArinashiDict()
-        find_type = projectConfig.getProblemAnalyzeConfig("problemList")
-        if not find_type:
-            find_type = projectConfig.getProblemAnalyzeConfig("GPT35")  # 兼容旧版
-        find_problems(
-            trans_list,
-            find_type=find_type,
-            arinashi_dict=arinashi_dict,
-            gpt_dict=gpt_dic,
-        )
         save_transCache_to_json(trans_list, cache_file_path, post_save=True)
+        
     # 5、整理输出
     if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
         name_dict = load_name_table(

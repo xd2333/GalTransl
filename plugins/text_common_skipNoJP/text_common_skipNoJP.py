@@ -20,6 +20,7 @@ class skip_noJP(GTextPlugin):
         :param tran: The CSentense to be processed.
         :return: The modified CSentense."""
         if not contains_japanese(tran.post_jp):
+            # 像这样赋值pre_zh后，这句话就不会被翻译。
             tran.pre_zh = tran.post_jp
         return tran
 

@@ -53,7 +53,7 @@ TRANSLATOR_SUPPORTED = {
     "gpt35-0613": "GPT3.5-Turbo API模式 -- 0613模型",
     "gpt35-1106": "GPT3.5-Turbo API模式 -- 1106模型",
     "gpt4": "GPT4 API模式 -- 0613模型",
-    "gpt4-turbo": "GPT4-Turbo API模式 -- 1106-preview模型",
+    "gpt4-turbo": "GPT4-Turbo API模式 -- 0125-preview模型",
     "newbing": "NewBing 模拟网页模式",
     "sakura0.9": "Sakura-13B-Galgame翻译模型 -- v0.9模型",
     "rebuildr": "重建结果 用译前译后字典通过缓存刷写结果json -- 跳过翻译和写缓存",

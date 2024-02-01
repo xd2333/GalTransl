@@ -1,4 +1,4 @@
-from GalTransl.CSentense import *
+from GalTransl.CSentense import CSentense
 from GalTransl.GTPlugin import GTextPlugin
 
 

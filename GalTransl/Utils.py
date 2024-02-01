@@ -50,6 +50,9 @@ def contains_japanese(text: str) -> bool:
 
     # 检查字符串中的每个字符
     for char in text:
+        # 黑名单
+        if char in ["ー", "・"]:
+            continue
         # 获取字符的 Unicode 码点
         code_point = ord(char)
         # 检查字符是否在日文字符范围内

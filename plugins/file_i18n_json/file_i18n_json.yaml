@@ -1,0 +1,9 @@
+Core:
+  Name: i18n_json
+  Type: file
+  Module: file_i18n_json
+
+Documentation:
+  Author: cx2333
+  Version: 1.0
+  Description: 可以处理任意字典格式的json文件。可以用来做一些i18n的翻译，或翻译mtool导出的结果（但此类工具提取的文本缺少人名，Gal请优先使用VNT或SE）

@@ -53,7 +53,7 @@ class CSakuraTranslate:
         pass
 
     def init_chatbot(self, eng_type, config: CProjectConfig):
-        if eng_type == "Sakura0.9":
+        if eng_type == "sakura0.9":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             endpoint = config.getBackendConfigSection("Sakura").get("endpoint")
@@ -99,7 +99,7 @@ class CSakuraTranslate:
 
         while True:  # 一直循环，直到得到数据
             try:
-                LOGGER.info("->输入：\n" + input_str + "\n")
+                LOGGER.info("->输入：\n" + prompt_req + "\n")
                 resp = ""
                 last_data = ""
                 repetition_cnt = 0
@@ -128,7 +128,8 @@ class CSakuraTranslate:
                 str_ex = str(ex).lower()
                 traceback.print_exc()
                 self._del_last_answer()
-                LOGGER.info("-> 报错:%s, 立刻重试" % ex)
+                LOGGER.info("-> 报错:%s, 即将重试" % ex)
+                await asyncio.sleep(3)
                 continue
 
             result_list = resp.strip("\n").split("\n")
@@ -245,7 +246,7 @@ class CSakuraTranslate:
         trans_list: CTransList,
         num_pre_request: int,
         retry_failed: bool = False,
-        chatgpt_dict: CGptDict = None,
+        gpt_dic: CGptDict = None,
         proofread: bool = False,
         retran_key: str = "",
     ) -> CTransList:
@@ -275,8 +276,8 @@ class CSakuraTranslate:
 
             trans_list_split = trans_list_unhit[i : i + num_pre_request]
             dic_prompt = (
-                chatgpt_dict.gen_prompt(trans_list_split)
-                if chatgpt_dict != None
+                gpt_dic.gen_prompt(trans_list_split,type="sakura")
+                if gpt_dic != None
                 else ""
             )
             num, trans_result = await self.translate(trans_list_split, dic_prompt)

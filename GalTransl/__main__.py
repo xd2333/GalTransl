@@ -1,5 +1,5 @@
 import argparse, traceback
-from asyncio import get_event_loop, run
+from asyncio import get_event_loop, run, new_event_loop, set_event_loop
 from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.Runner import run_galtransl
 from GalTransl import (
@@ -21,8 +21,12 @@ def worker(project_dir: str, config_file_name: str, translator: str, show_banner
         print(f"Contributors: {CONTRIBUTORS}")
 
     cfg = CProjectConfig(project_dir, config_file_name)
+    try:
+        loop = get_event_loop()
+    except RuntimeError:
+        loop = new_event_loop()
+        set_event_loop(loop)
 
-    loop = get_event_loop()
     try:
         run(run_galtransl(cfg, translator))
     except KeyboardInterrupt:

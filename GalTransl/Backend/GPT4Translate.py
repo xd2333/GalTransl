@@ -12,7 +12,7 @@ from random import choice
 from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
-from GalTransl.StringUtils import extract_code_blocks
+from GalTransl.Utils import extract_code_blocks
 from GalTransl.Backend.Prompts import (
     GPT4_CONF_PROMPT,
     GPT4_TRANS_PROMPT,
@@ -58,20 +58,21 @@ class CGPT4Translate:
             self.record_confidence = val
         else:
             self.record_confidence = False
-        # 源语言
-        if val := config.getKey("sourceLanguage"):
+        # 语言设置
+        if val := config.getKey("language"):
+            sp = val.split("2")
+            self.source_lang = sp[0]
+            self.target_lang = sp[1]
+        elif val := config.getKey("sourceLanguage"):  # 兼容旧版本配置
             self.source_lang = val
+            self.target_lang = config.getKey("targetLanguage")
         else:
             self.source_lang = "ja"
+            self.target_lang = "zh-cn"
         if self.source_lang not in LANG_SUPPORTED.keys():
             raise ValueError("错误的源语言代码：" + self.source_lang)
         else:
             self.source_lang = LANG_SUPPORTED[self.source_lang]
-        # 目标语言
-        if val := config.getKey("targetLanguage"):
-            self.target_lang = val
-        else:
-            self.target_lang = "zh-cn"
         if self.target_lang not in LANG_SUPPORTED.keys():
             raise ValueError("错误的目标语言代码：" + self.target_lang)
         else:
@@ -105,7 +106,7 @@ class CGPT4Translate:
         if val := config.getKey("gpt.translStyle"):
             self.transl_style = val
         else:
-            self.transl_style = "normal"
+            self.transl_style = "auto"
         self._current_style = ""
 
         self.init_chatbot(eng_type=eng_type, config=config)  # 模型选择
@@ -123,16 +124,18 @@ class CGPT4Translate:
         pass
 
     def init_chatbot(self, eng_type, config):
+        eng_name = config.getBackendConfigSection("GPT4").get("rewriteModelName", "")
         if eng_type == "gpt4":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.token = self.tokenProvider.getToken(False, True)
+            eng_name = "gpt-4" if eng_name == "" else eng_name
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
                 temperature=0.4,
                 frequency_penalty=0.2,
                 system_prompt=GPT4_SYSTEM_PROMPT,
-                engine="gpt-4",
+                engine=eng_name,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
             )
@@ -145,14 +148,14 @@ class CGPT4Translate:
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.token = self.tokenProvider.getToken(False, True)
-
+            eng_name = "gpt-4-0125-preview" if eng_name == "" else eng_name
             system_prompt = GPT4Turbo_SYSTEM_PROMPT
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
                 temperature=0.4,
                 frequency_penalty=0.2,
                 system_prompt=system_prompt,
-                engine="gpt-4-1106-preview",
+                engine=eng_name,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
                 # response_format="json",
@@ -162,22 +165,6 @@ class CGPT4Translate:
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None
             )
-        elif eng_type == "unoffapi":
-            from GalTransl.Backend.revChatGPT.V1 import Chatbot as ChatbotV1
-
-            gpt_config = {
-                "model": "gpt-4",
-                "paid": True,
-                "access_token": choice(
-                    config.getBackendConfigSection("ChatGPT")["access_tokens"]
-                )["access_token"],
-                "proxy": self.proxyProvider.getProxy().addr if self.proxies else None,
-            }
-            if gpt_config["proxy"] == "":
-                del gpt_config["proxy"]
-            self.chatbot = ChatbotV1(config=gpt_config)
-            self.chatbot.trans_prompt = GPT4_TRANS_PROMPT
-            self.chatbot.clear_conversations()
 
     async def translate(self, trans_list: CTransList, gptdict="", proofread=False):
         input_list = []
@@ -232,6 +219,9 @@ class CGPT4Translate:
                 if self.eng_type != "unoffapi":
                     self.token = self.tokenProvider.getToken(False, True)
                     self.chatbot.set_api_key(self.token.token)
+                    self.chatbot.set_api_addr(
+                        f"{self.token.domain}/v1/chat/completions"
+                    )
                 # LOGGER.info("->输入：\n" + prompt_req + "\n")
                 LOGGER.info(
                     f"->{'翻译输入' if not proofread else '校对输入'}：{gptdict}\n{input_json}\n"
@@ -259,6 +249,8 @@ class CGPT4Translate:
                     print("")
             except asyncio.CancelledError:
                 raise
+            except RuntimeError:
+                raise
             except Exception as ex:
                 str_ex = str(ex).lower()
                 LOGGER.error(f"-> {str_ex}")
@@ -268,8 +260,8 @@ class CGPT4Translate:
                     self.token = self.tokenProvider.getToken(False, True)
                     self.chatbot.set_api_key(self.token.token)
                 elif "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.warning("-> 请求受限，5分钟后继续尝试")
-                    await asyncio.sleep(300)
+                    LOGGER.warning("-> 请求受限，1分钟后继续尝试")
+                    await asyncio.sleep(60)
                     continue
                 elif "expired" in str_ex:
                     LOGGER.error("-> access_token过期，请更换")
@@ -284,7 +276,12 @@ class CGPT4Translate:
                 await asyncio.sleep(5)
                 continue
 
-            result_text = resp[resp.find('{"id') :]
+            result_text = resp
+            if "```json" in result_text:
+                lang_list, code_list = extract_code_blocks(result_text)
+                if len(lang_list) > 0 and len(code_list) > 0:
+                    result_text = code_list[0]
+            result_text = result_text[result_text.find('{"id') :]
 
             result_text = (
                 result_text.replace(", doub:", ', "doub":')
@@ -396,7 +393,7 @@ class CGPT4Translate:
         trans_list: CTransList,
         num_pre_request: int,
         retry_failed: bool = False,
-        chatgpt_dict: CGptDict = None,
+        gpt_dic: CGptDict = None,
         proofread: bool = False,
         retran_key: str = "",
     ) -> CTransList:
@@ -438,11 +435,7 @@ class CGPT4Translate:
                 else trans_list_unhit[i:]
             )
 
-            dic_prompt = (
-                chatgpt_dict.gen_prompt(trans_list_split)
-                if chatgpt_dict != None
-                else ""
-            )
+            dic_prompt = gpt_dic.gen_prompt(trans_list_split) if gpt_dic != None else ""
 
             num, trans_result = await self.translate(
                 trans_list_split, dic_prompt, proofread=proofread

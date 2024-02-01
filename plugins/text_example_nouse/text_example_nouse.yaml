@@ -1,0 +1,15 @@
+Core:
+  Name: 样例文本插件
+  Type: text
+  Module: text_example_nouse
+
+Documentation:
+  Author: cx2333
+  Version: 1.0
+  Description: 这是个样例文本插件，任何项目都不应该使用本插件
+
+Settings: # 这里存放插件的设置
+  set_int: 123
+  set_string: aaa
+  set_bool: True
+  设置样例4: False

@@ -8,16 +8,15 @@ from GalTransl import (
     OUTPUT_FOLDERNAME,
     CACHE_FOLDERNAME,
 )
-
-# from GalTransl.COpenAI import COpenAIToken
-from GalTransl.Problem import CTranslateProblem
 from asyncio import gather
+from tenacity import retry, stop_after_attempt, wait_fixed
 from httpx import AsyncClient, TimeoutException
 from time import time
 from typing import Optional
 from random import choice
 from yaml import safe_load
 from os import path, sep
+from enum import Enum
 
 
 class CProxy:
@@ -33,16 +32,36 @@ class CProxy:
         pass
 
 
+class CProblemType(Enum):
+    """
+    问题类型
+    """
+
+    词频过高 = 1
+    标点错漏 = 2
+    本无括号 = 2
+    本无引号 = 2
+    残留日文 = 3
+    丢失换行 = 4
+    多加换行 = 5
+    比日文长 = 6
+    字典使用 = 7
+
+
 class CProjectConfig:
     def __init__(self, projectPath: str, config_name=CONFIG_FILENAME) -> None:
         self.projectConfig = loadConfigFile(path.join(projectPath, config_name))
         self.projectDir: str = projectPath
-        self.inputPath: str = str(
-            path.abspath(path.join(projectPath, INPUT_FOLDERNAME))
-        )
-        self.outputPath: str = str(
-            path.abspath(path.join(projectPath, OUTPUT_FOLDERNAME))
-        )
+        input_dir = path.abspath(path.join(projectPath, INPUT_FOLDERNAME))
+        path_json_jp = path.abspath(path.join(projectPath, "json_jp"))
+        if not path.exists(input_dir) and path.exists(path_json_jp):
+            input_dir = path_json_jp  # 兼容旧版本
+        self.inputPath: str = str(input_dir)
+        output_dir = path.abspath(path.join(projectPath, OUTPUT_FOLDERNAME))
+        path_json_cn = path.abspath(path.join(projectPath, "json_cn"))
+        if not path.exists(output_dir) and path.exists(path_json_cn):
+            output_dir = path_json_cn  # 兼容旧版本
+        self.outputPath: str = str(output_dir)
         self.cachePath: str = str(
             path.abspath(path.join(projectPath, CACHE_FOLDERNAME))
         )
@@ -69,6 +88,18 @@ class CProjectConfig:
     def getProjectDir(self) -> str:
         return self.projectDir
 
+    def getTextPluginList(self) -> list:
+        if "plugin" not in self.projectConfig:
+            return []
+        else:
+            return self.projectConfig["plugin"]["textPlugins"]
+
+    def getFilePlugin(self) -> str:
+        if "plugin" not in self.projectConfig:
+            return "file_galtransl_json"
+        else:
+            return self.projectConfig["plugin"]["filePlugin"]
+
     def getInputPath(self) -> str:
         return self.inputPath
 
@@ -80,6 +111,10 @@ class CProjectConfig:
 
     def getCommonConfigSection(self) -> dict:
         return self.projectConfig["common"]
+
+    def getlbSymbol(self) -> str:
+        lbSymbol = self.projectConfig["common"].get("linebreakSymbol", "\r\n")
+        return lbSymbol
 
     def getProxyConfigSection(self) -> dict:
         return self.projectConfig["proxy"]["proxies"]
@@ -101,10 +136,12 @@ class CProjectConfig:
     def getKey(self, key: str) -> str | bool | int | None:
         return self.keyValues.get(key)
 
-    def getProblemAnalyzeConfig(self, backendName: str) -> list[CTranslateProblem]:
-        result: list[CTranslateProblem] = []
+    def getProblemAnalyzeConfig(self, backendName: str) -> list[CProblemType]:
+        if backendName not in self.projectConfig["problemAnalyze"]:
+            return []
+        result: list[CProblemType] = []
         for i in self.projectConfig["problemAnalyze"][backendName]:
-            result.append(CTranslateProblem[i])
+            result.append(CProblemType[i])
 
         return result
 
@@ -120,6 +157,7 @@ class CProxyPool:
                 (False, CProxy(i["address"], i.get("username", i.get("password"))))
             )
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
     async def _availablityChecker(
         self, proxy: CProxy, test_address="http://www.gstatic.com/generate_204"
     ) -> tuple[bool, CProxy]:
@@ -192,6 +230,8 @@ def initDictList(config: dict, dictDir: str, projectDir: str) -> Optional[list[s
     """
     处理字典设置项
     """
+    if not config:
+        return []
     result: list[str] = []
     for entry in config:
         if entry.startswith("(project_dir)"):

@@ -74,10 +74,22 @@ class Chatbot:
         self.api_address: str = api_address
         self.system_prompt: str = system_prompt
         self.max_tokens: int = max_tokens or (
-            31000 if engine == "gpt-4-32k" else 7000 if engine == "gpt-4" else 4000
+            31000
+            if "-32k" in engine
+            else 15000
+            if "-16k" in engine
+            else 7000
+            if "gpt-4" in engine
+            else 4000
         )
         self.truncate_limit: int = truncate_limit or (
-            30500 if engine == "gpt-4-32k" else 6500 if engine == "gpt-4" else 3500
+            30500
+            if "-32k" in engine
+            else 14500
+            if "-16k" in engine
+            else 6500
+            if "gpt-4" in engine
+            else 3500
         )
         self.temperature: float = temperature
         self.top_p: float = top_p
@@ -132,17 +144,7 @@ class Chatbot:
         """
         Get token count
         """
-        if self.engine not in [
-            "gpt-3.5-turbo",
-            "gpt-3.5-turbo-0301",
-            "gpt-3.5-turbo-0613",
-            "gpt-3.5-turbo-1106",
-            "gpt-4",
-            "gpt-4-0314",
-            "gpt-4-32k",
-            "gpt-4-32k-0314",
-            "gpt-4-1106-preview",
-        ]:
+        if "gpt-3.5" not in self.engine and "gpt-4" not in self.engine:
             raise NotImplementedError(f"Unsupported engine {self.engine}")
 
         tiktoken.model.MODEL_TO_ENCODING["gpt-4"] = "cl100k_base"
@@ -423,7 +425,7 @@ class Chatbot:
                 keys.remove("aclient")
             self.__dict__.update({key: loaded_config[key] for key in keys})
 
-    def chenge_api_addr(self, new_api_addr: str) -> None:
+    def set_api_addr(self, new_api_addr: str) -> None:
         self.api_address = new_api_addr
 
     def set_api_key(self, new_api_key: str) -> None:

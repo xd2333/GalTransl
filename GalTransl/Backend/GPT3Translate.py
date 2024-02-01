@@ -16,7 +16,7 @@ from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Backend.revChatGPT.typings import APIConnectionError
-from GalTransl.StringUtils import extract_code_blocks
+from GalTransl.Utils import extract_code_blocks
 from httpx import ProtocolError
 from GalTransl import LOGGER, LANG_SUPPORTED
 from GalTransl.Backend.Prompts import (
@@ -40,20 +40,21 @@ class CGPT35Translate:
         self.eng_type = eng_type
         self.last_file_name = ""
         self.retry_count = 0
-        # 源语言
-        if val := config.getKey("sourceLanguage"):
+        # 语言设置
+        if val := config.getKey("language"):
+            sp = val.split("2")
+            self.source_lang = sp[0]
+            self.target_lang = sp[1]
+        elif val := config.getKey("sourceLanguage"):  # 兼容旧版本配置
             self.source_lang = val
+            self.target_lang = config.getKey("targetLanguage")
         else:
             self.source_lang = "ja"
+            self.target_lang = "zh-cn"
         if self.source_lang not in LANG_SUPPORTED.keys():
             raise ValueError("错误的源语言代码：" + self.source_lang)
         else:
             self.source_lang = LANG_SUPPORTED[self.source_lang]
-        # 目标语言
-        if val := config.getKey("targetLanguage"):
-            self.target_lang = val
-        else:
-            self.target_lang = "zh-cn"
         if self.target_lang not in LANG_SUPPORTED.keys():
             raise ValueError("错误的目标语言代码：" + self.target_lang)
         else:
@@ -98,7 +99,7 @@ class CGPT35Translate:
         if val := config.getKey("gpt.translStyle"):
             self.transl_style = val
         else:
-            self.transl_style = "normal"
+            self.transl_style = "auto"
         self._current_style = ""
 
         if self.target_lang == "Simplified Chinese":
@@ -116,14 +117,17 @@ class CGPT35Translate:
         pass
 
     def init_chatbot(self, eng_type, config):
+        eng_name = config.getBackendConfigSection("GPT35").get("rewriteModelName", "")
+
         if eng_type == "gpt35-0613":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.token = self.tokenProvider.getToken(True, False)
+            eng_name = "gpt-3.5-turbo-0613" if eng_name == "" else eng_name
             # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
-                engine="gpt-3.5-turbo-0613",
+                engine=eng_name,
                 system_prompt=GPT35_0613_SYSTEM_PROMPT,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
@@ -137,10 +141,11 @@ class CGPT35Translate:
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.token = self.tokenProvider.getToken(True, False)
+            eng_name = "gpt-3.5-turbo-1106" if eng_name == "" else eng_name
             # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,
-                engine="gpt-3.5-turbo-1106",
+                engine=eng_name,
                 system_prompt=GPT35_1106_SYSTEM_PROMPT,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
@@ -150,21 +155,6 @@ class CGPT35Translate:
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
             )
-        elif eng_type == "unoffapi":
-            from GalTransl.Backend.revChatGPT.V1 import AsyncChatbot as ChatbotV1
-
-            gpt_config = {
-                "access_token": choice(
-                    config.getBackendConfigSection("ChatGPT")["access_tokens"]
-                )["access_token"],
-                "proxy": self.proxyProvider.getProxy().addr
-                if self.proxyProvider
-                else "",
-            }
-            if gpt_config["proxy"] == "":
-                del gpt_config["proxy"]
-            self.chatbot = ChatbotV1(config=gpt_config)
-            self.chatbot.clear_conversations()
 
         if self.transl_style == "auto":
             self._set_gpt_style("precise")
@@ -201,6 +191,9 @@ class CGPT35Translate:
                 if self.eng_type != "unoffapi":
                     self.token = self.tokenProvider.getToken(True, False)
                     self.chatbot.set_api_key(self.token.token)
+                    self.chatbot.set_api_addr(
+                        f"{self.token.domain}/v1/chat/completions"
+                    )
                 LOGGER.info(f"-> 翻译输入：\n{gptdict}\n{input_json}\n")
                 if self.streamOutputMode:
                     LOGGER.info("-> 输出：\n")
@@ -231,8 +224,8 @@ class CGPT35Translate:
                     self.token = self.tokenProvider.getToken(True, False)
                     self.chatbot.set_api_key(self.token.token)
                 elif "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.warning("-> 请求受限，5分钟后继续尝试")
-                    await asyncio.sleep(300)
+                    LOGGER.warning("-> 请求受限，1分钟后继续尝试")
+                    await asyncio.sleep(60)
                     continue
                 elif "expired" in str_ex:
                     LOGGER.error("-> access_token过期，请更换")
@@ -262,11 +255,11 @@ class CGPT35Translate:
                 result_json = json.loads(result_text)  # 尝试解析json
                 if len(result_json) != len(input_list):  # 输出行数错误
                     LOGGER.error("-> 错误的输出行数：\n" + result_text + "\n")
-                    error_message="输出行数错误"
+                    error_message = "输出行数错误"
                     error_flag = True
             except:
                 LOGGER.error("-> 非json：\n" + result_text + "\n")
-                error_message="输出非json"
+                error_message = "输出非json"
                 error_flag = True
 
             if not error_flag:
@@ -466,7 +459,7 @@ class CGPT35Translate:
         trans_list: CTransList,
         num_pre_req: int,
         retry_failed: bool = False,
-        gptdict: CGptDict = None,
+        gpt_dic: CGptDict = None,
         proofread: bool = False,
         retran_key: str = "",
     ) -> CTransList:
@@ -501,8 +494,8 @@ class CGPT35Translate:
             trans_list_split = trans_list_unhit[i : i + num_pre_req]
 
             dic_prompt = ""
-            if gptdict != None:
-                dic_prompt = gptdict.gen_prompt(trans_list_split)
+            if gpt_dic != None:
+                dic_prompt = gpt_dic.gen_prompt(trans_list_split)
             num, trans_result = await self.asyncTranslate(trans_list_split, dic_prompt)
             trans_result_list += trans_result
             i += num if num > 0 else 0

@@ -76,35 +76,48 @@ def get_transCache_from_json(
     Returns:
         Tuple[List[CTrans], List[CTrans]]: 包含两个列表的元组：击中缓存的翻译列表和未击中缓存的翻译列表。
     """
-    if not os.path.exists(cache_file_path):
-        return [], trans_list
 
     trans_list_hit = []
     trans_list_unhit = []
-    with open(cache_file_path, encoding="utf8") as f:
-        try:
-            cache_dictList = load(f)
-        except JSONDecodeError:
-            LOGGER.warn("读取缓存时出现错误，请重新启动程序。")
-            f.close()  # 不然文件句柄还占用——删不了文件
-            os.remove(cache_file_path)
-            raise SystemExit
 
-    cache_dict = {cache["index"]: cache for cache in cache_dictList}
+    if os.path.exists(cache_file_path):
+        with open(cache_file_path, encoding="utf8") as f:
+            try:
+                cache_dictList = load(f)
+                cache_dict = {cache["index"]: cache for cache in cache_dictList}
+            except Exception as e:
+                f.close()
+                LOGGER.error(f"读取缓存{cache_file_path}时出现错误，请检查错误信息")
+                raise e
+    else:
+        cache_dict = {}
 
     for tran in trans_list:
-        if tran.index not in cache_dict:  # 原句不在缓存
+        # 忽略jp为空的句子
+        if tran.pre_jp == "" or tran.post_jp == "":
+            tran.pre_zh, tran.post_zh = "", ""
+            trans_list_hit.append(tran)
+            continue
+        # 忽略在读取缓存前pre_zh就有值的句子
+        if tran.pre_zh != "":
+            tran.post_zh = tran.pre_zh
+            trans_list_hit.append(tran)
+            continue
+        # index不在缓存
+        if tran.index not in cache_dict:
             trans_list_unhit.append(tran)
             continue
+        # post_jp被改变
         if load_post_jp == ignr_post_jp == False:
-            if tran.post_jp != cache_dict[tran.index]["post_jp"]:  # 前润被改变
+            if tran.post_jp != cache_dict[tran.index]["post_jp"]:
                 trans_list_unhit.append(tran)
                 continue
+        # pre_zh为空
         if tran.post_jp != "":
             if (
                 "pre_zh" not in cache_dict[tran.index]
                 or cache_dict[tran.index]["pre_zh"] == ""
-            ):  # 后原为空
+            ):
                 trans_list_unhit.append(tran)
                 continue
         # 重试失败的
@@ -126,7 +139,7 @@ def get_transCache_from_json(
                 trans_list_unhit.append(tran)
                 continue
 
-        # 剩下的都是击中缓存的,post_zh初始值赋pre_zh
+        # 击中缓存的,post_zh初始值赋pre_zh
         tran.pre_zh = cache_dict[tran.index]["pre_zh"]
         if "trans_by" in cache_dict[tran.index]:
             tran.trans_by = cache_dict[tran.index]["trans_by"]
@@ -140,18 +153,20 @@ def get_transCache_from_json(
             tran.doub_content = cache_dict[tran.index]["doub_content"]
         if "unknown_proper_noun" in cache_dict[tran.index]:
             tran.unknown_proper_noun = cache_dict[tran.index]["unknown_proper_noun"]
-        if "problem" in cache_dict[tran.index]:
-            tran.problem = cache_dict[tran.index]["problem"]
+        # if "problem" in cache_dict[tran.index]:
+        #    tran.problem = cache_dict[tran.index]["problem"]
 
         if tran.proofread_zh != "":
             tran.post_zh = tran.proofread_zh
         else:
             tran.post_zh = tran.pre_zh
 
+        # 校对模式下，未校对的
         if proofread and tran.proofread_zh == "":
             trans_list_unhit.append(tran)
             continue
 
+        # 不检查post_jp是否被改变, 且直接使用cache的post_jp
         if load_post_jp:
             tran.post_jp = cache_dict[tran.index]["post_jp"]
 

@@ -16,7 +16,7 @@ class CSentense:
         """
         self.index = index
 
-        self.pre_jp = pre_jp  # 前原
+        self._pre_jp = pre_jp  # 前原
         self.post_jp = pre_jp  # 前润，初始为原句
         self.pre_zh = ""  # 后原
         self.proofread_zh = ""  # 校对, For GPT4
@@ -42,6 +42,16 @@ class CSentense:
 
         self.prev_tran: CSentense = None  # 指向上一个tran
         self.next_tran: CSentense = None  # 指向下一个tran
+
+    @property
+    def pre_jp(self):
+        return self._pre_jp
+
+    @pre_jp.setter
+    def pre_jp(self, value):
+        if hasattr(self, "_pre_jp"):
+            raise AttributeError("Can't modify pre_jp")
+        self._pre_jp = value
 
     def __repr__(self) -> str:
         name = self.speaker
@@ -139,138 +149,6 @@ class CSentense:
         译后用，对post_zh恢复对话符号，应该放在最后
         """
         self.post_zh = self.left_symbol + self.post_zh + self.right_symbol
-
-    def some_normal_fix(self, line_break_symbol="\\n"):
-        """
-        译后用，一键应用常规的修复，要放在recover_dialogue_symbol前
-        """
-        if self.post_zh == "":
-            return
-        self.simple_fix_double_quotaion()
-        self.remove_first_symbol(line_break_symbol)
-        self.fix_last_symbol()
-        # 修复输出中的\r\n换行符
-        if "\r\n" in self.post_jp:
-            if "\r\n" not in self.post_zh and "\n" in self.post_zh:
-                self.post_zh = self.post_zh.replace("\n", "\r\n")
-            if self.post_zh.startswith("\r\n") and not self.post_jp.startswith("\r\n"):
-                self.post_zh = self.post_zh[2:]
-
-    def simple_fix_double_quotaion(self):
-        """
-        译后用，简单的记数法修复双引号左右不对称的问题，只适合句子里只有一对双引号的情况
-        用在译后的字典替换后
-        """
-        if self.post_zh.count("”") == 2 and self.post_zh.count("“") == 0:
-            self.post_zh = self.post_zh.replace("”", "“", 1)
-        if self.post_zh.count("』") == 2 and self.post_zh.count("『") == 0:
-            self.post_zh = self.post_zh.replace("』", "『", 1)
-
-    def remove_first_symbol(self, line_break_symbol="\\n"):
-        """译后用，移除第一个字符是逗号，句号，换行符的情况"""
-        if self.post_zh[:1] in ["，", "。"]:
-            self.post_zh = self.post_zh[1:]
-        if self.post_zh[:2] in [line_break_symbol]:
-            self.post_zh = self.post_zh[2:]
-
-    def fix_last_symbol(self):
-        """
-        针对一些最后一个符号丢失的问题进行补回
-        """
-        if not self.post_jp.endswith("\r\n") and self.post_zh.endswith("\r\n"):
-            self.post_zh = self.post_zh[:-2]
-        if self.post_jp[-1:] == "♪" and self.post_zh[-1:] != "♪":
-            self.post_zh += "♪"
-        if self.post_jp[-1:] != "、" and self.post_zh[-1:] == "，":
-            self.post_zh = self.post_zh[:-1]
-        if self.post_jp[-2:] == "！？" and self.post_zh[-1:] == "！":
-            self.post_zh = self.post_zh + "？"
-        if self.proofread_zh != "":
-            if not self.pre_jp.endswith("\r\n") and self.proofread_zh.endswith("\r\n"):
-                self.proofread_zh = self.proofread_zh[:-2]
-            if self.post_jp[-1:] == "♪" and self.proofread_zh[-1:] != "♪":
-                self.proofread_zh += "♪"
-            if self.post_jp[-1:] != "、" and self.proofread_zh[-1:] == "，":
-                self.proofread_zh = self.proofread_zh[:-1]
-            if self.post_jp[-2:] == "！？" and self.post_zh[-1:] == "！":
-                self.proofread_zh = self.proofread_zh + "？"
-
-    def __replace_he2she(self):
-        self.post_zh = self.post_zh.replace("他", "她").replace("其她", "其他")
-
-    def fix_he2she(self, jp_name_list: List[str], zh_name_list: List[str]):
-        """译后用，通过一些规则修复男女他的问题"""
-        if self.post_zh == "":
-            return
-        if self.is_dialogue:
-            self.fix_diag_he2she(jp_name_list, zh_name_list)
-        else:
-            self.fix_mono_he2she(jp_name_list, zh_name_list)
-
-        for zh_name in zh_name_list:
-            name_xs, name_xj = f"{zh_name}先生", f"{zh_name}小姐"
-            if name_xs in self.post_zh:
-                self.post_zh = self.post_zh.replace(name_xs, name_xj)
-        pass
-
-    def fix_diag_he2she(self, jp_name_list: List[str], zh_name_list: List[str]):
-        """
-        1、对话这一句包含女主角名
-        """
-        if self.is_dialogue == False:  # 不处理独白
-            return
-
-        # 1、对话这一句包含女主角名
-        for her_name in zh_name_list:
-            if her_name in self.post_zh:
-                self.__replace_he2she()
-                return
-
-    def fix_mono_he2she(self, jp_name_list: List[str], zh_name_list: List[str]):
-        """
-        :jp_name_list:日文名列表，主要用于找speaker
-        :zh_name_list:中文名列表，主要用于找内容
-        :针对独白中男他的一些fix trick：
-        :1、独白前一句的speaker是女主角的话
-        :2、独白前一句是独白，内容包含女主角名，或包含她字的话
-        :3、独白这一句里包含女主角名
-        :4、独白下一句的speaker是女主角的话
-        """
-        if self.is_dialogue == True:  # 不处理对话
-            return
-
-        for her_name in zh_name_list:
-            # 3、独白这一句里包含女主角名
-            if her_name in self.post_zh:
-                self.__replace_he2she()
-                return
-
-        pre_tran = self.prev_tran
-        if pre_tran != None:
-            # 1、独白前一句是对话，speaker是女主角的话
-            if pre_tran.is_dialogue:
-                if any(name in pre_tran.speaker for name in jp_name_list):
-                    self.__replace_he2she()
-                return
-
-            # 2、独白往上找是独白，内容包含女主角名，或包含她字的话
-            while pre_tran != None and pre_tran.is_dialogue == False:
-                if "她" in pre_tran.post_zh:
-                    self.__replace_he2she()
-                    return
-                else:
-                    for her_name in zh_name_list:
-                        if her_name in pre_tran.post_zh:
-                            self.__replace_he2she()
-                            return
-                pre_tran = pre_tran.prev_tran  # 再往上找
-
-        next_tran = self.next_tran
-        if next_tran != None:
-            # 4、独白下一句的speaker是女主角的话
-            if next_tran.is_dialogue and next_tran.speaker in jp_name_list:
-                self.__replace_he2she()
-                return
 
 
 CTransList = list[CSentense]

@@ -14,6 +14,7 @@ from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.CSentense import CTransList, CSentense
 from GalTransl.Dictionary import CGptDict
+from GalTransl.Utils import extract_code_blocks
 from GalTransl.Backend.Prompts import (
     NewBing_CONF_PROMPT,
     NewBing_FORCE_PROMPT,
@@ -207,6 +208,10 @@ class CBingGPT4Translate:
                 LOGGER.info(result_text)
             else:
                 print("")
+            if "```json" in result_text:
+                lang_list, code_list = extract_code_blocks(result_text)
+                if len(lang_list) > 0 and len(code_list) > 0:
+                    result_text = code_list[0]
             result_text = result_text[result_text.find('{"id') :]
             # 修复丢冒号
             result_text = (
@@ -233,7 +238,6 @@ class CBingGPT4Translate:
                         )
                         break
                     else:
-                        LOGGER.warning("NB输出格式异常")
                         continue
                 error_flag = False
                 # 本行输出不正常
@@ -346,8 +350,8 @@ class CBingGPT4Translate:
         cache_file_path,
         trans_list: CTransList,
         num_pre_request: int,
-        chatgpt_dict: CGptDict = None,
         retry_failed: bool = False,
+        gpt_dic: CGptDict = None,
         proofread: bool = False,
         retran_key: str = "",
     ) -> CTransList:
@@ -386,8 +390,8 @@ class CBingGPT4Translate:
             trans_list_split = trans_list_unhit[i : i + num_pre_request]
 
             # 生成dic prompt
-            if chatgpt_dict:
-                dic_prompt = chatgpt_dict.gen_prompt(trans_list_split)
+            if gpt_dic:
+                dic_prompt = gpt_dic.gen_prompt(trans_list_split)
             else:
                 dic_prompt = ""
 

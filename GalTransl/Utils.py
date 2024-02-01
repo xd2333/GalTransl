@@ -1,10 +1,13 @@
 """
-统计字符串的工具函数
+工具函数
 """
+import os
+import codecs
 from typing import Tuple, List
 from collections import Counter
 from re import compile
 
+PATTERN_CODE_BLOCK = compile(r"```([\w]*)\n([\s\S]*?)\n```")
 
 def get_most_common_char(input_text: str) -> Tuple[str, int]:
     """
@@ -47,7 +50,7 @@ def contains_japanese(text: str) -> bool:
 
     # 检查字符串中的每个字符
     for char in text:
-        # 排除ー
+        # 黑名单
         if char in ["ー", "・"]:
             continue
         # 获取字符的 Unicode 码点
@@ -62,10 +65,9 @@ def contains_japanese(text: str) -> bool:
     return False
 
 
-def extract_code_blocks(content):
+def extract_code_blocks(content: str) -> Tuple[List[str], List[str]]:
     # 匹配带语言标签的代码块
-    pattern_with_lang = compile(r"```([\w]*)\n([\s\S]*?)\n```")
-    matches_with_lang = pattern_with_lang.findall(content)
+    matches_with_lang = PATTERN_CODE_BLOCK.findall(content)
 
     # 提取所有匹配到的带语言标签的代码块
     lang_list = []
@@ -75,3 +77,22 @@ def extract_code_blocks(content):
         code_list.append(match[1])
 
     return lang_list, code_list
+
+
+def get_file_name(file_path: str) -> str:
+    """
+    获取文件名，不包含扩展名
+    """
+    base_name = os.path.basename(file_path)
+    file_name, _ = os.path.splitext(base_name)
+    return file_name
+
+def get_file_list(directory: str):
+    file_list = []
+    for dirpath, dirnames, filenames in os.walk(directory):
+        for file in filenames:
+            file_list.append(os.path.join(dirpath, file))
+    return file_list
+
+def process_escape(text: str) -> str:
+    return codecs.escape_decode(bytes(text, "utf-8"))[0].decode("utf-8")

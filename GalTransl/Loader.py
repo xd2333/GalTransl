@@ -14,7 +14,10 @@ def load_transList(json_path_or_list: str | list) -> tuple[CTransList, list]:
     if isinstance(json_path_or_list, str):
         assert path.exists(json_path_or_list), f"{json_path_or_list}不存在"
         with open(json_path_or_list, "r", encoding="utf-8") as f:
-            json_list = loads(f.read())
+            try:
+                json_list = loads(f.read())
+            except Exception as e:
+                raise e
     elif isinstance(json_path_or_list, list):
         json_list = json_path_or_list
 

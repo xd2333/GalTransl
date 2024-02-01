@@ -59,7 +59,12 @@ async def doLLMTranslateSingleFile(
         if not origin_input:
             origin_input = input_file_path
             save_func = save_json
-        trans_list, json_list = load_transList(origin_input)
+
+        try:
+            trans_list, json_list = load_transList(origin_input)
+        except Exception as e:
+            LOGGER.error(f"文件 {file_name} 加载翻译列表失败: {e}")
+            return False
 
         # 2、翻译前处理
         for i, tran in enumerate(trans_list):
@@ -136,7 +141,7 @@ async def doLLMTranslateSingleFile(
         find_problems(trans_list, projectConfig, gpt_dic)
         # 用于保存problems
         save_transCache_to_json(trans_list, cache_file_path, post_save=True)
-        
+
     # 5、整理输出
     if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
         name_dict = load_name_table(

@@ -2,10 +2,12 @@
 工具函数
 """
 import os
+import codecs
 from typing import Tuple, List
 from collections import Counter
 from re import compile
 
+PATTERN_CODE_BLOCK = compile(r"```([\w]*)\n([\s\S]*?)\n```")
 
 def get_most_common_char(input_text: str) -> Tuple[str, int]:
     """
@@ -48,9 +50,6 @@ def contains_japanese(text: str) -> bool:
 
     # 检查字符串中的每个字符
     for char in text:
-        # 排除ー
-        if char in ["ー", "・"]:
-            continue
         # 获取字符的 Unicode 码点
         code_point = ord(char)
         # 检查字符是否在日文字符范围内
@@ -65,8 +64,7 @@ def contains_japanese(text: str) -> bool:
 
 def extract_code_blocks(content: str) -> Tuple[List[str], List[str]]:
     # 匹配带语言标签的代码块
-    pattern_with_lang = compile(r"```([\w]*)\n([\s\S]*?)\n```")
-    matches_with_lang = pattern_with_lang.findall(content)
+    matches_with_lang = PATTERN_CODE_BLOCK.findall(content)
 
     # 提取所有匹配到的带语言标签的代码块
     lang_list = []
@@ -92,3 +90,6 @@ def get_file_list(directory: str):
         for file in filenames:
             file_list.append(os.path.join(dirpath, file))
     return file_list
+
+def process_escape(text: str) -> str:
+    return codecs.escape_decode(bytes(text, "utf-8"))[0].decode("utf-8")

@@ -18,6 +18,7 @@ from GalTransl.Backend.Prompts import (
     GPT4_TRANS_PROMPT,
     GPT4_SYSTEM_PROMPT,
     GPT4_PROOFREAD_PROMPT,
+    NAME_PROMPT4,
 )
 from GalTransl.Backend.Prompts import (
     GPT4Turbo_SYSTEM_PROMPT,
@@ -25,8 +26,6 @@ from GalTransl.Backend.Prompts import (
     GPT4Turbo_CONF_PROMPT,
     GPT4Turbo_PROOFREAD_PROMPT,
 )
-
-NAME_PROMPT3 = "and `name`(if have) "
 
 
 class CGPT4Translate:
@@ -158,7 +157,7 @@ class CGPT4Translate:
                 engine=eng_name,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
-                # response_format="json",
+                response_format="json",
             )
             self.chatbot.trans_prompt = GPT4Turbo_TRANS_PROMPT
             self.chatbot.proofread_prompt = GPT4Turbo_PROOFREAD_PROMPT
@@ -183,9 +182,9 @@ class CGPT4Translate:
                     "id": trans.index,
                     "name": trans.speaker,
                     "src": trans.post_jp,
-                    "dst": trans.pre_zh
-                    if trans.proofread_zh == ""
-                    else trans.proofread_zh,
+                    "dst": (
+                        trans.pre_zh if trans.proofread_zh == "" else trans.proofread_zh
+                    ),
                 }
                 if trans.speaker == "":
                     del tmp_obj["name"]
@@ -210,7 +209,7 @@ class CGPT4Translate:
         else:
             prompt_req = prompt_req.replace("[ConfRecord]", "")
         if '"name"' in input_json:
-            prompt_req = prompt_req.replace("[NamePrompt3]", NAME_PROMPT3)
+            prompt_req = prompt_req.replace("[NamePrompt3]", NAME_PROMPT4)
         else:
             prompt_req = prompt_req.replace("[NamePrompt3]", "")
         while True:  # 一直循环，直到得到数据
@@ -301,11 +300,10 @@ class CGPT4Translate:
                     if i == -1:
                         LOGGER.error("-> 非json：\n" + line + "\n")
                         error_flag = True
-                        continue
+                        break
                     else:
                         continue
 
-                error_flag = False
                 # 本行输出不正常
                 if (
                     isinstance(line_json, dict) == False
@@ -335,7 +333,9 @@ class CGPT4Translate:
                         "／" not in trans_list[i].post_jp
                         and "/" not in trans_list[i].post_jp
                     ):
-                        error_message = f"-> 第{line_id}句多余 / 符号：" + line_json[key_name]
+                        error_message = (
+                            f"-> 第{line_id}句多余 / 符号：" + line_json[key_name]
+                        )
                         error_flag = True
                         break
 
@@ -360,6 +360,7 @@ class CGPT4Translate:
                     result_trans_list.append(trans_list[i])
 
             if error_flag:
+                LOGGER.error(f"-> 解析结果出错：{error_message}")
                 if self.skipRetry:
                     self.reset_conversation()
                     LOGGER.warning("-> 解析出错但跳过本轮翻译")
@@ -376,15 +377,36 @@ class CGPT4Translate:
                         result_trans_list.append(trans_list[i])
                         i = i + 1
                     return i, result_trans_list
-                else:
-                    self._handle_error(error_message)
-                    continue
-            else:
-                if self.transl_style == "auto":
-                    self._set_gpt_style("precise")
-                self.retry_count = 0
 
-            return i + 1, result_trans_list
+                await asyncio.sleep(1)
+                self._del_last_answer()
+                self.retry_count += 1
+                # 切换模式
+                if self.transl_style == "auto":
+                    self._set_gpt_style("normal")
+                # 2次重试则对半拆
+                if self.retry_count == 2 and len(trans_list) > 1:
+                    self.retry_count -= 1
+                    LOGGER.warning("-> 仍然出错，拆分重试")
+                    return await self.translate(
+                        trans_list[: len(trans_list) // 2], gptdict
+                    )
+                # 单句重试仍错则重置会话
+                if self.retry_count == 3:
+                    self.reset_conversation()
+                    LOGGER.warning("-> 单句仍错，重置会话")
+                # 单句5次重试则中止
+                if self.retry_count == 5:
+                    LOGGER.error(f"-> 单句反复出错，已中止。错误为：{error_message}")
+                    raise RuntimeError(f"-> 单句反复出错，最后错误为：{error_message}")
+                continue
+
+            # 翻译完成，收尾
+            if self.transl_style == "auto":
+                self._set_gpt_style("precise")
+            self.retry_count = 0
+            break
+        return i + 1, result_trans_list
 
     async def batch_translate(
         self,
@@ -435,7 +457,7 @@ class CGPT4Translate:
                 else trans_list_unhit[i:]
             )
 
-            dic_prompt = gpt_dic.gen_prompt(trans_list_split) if gpt_dic != None else ""
+            dic_prompt = gpt_dic.gen_prompt(trans_list_split) if gpt_dic else ""
 
             num, trans_result = await self.translate(
                 trans_list_split, dic_prompt, proofread=proofread
@@ -454,27 +476,6 @@ class CGPT4Translate:
             )
 
         return trans_result_list
-
-    def _handle_error(self, error_msg: str = "") -> None:
-        LOGGER.error(f"-> 错误的输出：{error_msg}")
-        self.retry_count += 1
-        # 切换模式
-        if self.transl_style == "auto":
-            self._set_gpt_style("normal")
-        # 3次重试则重置会话
-        if self.retry_count % 3 == 0:
-            self.reset_conversation()
-            LOGGER.warning("-> 3次出错重置会话")
-            return
-        # 10次重试则中止
-        if self.retry_count > 10:
-            LOGGER.error(f"-> 循环重试超过10次，已中止：{error_msg}")
-            exit(-1)
-        # 其他情况
-        if self.eng_type != "unoffapi":
-            self._del_last_answer()
-        elif self.eng_type == "unoffapi":
-            self.reset_conversation()
 
     def reset_conversation(self):
         if self.eng_type != "unoffapi":

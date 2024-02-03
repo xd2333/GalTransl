@@ -333,8 +333,7 @@ class CGPT35Translate:
                     LOGGER.warning("-> 单句仍错，重置会话")
                 # 单句5次重试则中止
                 if self.retry_count == 5:
-                    LOGGER.error(f"-> 单句反复出错，已中止。错误为：{error_message}")
-                    exit(-1)
+                    raise RuntimeError(f"-> 单句反复出错，已中止。最后错误为：{error_message}")
                 continue
 
             if warn_flag:

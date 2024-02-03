@@ -202,17 +202,25 @@ class CBingGPT4Translate:
                 LOGGER.info("->Need New topic")
                 await self.chatbot.reset()
                 continue
+            
+            try:
+                result_text = resp["item"]["messages"][1]["text"]
+            except:
+                LOGGER.error("-> 没有获取到有效结果，重置会话")
+                await self.chatbot.reset()
+                continue
 
-            result_text = resp["item"]["messages"][1]["text"]
             if not self.streamOutputMode:
                 LOGGER.info(result_text)
             else:
                 print("")
+
             if "```json" in result_text:
                 lang_list, code_list = extract_code_blocks(result_text)
                 if len(lang_list) > 0 and len(code_list) > 0:
                     result_text = code_list[0]
             result_text = result_text[result_text.find('{"id') :]
+            
             # 修复丢冒号
             result_text = (
                 result_text.replace(", src:", ', "src":')

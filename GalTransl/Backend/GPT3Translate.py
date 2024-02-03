@@ -166,10 +166,6 @@ class CGPT35Translate:
         translate with async requests
         """
         input_list = []
-        error_flag = False
-        warn_flag = False
-        error_message = ""
-        key_name = "dst"
         for i, trans in enumerate(content):
             tmp_obj = {"id": trans.index, "name": trans.speaker, "src": trans.post_jp}
             if trans.speaker == "":
@@ -251,6 +247,9 @@ class CGPT35Translate:
             else:
                 result_text = resp
 
+            key_name = "dst"
+            error_flag, warn_flag = False, False
+            error_message = ""
             try:
                 result_json = json.loads(result_text)  # 尝试解析json
                 if len(result_json) != len(input_list):  # 输出行数错误

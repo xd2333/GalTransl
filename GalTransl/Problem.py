@@ -78,7 +78,7 @@ def find_problems(
                     f"比日文长{round(len(post_zh)/max(len(pre_jp),0.1),1)}倍"
                 )
         if CProblemType.字典使用 in find_type:
-            if val := gpt_dict.check_dic_use(post_zh, tran):
+            if val := gpt_dict.check_dic_use(pre_zh, tran):
                 problem_list.append(val)
         if arinashi_dict != {}:
             for key, value in arinashi_dict.items():

@@ -4,7 +4,7 @@ from time import localtime
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
-PROGRAM_SPLASH1 = """
+PROGRAM_SPLASH1 = r"""
    ____       _ _____                    _ 
   / ___| __ _| |_   _| __ __ _ _ __  ___| |
  | |  _ / _` | | | || '__/ _` | '_ \/ __| |
@@ -13,7 +13,7 @@ PROGRAM_SPLASH1 = """
 
 ------Translate your favorite Galgame------"""
 
-PROGRAM_SPLASH2 = """
+PROGRAM_SPLASH2 = r"""
    ______      ________                      __
   / ____/___ _/ /_  __/________ _____  _____/ /
  / / __/ __ `/ / / / / ___/ __ `/ __ \/ ___/ / 

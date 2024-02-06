@@ -13,23 +13,23 @@
 &ensp;&ensp;&ensp;&ensp;GalTransl的核心是一组由我(cx2333)构建的自动化翻译脚本，它解决了使用ChatGPT自动化翻译Galgame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合，打通了制作补丁的完整流程，一定程度降低了上手门槛。对此感兴趣的朋友可以更容易的构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  
 
   * 特性：   
-  1. 支持**ChatGPT、Newbing、GPT-4、Sakura**等大语言模型，并通过提示工程大幅提高了GPT的翻译质量   
-  2. NewBing基于GPT-4并且**免费**；ChatGPT与GPT-4支持官方API与~~模拟网页操作模式~~（2023.12 模拟网页操作目前不可用）   
-  3. 首创**GPT字典系统**，让GPT了解人设，准确翻译人名、人称代词与生词   
-  4. 首创NewBing、GPT-4下支持自动记录翻译确信度、存疑句、未知专有名词，方便手工修正，并支持自动化校润(目前不稳定)   
-  5. 通过译前、译后字典与条件字典实现灵活的自动化字典系统   
-  6. 实时保存缓存、自动断点续翻   
-  7. 结合其他项目支持多引擎脚本一键解包与注入，提供完整教程降低上手难度   
+  1. 支持**GPT3.5、Newbing、GPT-4、Sakura**等大语言模型，并通过提示工程提高了GPT的翻译质量   
+  2. 首创**GPT字典**，让GPT了解人设，准确翻译人名、人称代词与生词   
+  3. 通过译前、译后字典与条件字典实现灵活的自动化字典系统   
+  4. 实时保存缓存、自动断点续翻   
+  5. 结合其他项目支持多引擎脚本一键解包与注入，提供完整教程降低上手难度   
    
-  * 支持我：点个Star~（PS. 分享补丁时**请注明GPT翻译**，能提一下是用GalTransl翻译的就更好了）   
+  * 支持我：点个Star~（PS. 分享补丁时**请注明GPT翻译**，能提一下是用GalTransl翻译的就更好了）
+  * 也欢迎捐赠任意金额、任意中转的充值码到`galtransl233@gmail.com`，供我用于调试和改善翻译效果   
 
   * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群）   
 
-## News
+## 近期更新
+* 2024/02/01：更新v4版，支持插件系统  
 * 2024/01/02：提供exe一键包，免安装环境   
 * 2023/12/28：增加设置项，允许通过字典在译前译后替换name，可用于汉化name字段   
 * 2023/12/23：支持Sakura-13B-Galgame离线翻译模型   
-* 2023/12/17：支持基于文件的多线程 by @ryank231231   
+* 2023/12/17：更新v3版，支持基于文件的多线程 by @ryank231231   
 
 ## 使用GalTransl翻译的游戏
 
@@ -50,17 +50,20 @@
 * [GalTransl核心功能介绍](https://github.com/XD2333/GalTransl#galtransl核心功能介绍)：介绍GPT字典、缓存、普通字典、找问题等功能。  
 
 ## 环境准备
-  * Python   
-  安装 Python 3.11 版（暂不支持3.12）。 [下载](https://www.python.org/downloads/release/python-3117/)   
-  **安装时勾选下方 add Python to path**   
+  * **免环境版**   
+  现在release里有winexe版本，不需要安装运行环境和依赖。
    
   * [下载本项目](https://github.com/XD2333/GalTransl/releases/)   
-  解压到任意位置，例如 `D:\GalTransl-main`
+  解压到任意位置，例如 `D:\GalTransl`
+
+  * Python   
+  安装 Python 3.11/3.12。 [下载](https://www.python.org/downloads/release/python-3117/)   
+  **安装时勾选下方 add Python to path**   
 
   * 安装Python依赖   
   安装 Python 后
   
-  如果你是**初学者**，可以直接双击`安装、更新依赖.bat`来安装本项目需要的依赖。或者，直接使用winexe版本，不需要安装依赖。
+  如果你是**初学者**，可以直接双击`安装、更新依赖.bat`来安装本项目需要的依赖。
 
   如果你**熟悉python**，本项目提供Poetry进行依赖管理，可以通过以下命令安装并运行程序：
 
@@ -74,18 +77,14 @@
   python -m GalTransl -p 你的项目路径 -t 翻译后端
   ```
 
-  * EmEditor   
-  神一样的文本编辑器。[下载](https://www.ghxi.com/emeditor.html)   
-  
-  * GARbro   
-  神一样的解包工具。[下载](https://github.com/morkt/GARbro/releases/download/v1.5.44/GARbro-v1.5.44.2904.rar)
-
 ## 实用工具
 | 名称 | 说明 |
 | --- | --- |
-| GalTransl_DumpInjector | 文本工具：[VNTextPatch](https://github.com/arcusmaximus/VNTranslationTools)的图形化界面，综合文本提取导入工具 |
-| [SExtractor](https://github.com/satan53x/SExtractor) | 文本工具：综合文本提取导入工具 |
-| [DBTXT2Json_jp](https://github.com/XD2333/DBTXT2Json_jp) | 文本工具：通用双行文本与json_jp互转脚本 |
+| EmEditor | 文本工具：神一样的文本编辑器。[下载](https://www.ghxi.com/emeditor.html)  |
+| GalTransl_DumpInjector | 脚本工具：[VNTextPatch](https://github.com/arcusmaximus/VNTranslationTools)的图形化界面，综合脚本文本提取导入工具 |
+| [SExtractor](https://github.com/satan53x/SExtractor) | 脚本工具：综合脚本文本提取导入工具 |
+| [DBTXT2Json_jp](https://github.com/XD2333/DBTXT2Json_jp) | 脚本工具：通用双行文本与json_jp互转脚本 |
+| GARbro | 引擎工具：神一样的解包工具。[下载](https://github.com/morkt/GARbro/releases/download/v1.5.44/GARbro-v1.5.44.2904.rar) |
 | [KirikiriTools](https://github.com/arcusmaximus/KirikiriTools) | 引擎工具：Krkr、krkrz 提取、注入工具 |
 | [UniversalInjectorFramework](https://github.com/AtomCrafty/UniversalInjectorFramework) | 引擎工具：sjis隧道、sjis替换模式通用注入框架 |
 | [VNTextProxy](https://github.com/arcusmaximus/VNTranslationTools) | 引擎工具：sjis隧道模式通用注入框架 |
@@ -112,7 +111,7 @@
 
 或者，参考[资源包后缀表](https://morkt.github.io/GARbro/supported.html)，比较资源包的后缀。   
 
-剧情脚本一般在一些有明显关键字的资源包，或在资源包中明显关键字的目录内，例如：scene、scenario、message、script等字样。并且脚本通常是由许多明显分章节、分人物，有的还分出了主线和hs(例如带_h)，通常多翻找几个资源包就能找到。   
+剧情脚本一般在一些有明显关键字的资源包，或在资源包中明显关键字的目录内，例如：scene、scenario、message、script等字样。并且脚本通常是由许多明显分章节、分人物，有的还分出了剧情和hs(例如带_h)，通常多翻找几个资源包就能找到。   
 
 或者，参考[Dir-A佬的教程](https://space.bilibili.com/8144708/)   
 
@@ -129,29 +128,26 @@
 &ensp;&ensp;&ensp;&ensp;通常情况下，本项目是结合[VNTextPatch工具](https://github.com/arcusmaximus/VNTranslationTools)来解包脚本的。 VNTextPatch是由外国大佬arcusmaximus开发的[支持许多引擎](https://github.com/arcusmaximus/VNTranslationTools#vntextpatch)脚本的提取与注入的通用工具。（但并不是这些引擎都能搞定了，实测有的游戏是会提取失败的）   
    
 &ensp;&ensp;&ensp;&ensp;VNTextPatch是使用cmd操作的，为了降低上手难度，我搓了一个图形化的界面，你可以在项目的useful_tools/GalTransl_DumpInjector内找到，点击GalTransl_DumpInjector.exe运行。   
-&ensp;&ensp;&ensp;&ensp;现在，你只需要选择日文脚本目录，然后选择保存提取的日文json的目录，这里一般将日文脚本放到叫script_jp的文件夹，再新建一个json_jp目录，用于存储提取出的脚本：   
+&ensp;&ensp;&ensp;&ensp;现在，你只需要选择日文脚本目录，然后选择保存提取的日文json的目录，这里一般将日文脚本放到叫script_jp的文件夹，再新建一个gt_input目录，用于存储提取出的脚本：   
 ![图1](./img/img_dumper.png)
-&ensp;&ensp;&ensp;&ensp;在这里，需要明确一个概念：GalTransl全程是使用JSON格式输入、处理和输出的。[JSON是什么](http://c.biancheng.net/json/what-is-json.html)   
-提取出来的json_jp文件打开是这个样子的：   
+&ensp;&ensp;&ensp;&ensp;需要注意GalTransl全程是使用name-message格式的JSON输入、处理和输出的。[JSON是什么](http://c.biancheng.net/json/what-is-json.html)   
+提取出来的json文件可以用emeditor打开，一般是这个样子的：   
 ```json
 [
-  {
-    "message": "わりと遠慮のない子らしい。でも、屈託のない明るさも\r\n相まってこういうのも悪くない。"
-  },
   {
     "name": "咲來",
     "message": "「ってか、白鷺学園だったらあたしと一緒じゃん。\r\nセンパイだったんですねー」"
   }
 ]
 ```
-&ensp;&ensp;&ensp;&ensp;其中，每个{object(对象)}是一句话，`message`是消息内容，如果object还带了`name`，说明是对话。不过可能并不是所有类型的脚本都可以带name提取，当可以正确提取name时，GalTransl的翻译质量会更好。   
-&ensp;&ensp;&ensp;&ensp;PS. GalTransl只支持指定格式的json文件输入，但并不是说GalTransl就与VNTextPatch工具绑定了，也可以通过其他工具提取出脚本文本，然后尝试使用"双行文本与json_jp互转脚本"、"正则表达式模式"等工具将其他格式的文本与json文本转换，或尝试使用SExtractor工具，现在也支持导出GalTransl需要的json。   
+&ensp;&ensp;&ensp;&ensp;其中，每个{object(对象)}是一句话，`message`是消息内容，如果object还带了`name`，说明是对话。不过可能并不是所有类型的脚本都可以带name提取，**当可以正确提取name时，GalTransl的翻译质量会更好**。   
+&ensp;&ensp;&ensp;&ensp;PS. GalTransl只支持指定格式的json文件输入，但并不是说GalTransl就与VNTextPatch工具绑定了，也可以使用SExtractor工具，现在也支持导出GalTransl需要的name-message格式JSON   
 
 * **【2.2. GalTransl启动】**   
 &ensp;&ensp;&ensp;&ensp;将本项目下载下来解压到任意位置（示例中默认为D盘根目录），在项目示例文件夹`sampleProject`中，找到示例配置文件`config.inc.yaml`，将其重命名为`config.yaml`。另外，也将sampleProject文件夹改个名字，一般是游戏的名字。   
 
 &ensp;&ensp;&ensp;&ensp;本教程使用GPT3.5官方API来举例。其他引擎可参考下面[引擎使用](https://github.com/XD2333/GalTransl?tab=readme-ov-file#配置文件与翻译引擎设置)章节，对应修改示例项目的`config.yaml`即可调用。   
-&ensp;&ensp;&ensp;&ensp;先将所有提取出的日文json文件放入示例文件夹内的`json_jp`文件夹中（都放在一级目录，不要在json_jp内再新建文件夹），然后用任意文本编辑器编辑`config.yaml`文件，按**注释**修改以下内容：
+&ensp;&ensp;&ensp;&ensp;先将所有提取出的日文json文件放入示例文件夹内的`gt_input`文件夹中，然后用任意文本编辑器编辑`config.yaml`文件，按**注释**修改以下内容：
 ```yaml
 # 代理设置
 proxy:
@@ -177,13 +173,13 @@ backendSpecific:
 ```python
   enableProxy: false # 此时不用设置代理
 
-  GPT35: # GPT3.5 官方 API
-    tokens: # 令牌列表
+  GPT35: 
+    tokens: 
       - token: sk-xxxxxxxx # 你的第三方令牌
         endpoint: https://api.chatanywhere.com.cn  # 使用第三方API端点
 ```   
    
-&ensp;&ensp;&ensp;&ensp;修改好项目设置后，确保你已经安装了需要的依赖（见环境准备），然后双击`run.bat`，首先输入或拖入项目文件夹，例如`D:\GalTransl-main\sampleProject`（路径不要带空格）   
+&ensp;&ensp;&ensp;&ensp;修改好项目设置后，确保你已经安装了需要的依赖（见环境准备），然后双击`run.bat`（免环境版双击exe），首先拖入项目文件夹，例如`D:\GalTransl-main\sampleProject`   
 
 接着选择gpt35:
 
@@ -193,14 +189,16 @@ backendSpecific:
 
 ![img_start](./img/img_start.png)
 
-&ensp;&ensp;&ensp;&ensp;**但是**，我不建议就这样开始翻译了，请至少要先看一下[GPT字典的使用](https://github.com/XD2333/GalTransl#gpt字典)，为你要翻译的gal设定好各角色的人名字典，这样才能保证基本的翻译质量。   
+&ensp;&ensp;&ensp;&ensp;**但是，不建议就这样开始翻译了**，请至少要先学会[GPT字典的使用](https://github.com/XD2333/GalTransl#gpt字典)，为你要翻译的gal设定好各角色的人名字典，这样才能保证基本的翻译质量。   
 
-&ensp;&ensp;&ensp;&ensp;翻译完成后，如果想手工修正，见[翻译缓存章节](https://github.com/XD2333/GalTransl#翻译缓存)
+&ensp;&ensp;&ensp;&ensp;翻译完成后，如果想手工修正，可以对缓存进行修正，并重新生成结果json，见[翻译缓存章节](https://github.com/XD2333/GalTransl#翻译缓存)
 
 * **【2.3. 构建中文脚本】**   
 &ensp;&ensp;&ensp;&ensp;如果你是使用GalTransl提取注入工具提取的脚本，构建同理，选择日文脚本目录、中文json目录、中文脚本保存目录，然后点'注入'，即可将文本注入回脚本。但这里面有一些坑，第四章会提到。
 
-注：这里一般把中文脚本保存目录叫script_cn，因为日文脚本目录叫script_jp
+注：   
+1. 这里一般把中文脚本保存目录叫script_cn，因为日文脚本目录叫script_jp   
+2. 一般使用什么工具导出，就用什么工具导入。所以要先尝试导入导出是否都正常再开始翻译。   
 
 
 </details>
@@ -213,7 +211,7 @@ backendSpecific:
 </b> </summary>
 
 &ensp;&ensp;&ensp;&ensp;构建好中文脚本后，下一步就是想办法让游戏读取。首先目前主流引擎基本都是支持免封包读取的，可以继续参考Dir-A佬的[教程](https://space.bilibili.com/8144708/)，看看你要搞的引擎支不支持免封包读取。   
-&ensp;&ensp;&ensp;&ensp;特别的，针对krkr/krkrz引擎，可以使用arcusmaximus大佬的[KirikiriTools工具](https://github.com/arcusmaximus/KirikiriTools)，下载里面的version.dll，丢到游戏目录里，然后在游戏目录里新建一个"unencrypted"文件夹，将脚本丢进去，就可以让krkr读取   
+&ensp;&ensp;&ensp;&ensp;特别的，针对krkr/krkrz引擎，可以使用arcusmaximus大佬的[KirikiriTools工具](https://github.com/arcusmaximus/KirikiriTools)，下载里面的version.dll，丢到游戏目录里，然后在游戏目录里新建一个"unencrypted"文件夹，将脚本直接丢进去（不用新建二级目录），就可以让krkr读取   
 
 </details>
 
@@ -229,7 +227,7 @@ backendSpecific:
 如果你在做的引擎支持unicode编码，例如krkr、Artemis引擎等，一般就可以直接玩了。但如果引擎是使用sjis编码的话，直接打开会是乱码，这时候需要通过2种路线尝试使其可以正常显示中文：   
 
 路线1：使用GBK编码注入脚本，然后修改引擎程序使其支持GBK编码   
-路线2：仍然使用sjis编码注入脚本，但通过sjis隧道或sjis替换2种方式，结合通用注入dll在运行过程中通过动态替换来显示中文   
+路线2：仍然使用jis编码注入脚本，但通过jis隧道或jis替换（推荐）2种方式，结合通用注入dll在运行过程中通过动态替换来显示中文   
 
 GalTransl提取注入工具的VNTextPatch模式注入脚本时默认是以sjis或unicode(utf8)编码注入的，这取决于引擎类型。
 
@@ -241,11 +239,11 @@ GalTransl提取注入工具的VNTextPatch模式注入脚本时默认是以sjis�
 * **使用路线2**   
 在注入脚本时先什么都不勾选，如果有提示"sjis_ext.bin包含文字：xxx"的话，说明程序是以sjis编码注入的，并把这些不支持显示的字符放到script_cn目录内的sjis_ext.bin里供sjis隧道模式调用了。   
 
-**sjis隧道**：仍然来自arcusmaximus大佬的VNTranslationTools项目中的[VNTextProxy组件](https://github.com/arcusmaximus/VNTranslationTools#vntextproxy)。VNTextPatch在将文本注入回脚本时，会将sjis编码不支持的字符临时替换为sjis编码中未定义的字符，VNTextProxy通过DLL劫持技术HOOK游戏，并在遇到这些字符时再把它还原回去。   
+**jis隧道**：仍然来自arcusmaximus大佬的VNTranslationTools项目中的[VNTextProxy组件](https://github.com/arcusmaximus/VNTranslationTools#vntextproxy)。VNTextPatch在将文本注入回脚本时，会将sjis编码不支持的字符临时替换为sjis编码中未定义的字符，VNTextProxy通过DLL劫持技术HOOK游戏，并在遇到这些字符时再把它还原回去。   
 
 当使用sjis隧道模式时，将`script_cn`内的`sjis_ext.bin`文件移动到游戏目录内，然后将useful_tools\VNTextProxy内的所有dll逐个丢到游戏目录内(一般推荐先试version.dll，或使用PEID/DIE等工具查输入表)，运行游戏，看有没有哪个dll可以正确的hook游戏并让不显示的文本可以正常显示（不正常的话那些地方会是空的）。不正常的话，删掉这个DLL，换下一个。[详细设置见此](https://github.com/XD2333/GalTransl/tree/main/useful_tools/VNTextProxy)
 
-**sjis替换**：来自AtomCrafty大佬的[UniversalInjectorFramework(通用注入框架)](https://github.com/AtomCrafty/UniversalInjectorFramework#character-substitution)项目，也是通过DLL劫持技术HOOK游戏，并可以将某个字符根据设置替换成指定的另一个字符，不限编码。我建立了[一套替换字典](https://github.com/XD2333/GalTransl_DumpInjector/blob/main/hanzi2kanji_table.txt)，按一些规则梳理了sjis编码内不支持的简中汉字与sjis支持的日文汉字的映射关系，可以满足99.99%常用简体中文汉字的正常显示(见hanzi2kanji_table.txt)，并将替换功能写在了GalTransl提取注入工具内(现在[SExtractor](https://github.com/satan53x/SExtractor)也支持替换)。在替换后结合UniversalInjectorFramework的动态Hook替换功能在游戏中将这些日文汉字替换回简中文字，实现游戏的正常显示。
+**jis替换**：来自AtomCrafty大佬的[UniversalInjectorFramework(通用注入框架)](https://github.com/AtomCrafty/UniversalInjectorFramework#character-substitution)项目，也是通过DLL劫持技术HOOK游戏，并可以将某个字符根据设置替换成指定的另一个字符，不限编码。我建立了[一套替换字典](https://github.com/XD2333/GalTransl_DumpInjector/blob/main/hanzi2kanji_table.txt)，按一些规则梳理了jis编码内不支持的简中汉字与jis支持的日文汉字的映射关系，可以满足99.99%常用简体中文汉字的正常显示(见hanzi2kanji_table.txt)，并将替换功能写在了GalTransl提取注入工具内(现在[SExtractor](https://github.com/satan53x/SExtractor)也支持替换)。在替换后结合UniversalInjectorFramework的动态Hook替换功能在游戏中将这些日文汉字替换回简中文字，实现游戏的正常显示。
 
 当使用sjis替换模式时，可以先运行一遍GalTransl提取注入工具的注入文本，获取游戏不支持的文字列表（注入后会提示"sjis_ext.bin包含文字：xxx"），然后，勾选"sjis替换模式注入"，把这些文字复制到右边的文本框内，再点击注入。注入后会获得一个sjis替换模式配置。
 
@@ -315,7 +313,7 @@ OpenAI的*最先进*、~~最安全~~的大语言模型，模型代号为GPT-4。
 
   * 总结：~~氪服困难~~，泰贵鸟。   
   ---   
-* **Sakura-13B-Galgame**:+1:  
+* **Sakura-13B-Galgame**:+1::+1:  
 基于一系列开源大模型构建，在通用日文语料与轻小说/Galgame等领域的中日语料上进行继续预训练与微调，旨在提供性能接近GPT3.5且完全离线的Galgame/轻小说翻译大语言模型。[项目地址](https://github.com/SakuraLLM/Sakura-13B-Galgame)   
   
   * 优点：   
@@ -339,6 +337,7 @@ OpenAI的*最先进*、~~最安全~~的大语言模型，模型代号为GPT-4。
    
 ### GPT字典
 &ensp;&ensp;&ensp;&ensp;GPT字典系统是使用GalTransl翻译时想提高质量的关键功能，通过补充设定的方式大幅提高翻译质量。适用于gpt35、gpt4、newbing。   
+在程序目录中，`Dict`文件夹内有"通用GPT字典.txt"，在项目文件夹内可以新建"项目GPT字典.txt"，一般人名定义写进项目字典，通用提高翻译质量的词汇写进通用字典。   
    
 </summary>   
 

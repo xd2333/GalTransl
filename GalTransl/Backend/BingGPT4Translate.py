@@ -370,7 +370,7 @@ class CBingGPT4Translate:
             cache_file_path (_type_): 缓存文件路径
             trans_list (CTransList): translate列表
             num_pre_request (int): 每次请求的数量
-            chatgpt_dict (ChatgptDict, optional): _description_. Defaults to None.
+            gpt_dic (ChatgptDict, optional): _description_. Defaults to None.
             proofread (bool, optional): _description_. Defaults to False.
 
         Returns:

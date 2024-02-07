@@ -120,7 +120,7 @@ async def doLLMTranslateSingleFile(
                     trans_list,
                     projectConfig.getKey("gpt.numPerRequestProofRead"),
                     retry_failed=projectConfig.getKey("retranslFail"),
-                    chatgpt_dict=gpt_dic,
+                    gpt_dic=gpt_dic,
                     proofread=True,
                     retran_key=projectConfig.getKey("retranslKey"),
                 )

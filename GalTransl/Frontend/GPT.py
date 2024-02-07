@@ -1,10 +1,12 @@
 """
 GPT3.5 / 4 / New Bing 前端翻译的控制逻辑
 """
+
+from os import makedirs, sep as os_sep
 from os.path import join as joinpath
 from os.path import exists as isPathExists
 from os.path import getsize as getFileSize
-from os import listdir
+from os.path import basename, dirname
 from typing import Optional
 from asyncio import Semaphore, gather
 from time import time
@@ -24,11 +26,12 @@ from GalTransl.CSerialize import update_json_with_transList, save_json
 from GalTransl.Dictionary import CNormalDic, CGptDict
 from GalTransl.ConfigHelper import CProjectConfig, initDictList, CProxyPool
 from GalTransl.COpenAI import COpenAITokenPool
+from GalTransl.Utils import get_file_list
 
 
 async def doLLMTranslateSingleFile(
     semaphore: Semaphore,
-    file_name: str,
+    file_path: str,
     projectConfig: CProjectConfig,
     eng_type: str,
     pre_dic: CNormalDic,
@@ -40,9 +43,21 @@ async def doLLMTranslateSingleFile(
 ) -> bool:
     async with semaphore:
         st = time()
+        proj_dir = projectConfig.getProjectDir()
+        input_dir = projectConfig.getInputPath()
+        output_dir = projectConfig.getOutputPath()
+        cache_dir = projectConfig.getCachePath()
+        file_name = file_path.replace(input_dir, "").lstrip(os_sep)
+        file_name = file_name.replace(os_sep, "-}")
+        input_file_path = file_path
+        output_file_path = input_file_path.replace(input_dir, output_dir)
+        output_file_dir = dirname(output_file_path)
+        makedirs(output_file_dir, exist_ok=True)
+        cache_file_path = joinpath(cache_dir, file_name)
+
         # 1、初始化trans_list
         origin_input = ""
-        input_file_path = joinpath(projectConfig.getInputPath(), file_name)
+
         if getFileSize(input_file_path) == 0:
             return True
         for plugin in fPlugins:
@@ -87,7 +102,7 @@ async def doLLMTranslateSingleFile(
                     raise e
 
         # 3、读出未命中的Translate然后批量翻译
-        cache_file_path = joinpath(projectConfig.getCachePath(), file_name)
+
         await gptapi.batch_translate(
             file_name,
             cache_file_path,
@@ -143,15 +158,13 @@ async def doLLMTranslateSingleFile(
         save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 
     # 5、整理输出
-    if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")):
-        name_dict = load_name_table(
-            joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
-        )
+    if isPathExists(joinpath(proj_dir, "人名替换表.csv")):
+        name_dict = load_name_table(joinpath(proj_dir, "人名替换表.csv"))
     else:
         name_dict = {}
 
     new_json_list = update_json_with_transList(trans_list, json_list, name_dict)
-    save_func(joinpath(projectConfig.getOutputPath(), file_name), new_json_list)
+    save_func(output_file_path, new_json_list)
 
     et = time()
     LOGGER.info(f"文件 {file_name} 翻译完成，用时 {et-st:.3f}s.")
@@ -178,7 +191,7 @@ async def doLLMTranslate(
 
     workersPerProject = projectConfig.getKey("workersPerProject")
     match eng_type:
-        case "gpt35-0613" | "gpt35-1106":
+        case "gpt35-0613" | "gpt35-1106" | "gpt35-0125":
             gptapi = CGPT35Translate(projectConfig, eng_type, proxyPool, tokenPool)
         case "gpt4" | "gpt4-turbo":
             gptapi = CGPT4Translate(projectConfig, eng_type, proxyPool, tokenPool)
@@ -195,6 +208,9 @@ async def doLLMTranslate(
         case _:
             raise ValueError(f"不支持的翻译引擎类型 {eng_type}")
 
+    file_list = get_file_list(projectConfig.getInputPath())
+    if not file_list:
+        raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
     semaphore = Semaphore(workersPerProject)
     tasks = [
         doLLMTranslateSingleFile(
@@ -209,6 +225,6 @@ async def doLLMTranslate(
             fPlugins,
             gptapi,
         )
-        for file_name in listdir(projectConfig.getInputPath())
+        for file_name in file_list
     ]
     await gather(*tasks)  # run

@@ -1,6 +1,7 @@
 """
 CloseAI related classes
 """
+
 from httpx import AsyncClient
 from tqdm.asyncio import tqdm
 from time import time
@@ -13,6 +14,7 @@ TRANSLATOR_ENGINE = {
     "gpt35": "gpt-3.5-turbo",
     "gpt35-0613": "gpt-3.5-turbo-0613",
     "gpt35-1106": "gpt-3.5-turbo-1106",
+    "gpt35-0125": "gpt-3.5-turbo-0125",
     "gpt4": "gpt-4",
     "gpt4-turbo": "gpt-4-0125-preview",
 }
@@ -91,6 +93,11 @@ class COpenAITokenPool:
         self.tokens: list[tuple[bool, COpenAIToken]] = []
         for token in initGPTToken(config, eng_type):
             self.tokens.append((False, token))
+        if "gpt35" in eng_type:
+            section = config.getBackendConfigSection("GPT35")
+        elif "gpt4" in eng_type:
+            section = config.getBackendConfigSection("GPT4")
+        self.force_eng_name = section.get("rewriteModelName", "")
 
     async def _isTokenAvailable(
         self, token: COpenAIToken, proxy: CProxy = None, eng_type: str = ""
@@ -104,6 +111,8 @@ class COpenAITokenPool:
             ) as client:
                 auth = {"Authorization": "Bearer " + token.token}
                 model_name = TRANSLATOR_ENGINE.get(eng_type, "gpt-3.5-turbo")
+                if self.force_eng_name:
+                    model_name = self.force_eng_name
                 # test if have balance
                 chatResponse = await client.post(
                     token.domain + "/v1/chat/completions",
@@ -143,7 +152,10 @@ class COpenAITokenPool:
         """
         检测令牌有效性
         """
-        LOGGER.info(f"测试key是否能调用{eng_type}模型...")
+        model_name = TRANSLATOR_ENGINE.get(eng_type, "gpt-3.5-turbo")
+        if self.force_eng_name:
+            model_name = self.force_eng_name
+        LOGGER.info(f"测试key是否能调用{model_name}模型...")
         fs = []
         for _, token in self.tokens:
             fs.append(self._isTokenAvailable(token, proxy if proxy else None, eng_type))
@@ -182,7 +194,9 @@ class COpenAITokenPool:
         rounds: int = 0
         while True:
             if rounds > 20:
-                raise RuntimeError("COpenAITokenPool::getToken: 可用的OpenAI token耗尽！")
+                raise RuntimeError(
+                    "COpenAITokenPool::getToken: 可用的OpenAI token耗尽！"
+                )
             try:
                 available, token = choice(self.tokens)
                 if not available:

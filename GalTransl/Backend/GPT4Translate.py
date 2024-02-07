@@ -338,6 +338,11 @@ class CGPT4Translate:
                         )
                         error_flag = True
                         break
+                if self.target_lang != "English":
+                    if "can't fullfill" in line_json[key_name]:
+                        error_message = f"-> GPt4拒绝了翻译"
+                        error_flag = True
+                        break
 
                 if "Chinese" in self.target_lang:  # 统一简繁体
                     line_json[key_name] = self.opencc.convert(line_json[key_name])

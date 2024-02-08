@@ -31,14 +31,25 @@ class CBingGPT4Translate:
         cookiefile_list: list[str],
         proxyPool: Optional[CProxyPool],
     ):
-        if val := config.getKey("sourceLanguage"):
+        # 语言设置
+        if val := config.getKey("language"):
+            sp = val.split("2")
+            self.source_lang = sp[0]
+            self.target_lang = sp[1]
+        elif val := config.getKey("sourceLanguage"):  # 兼容旧版本配置
             self.source_lang = val
+            self.target_lang = config.getKey("targetLanguage")
         else:
             self.source_lang = "ja"
-        if val := config.getKey("targetLanguage"):
-            self.target_lang = val
-        else:
             self.target_lang = "zh-cn"
+        if self.source_lang not in LANG_SUPPORTED.keys():
+            raise ValueError("错误的源语言代码：" + self.source_lang)
+        else:
+            self.source_lang = LANG_SUPPORTED[self.source_lang]
+        if self.target_lang not in LANG_SUPPORTED.keys():
+            raise ValueError("错误的目标语言代码：" + self.target_lang)
+        else:
+            self.target_lang = LANG_SUPPORTED[self.target_lang]
 
         if config.getKey("internals.enableProxy") == True:
             self.proxyProvider = proxyPool
@@ -64,15 +75,6 @@ class CBingGPT4Translate:
             self.streamOutputMode = val
         else:
             self.streamOutputMode = False
-
-        if self.source_lang not in LANG_SUPPORTED.keys():
-            raise ValueError("错误的源语言代码：" + self.source_lang)
-        else:
-            self.source_lang = LANG_SUPPORTED[self.source_lang]
-        if self.target_lang not in LANG_SUPPORTED.keys():
-            raise ValueError("错误的目标语言代码：" + self.target_lang)
-        else:
-            self.target_lang = LANG_SUPPORTED[self.target_lang]
 
         self.cookiefile_list = cookiefile_list
         self.current_cookie_file = ""

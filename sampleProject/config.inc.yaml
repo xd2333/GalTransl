@@ -4,7 +4,7 @@ common:
   saveLog: false # 是否记录日志到文件[True/False]
   workersPerProject: 1 # 多线程，同时翻译的文件数量（单文件只能单线程）
   language: "ja2zh-cn" # 源语言2(to)目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
-  linebreakSymbol: "\r\n" # 这个项目在post_jp中使用的换行符，找问题和自动修复时用到，不影响翻译。
+  linebreakSymbol: "\r\n" # 这个项目在json中使用的换行符，找问题和自动修复时用到，不影响翻译。
   skipRetry: false # 开启则解析结果出错时跳过循环重试，直接用"Fail Translation"占位。[True/False]
   retranslFail: false # 重启时重翻所有"Fail Translation"的句子。[True/False]
   retranslKey: "" # 重启时主动重翻在problem或pre_jp中包含此关键字的句子，例如"残留日文"

@@ -84,9 +84,9 @@ class CBingGPT4Translate:
         self.sleep_time = 0
         self.last_file_name = ""
 
-        if self.target_lang == "Simplified Chinese":
+        if self.target_lang == "Simplified_Chinese":
             self.opencc = OpenCC("t2s.json")
-        elif self.target_lang == "Traditional Chinese":
+        elif self.target_lang == "Traditional_Chinese":
             self.opencc = OpenCC("s2t.json")
 
         self.init_chatbot()

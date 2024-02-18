@@ -44,8 +44,8 @@ TRANSLATOR_SUPPORTED = {
     "showplugs": "显示全部插件列表",
 }
 LANG_SUPPORTED = {
-    "zh-cn": "Simplified Chinese",
-    "zh-tw": "Traditional Chinese",
+    "zh-cn": "Simplified_Chinese",
+    "zh-tw": "Traditional_Chinese",
     "en": "English",
     "ja": "Japanese",
     "ko": "Korean",

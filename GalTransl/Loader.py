@@ -22,7 +22,7 @@ def load_transList(json_path_or_list: str | list) -> tuple[CTransList, list]:
         json_list = json_path_or_list
 
     for i, item in enumerate(json_list):
-        assert "message" in item, f"json格式不正确，{i+1}object缺少message字段"
+        assert "message" in item, f"json格式不正确，第{str(i+1)}个item缺少message字段：{item}"
 
         name = (
             item["name"] if "name" in item else item["names"] if "names" in item else ""

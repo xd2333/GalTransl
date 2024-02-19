@@ -10,6 +10,9 @@ class file_plugin(GFilePlugin):
         :param plugin_conf: The settings for the plugin.插件yaml中所有设置的dict。
         :param project_conf: The settings for the project.项目yaml中common下设置的dict。
         """
+        settings = plugin_conf["Settings"]
+        self.保存双语字幕 = settings.get("保存双语字幕", False)
+        self.上下双语1左右双语2 = settings.get("上下双语1左右双语2", 2)
         self.pattern = re.compile(
             r"(\d+)\n([\d:,]+ --> [\d:,]+)\n(.+?)(?=\n\d+|\Z)", re.DOTALL
         )
@@ -27,7 +30,7 @@ class file_plugin(GFilePlugin):
         try:
             matches = self.pattern.findall(srt_text)
             result = [
-                {"index": int(m[0]), "timestamp": m[1], "message": m[2].strip()}
+                {"index": int(m[0]), "timestamp": m[1], "message": m[2].strip(),"org_message": m[2].strip()}
                 for m in matches
             ]
         except Exception as e:
@@ -46,7 +49,13 @@ class file_plugin(GFilePlugin):
 
         result = ""
         for item in transl_json:
-            result += f"{item['index']}\n{item['timestamp']}\n{item['message']}\n\n"
+            if not self.保存双语字幕:
+                result += f"{item['index']}\n{item['timestamp']}\n{item['message']}\n\n"
+            else:
+                if self.上下双语1左右双语2 == 2:
+                    result += f"{item['index']}\n{item['timestamp']}\n{item['message']} {item['org_message']}\n\n"
+                elif self.上下双语1左右双语2 == 1:
+                    result += f"{item['index']}\n{item['timestamp']}\n{item['message']}{item['org_message']}\n\n"
 
         with open(file_path, "w", encoding="utf-8") as file:
             file.write(result.strip())

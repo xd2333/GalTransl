@@ -155,6 +155,8 @@ class COpenAITokenPool:
         model_name = TRANSLATOR_ENGINE.get(eng_type, "gpt-3.5-turbo")
         if self.force_eng_name:
             model_name = self.force_eng_name
+        if model_name == "gpt-3.5-turbo-0125":
+            raise RuntimeError("gpt-3.5-turbo-0125质量太差，请更换其他模型！")
         LOGGER.info(f"测试key是否能调用{model_name}模型...")
         fs = []
         for _, token in self.tokens:

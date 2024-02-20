@@ -51,9 +51,9 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
             else:
                 plug_settings = {}
 
-            LOGGER.info(f" {plug_name} ({plug_type} Plugin)")
+            LOGGER.info(f"  > {plug_name} ({plug_type} Plugin)")
             LOGGER.info(
-                f"  > {plug_info.name} v{plug_info.version} by {plug_info.author}"
+                f"    名称：{plug_info.name} v{plug_info.version} by {plug_info.author}"
             )
             LOGGER.info(f"    描述: {plug_info.description}")
             LOGGER.info(f"    路径: {plug_path}")

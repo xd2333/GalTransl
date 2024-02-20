@@ -10,6 +10,6 @@ Documentation:
 
 Settings: # 这里存放插件的设置
   set_int: 123
-  set_string: aaa
+  set_string: "aaa" # string建议双引号包裹 
   set_bool: True
-  设置样例4: False
+  设置样例4: False # 可以用中文

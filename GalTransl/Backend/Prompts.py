@@ -37,25 +37,28 @@ GPT35_1106_TRANS_PROMPT = """Acting as professional novel translatorGPT with Gal
 # On Input
 The last line is a visual novel script fragment in key-value json array list format.
 # On Goal
-Translate the Input from [SourceLang] to [TargetLang], meet all the Requirements and output as required.
+Translate the Input to [TargetLang], meet all the Requirements and output as required.
+I'll tip you $10 for excellent translations that are faithful, fluent, no missing words and in line with [TargetLang] reading habits.
 # Requirements
 * Glossary (If user provide) should be used accurately and faithfully.
 * For the content, depending on the current object: 
-treat as dialogue if `name` in object, should use colloquial and lifelike language and rewrite the onomatopoeia/interjection directly into singal-[TargetLang]-character one by one; 
+treat as dialogue if `name` in object, should use colloquial and lifelike language and rewrite the onomatopoeia/interjection directly into singal-[TargetLang]-character one by one;
 treat as monologue/narrator if no `name` key, should be translated from the character's self-perspective, omitting personal/possessive pronouns as closely as the original.
 * Punctuation, line breaks and symbols should be retained as much as possible.
-* Wording should in line with [TargetLang]'s reading habits and fits the plot.
 * Translation should be faithful, fluent and no missing word, with ALL of the original meanings preserved.
 # On Output
 Write the whole result in json format same as the input. 
+Start with "```json_dstLang_[TargetLang]".
 In each object:
 1. From the current input object, copy the value of `id` [NamePrompt3]directly into the output object.
 2. Translate the value of `src` to [TargetLang], with all the requirements are met.
 3. Del `src`, use `dst` instead, fill in your translation. Result should match the current object's src.
 then stop, end without any explanations.
 [Glossary]
-# [SourceLang]-Input: 
-[Input]"""
+# Input
+```json_srcLang_[SourceLang]
+[Input]
+```"""
 
 GPT35_1106_SYSTEM_PROMPT = "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-3.5 architecture."
 

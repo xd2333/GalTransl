@@ -1,0 +1,12 @@
+Core:
+  Name: 通用-全角替换为半角
+  Type: text
+  Module: text_common_fullWidthFix
+
+Documentation:
+  Author: PiDanShouRouZhou
+  Version: 1.0
+  Description: 译前修复：将全角字符替换为半角字符。
+
+Settings: # 这里存放插件的设置
+  是否替换标点: False

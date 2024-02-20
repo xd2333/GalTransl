@@ -40,17 +40,29 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         for candidate in plugin_manager.getPluginCandidates():
             plug_path = os.path.dirname(candidate[1])
             plug_name = os.path.basename(plug_path)
+            if "text_example_nouse" in plug_name:
+                continue
             plug_info = candidate[2]
             plug_type = plug_info.yaml_dict["Core"].get("Type", "unknown").lower()
             if PROJECT_DIR in plug_path:
                 plug_type = "Project-local " + plug_type
+            if "Settings" in plug_info.yaml_dict:
+                plug_settings = plug_info.yaml_dict["Settings"]
+            else:
+                plug_settings = {}
+
             LOGGER.info(f" {plug_name} ({plug_type} Plugin)")
             LOGGER.info(
                 f"  > {plug_info.name} v{plug_info.version} by {plug_info.author}"
             )
             LOGGER.info(f"    描述: {plug_info.description}")
             LOGGER.info(f"    路径: {plug_path}")
+            if plug_settings:
+                LOGGER.info(f"    设置: ")
+                for key, value in plug_settings.items():
+                    LOGGER.info(f"     - {key}: {value}")
             LOGGER.info("---------------------------------")
+        LOGGER.info("* 要修改插件的设置，可以进入插件路径，编辑其中的.yaml文件。")
 
     start_time = time.time()
 

@@ -151,6 +151,7 @@ class CGPT35Translate:
                 system_prompt=GPT35_1106_SYSTEM_PROMPT,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
+                response_format="json",
             )
             self.trans_prompt = GPT35_1106_TRANS_PROMPT
             self.name_prompt = GPT35_1106_NAME_PROMPT3

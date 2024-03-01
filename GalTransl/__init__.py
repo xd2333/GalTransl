@@ -25,9 +25,9 @@ PROGRAM_SPLASH2 = r"""
 ALL_BANNERS = [PROGRAM_SPLASH1, PROGRAM_SPLASH2]
 PROGRAM_SPLASH = ALL_BANNERS[localtime().tm_mday % 2]
 
-GALTRANSL_VERSION = "4.0.4"
+GALTRANSL_VERSION = "4.1.0"
 AUTHOR = "cx2333"
-CONTRIBUTORS = "ryank231231, Isotr0py, Noriverwater, pipixia244, gulaodeng"
+CONTRIBUTORS = "ryank231231, Isotr0py, Noriverwater, pipixia244, gulaodeng, PiDanShouRouZhouXD"
 
 CONFIG_FILENAME = "config.yaml"
 INPUT_FOLDERNAME = "gt_input"

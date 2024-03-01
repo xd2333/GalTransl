@@ -146,8 +146,8 @@ class CNormalDic:
         for line in dic_lines:
             if line.startswith("\n"):
                 continue
-            elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
-                continue
+            # elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
+            #     continue
 
             # 四个空格换成Tab
             line = line.replace("    ", "\t")
@@ -323,8 +323,8 @@ class CGptDict:
         for line in dic_lines:
             if line.startswith("\n"):
                 continue
-            elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
-                continue
+            # elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
+            #     continue
 
             # 四个空格换成Tab
             line = line.replace("    ", "\t")

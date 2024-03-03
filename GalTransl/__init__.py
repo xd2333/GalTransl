@@ -25,7 +25,7 @@ PROGRAM_SPLASH2 = r"""
 ALL_BANNERS = [PROGRAM_SPLASH1, PROGRAM_SPLASH2]
 PROGRAM_SPLASH = ALL_BANNERS[localtime().tm_mday % 2]
 
-GALTRANSL_VERSION = "4.1.0"
+GALTRANSL_VERSION = "4.1.1"
 AUTHOR = "cx2333"
 CONTRIBUTORS = "ryank231231, Isotr0py, Noriverwater, pipixia244, gulaodeng, PiDanShouRouZhouXD"
 
@@ -38,7 +38,8 @@ TRANSLATOR_SUPPORTED = {
     "gpt35-1106": "GPT3.5-Turbo API模式 -- 1106模型",
     "gpt4-turbo": "GPT4-Turbo API模式 -- 0125-preview模型",
     "newbing": "NewBing 模拟网页模式",
-    "sakura0.9": "Sakura-13B-Galgame翻译模型 -- v0.9模型",
+    "sakura-010": "SakuraLLM翻译模型 -- 0.10pre0模型",
+    "sakura-009": "SakuraLLM翻译模型 -- 0.09模型",
     "rebuildr": "重建结果 用译前译后字典通过缓存刷写结果json -- 跳过翻译和写缓存",
     "rebuilda": "重建缓存和结果 用译前译后字典刷写缓存+结果json -- 跳过翻译",
     "showplugs": "显示全部插件列表",

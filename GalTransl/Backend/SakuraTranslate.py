@@ -8,7 +8,7 @@ from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
-from GalTransl.Backend.Prompts import Sakura_TRANS_PROMPT, Sakura_SYSTEM_PROMPT
+from GalTransl.Backend.Prompts import Sakura_TRANS_PROMPT, Sakura_SYSTEM_PROMPT,Sakura_TRANS_PROMPT010,Sakura_SYSTEM_PROMPT010
 
 
 class CSakuraTranslate:
@@ -53,7 +53,7 @@ class CSakuraTranslate:
         pass
 
     def init_chatbot(self, eng_type, config: CProjectConfig):
-        if eng_type == "sakura0.9":
+        if eng_type == "sakura-009":
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             endpoint = config.getBackendConfigSection("Sakura").get("endpoint")
@@ -71,6 +71,27 @@ class CSakuraTranslate:
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
             )
             self.trans_prompt = Sakura_TRANS_PROMPT
+            self.transl_style = "auto"
+            self._current_style = "precies"
+            self._set_gpt_style("precise")
+        if eng_type == "sakura-010":
+            from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
+
+            endpoint = config.getBackendConfigSection("Sakura").get("endpoint")
+            if endpoint.endswith("/"):
+                endpoint = endpoint[:-1]
+
+            self.chatbot = ChatbotV3(
+                api_key="sk-114514",
+                system_prompt=Sakura_SYSTEM_PROMPT010,
+                engine="gpt-3.5-turbo",
+                api_address=endpoint + "/v1/chat/completions",
+                timeout=60,
+            )
+            self.chatbot.update_proxy(
+                self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
+            )
+            self.trans_prompt = Sakura_TRANS_PROMPT010
             self.transl_style = "auto"
             self._current_style = "precies"
             self._set_gpt_style("precise")

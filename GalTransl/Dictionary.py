@@ -152,13 +152,13 @@ class CNormalDic:
             # 四个空格换成Tab
             line = line.replace("    ", "\t")
 
-            # 处理转义字符
-            line = process_escape(line)
-
             sp = line.rstrip("\r\n").split("\t")  # 去多余换行符，Tab分割
             len_sp = len(sp)
             if len_sp < 2:  # 至少是2个元素
                 continue
+            # 处理转义字符
+            for i in range(len_sp):
+                sp[i]=process_escape(sp[i])
 
             is_conditionaDic_line = True if sp[0] in self.conditionaDic_key else False
             is_situationsDic_line = True if sp[0] in self.situationsDic_key else False

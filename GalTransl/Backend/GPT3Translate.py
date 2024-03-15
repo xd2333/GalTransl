@@ -383,19 +383,21 @@ class CGPT35Translate:
 
     def _del_previous_message(self) -> None:
         """删除历史消息，只保留最后一次的翻译结果，节约tokens"""
-        if self.eng_type != "unoffapi":
-            last_assistant_message = None
-            for message in self.chatbot.conversation["default"]:
-                if message["role"] == "assistant":
-                    last_assistant_message = message
-            system_message = self.chatbot.conversation["default"][0]
-            if last_assistant_message != None:
-                self.chatbot.conversation["default"] = [
-                    system_message,
-                    last_assistant_message,
-                ]
-        elif self.eng_type == "unoffapi":
-            pass
+        last_assistant_message = None
+        last_user_message = None
+        for message in self.chatbot.conversation["default"]:
+            if message["role"] == "assistant":
+                last_assistant_message = message
+        for message in self.chatbot.conversation["default"]:
+            if message["role"] == "user":
+                last_user_message = message
+                last_user_message["content"] = "(History Translation Request)"
+        system_message = self.chatbot.conversation["default"][0]
+        self.chatbot.conversation["default"] = [system_message]
+        if last_user_message:
+            self.chatbot.conversation["default"].append(last_user_message)
+        if last_assistant_message:
+            self.chatbot.conversation["default"].append(last_assistant_message)
 
     def _del_last_answer(self):
         if self.eng_type != "unoffapi":
@@ -461,6 +463,7 @@ class CGPT35Translate:
 
             tmp_context.reverse()
             self.chatbot.conversation["default"].append(
+                {"role": "user", "content": "(History Translation Request)"},
                 {
                     "role": "assistant",
                     "content": "Transl: " + json.dumps(tmp_context, ensure_ascii=False),

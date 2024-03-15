@@ -165,7 +165,7 @@ At the end of the code block is a fragment of a [SourceLang] visual novel script
 * If the `id` is incrementing, first reason the context, sort out the plot and subject-object relationship to ensure the translation as faithfully as possible.
 * For the content, depending on the current object: 
 treat as dialogue if `name` in object, should use colloquial and lifelike language and rewrite the onomatopoeia/interjection directly into [TargetLang] singal-character one by one; 
-treat as monologue/narrator if no `name` key, should be translated from the character's self-perspective, omitting personal/possessive pronouns as closely as the original.
+treat as monologue/narrator if no `name` key, should be translated from the character's self-perspective.
 * Escape characters and other control characters should be retained as much as possible.
 * Result should corresponds to the current source object's text.
 # On Output:

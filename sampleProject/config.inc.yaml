@@ -51,7 +51,7 @@ dictionary:
 # 翻译后端相关设置
 backendSpecific:
   GPT35: # GPT3.5 API
-    tokens: # api key列表
+    tokens:
       - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         endpoint: https://api.openai.com # OpenAI API请求的域名，使用转发或第三方API时修改
       - token: sk-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -61,16 +61,14 @@ backendSpecific:
   GPT4: # GPT4 API
     tokens:
       - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        endpoint: ""
-      - token: sk-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-        endpoint: ""
-    defaultEndpoint: https://api.openai.com
-    rewriteModelName: "" # 强制使用指定的模型型号，一般不修改
-  bingGPT4:
+        endpoint: https://api.openai.com # 使用转发或第三方API时修改
+    defaultEndpoint: https://api.openai.com # 一般不修改
+    rewriteModelName: "" # 强制使用指定的模型型号，可用于claude3-opus第三方中转
+  bingGPT4: # NewBing API
     cookiePath:
       - newbing_cookies/cookie1.json # 你的 cookies 文件，相对于项目目录
       - newbing_cookies/cookie2.json # 你的 cookies 文件2，会自动切换
-  Sakura:
+  Sakura: # Sakura API
     endpoint: http://127.0.0.1:8080
 # 自动问题分析配置
 problemAnalyze: 

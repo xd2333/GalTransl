@@ -34,12 +34,12 @@ INPUT_FOLDERNAME = "gt_input"
 OUTPUT_FOLDERNAME = "gt_output"
 CACHE_FOLDERNAME = "transl_cache"
 TRANSLATOR_SUPPORTED = {
-    "gpt35-0613": "GPT3.5-Turbo API模式 -- 0613模型",
-    "gpt35-1106": "GPT3.5-Turbo API模式 -- 1106模型",
-    "gpt4-turbo": "GPT4-Turbo API模式 -- 0125-preview模型",
+    "gpt35-0613": "GPT3.5-Turbo-0613 API模式",
+    "gpt35-1106": "GPT3.5-Turbo-1106 API模式",
+    "gpt4-turbo": "GPT4-Turbo-1125 API模式(兼容claude3-opus第三方中转API)",
     "newbing": "NewBing 模拟网页模式",
-    "sakura-010": "SakuraLLM翻译模型 -- 0.10pre0模型",
-    "sakura-009": "SakuraLLM翻译模型 -- 0.09模型",
+    "sakura-010": "SakuraLLM翻译模型 -- 适用0.10模型",
+    "sakura-009": "SakuraLLM翻译模型 -- 适用0.09模型",
     "rebuildr": "重建结果 用译前译后字典通过缓存刷写结果json -- 跳过翻译和写缓存",
     "rebuilda": "重建缓存和结果 用译前译后字典刷写缓存+结果json -- 跳过翻译",
     "showplugs": "显示全部插件列表",

@@ -135,6 +135,9 @@ class COpenAITokenPool:
                         isGPT4Available = True
                     elif "gpt-3.5" in model_name:
                         isGPT3Available = True
+                    else:
+                        isGPT4Available, isGPT3Available = True, True
+
                     return True, isGPT3Available, isGPT4Available, token
         except:
             LOGGER.debug(

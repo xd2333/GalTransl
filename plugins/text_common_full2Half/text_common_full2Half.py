@@ -20,8 +20,6 @@ class text_common_fullWidthFix(GTextPlugin):
         self.是否替换标点 = settings.get("是否替换标点", False)
 
     def full2half(self, s):
-        if "！" in s:
-            breakpoint()
         # 创建一个转换表，包括数字、字母和常见标点符号
         full_to_half_dict = {}
         full_to_half_dict.update({chr(0xFF10 + i): chr(0x30 + i) for i in range(10)})  # 数字

@@ -326,7 +326,7 @@ class CGPT35Translate:
                     while i < len(content):
                         content[i].pre_zh = "Failed translation"
                         content[i].post_zh = "Failed translation"
-                        content[i].trans_by = "GPT-3.5(Failed)"
+                        content[i].trans_by = f"{self.chatbot.engine}(Failed)"
                         i = i + 1
                     return len(content), content
 
@@ -366,7 +366,7 @@ class CGPT35Translate:
                     result[key_name] = self.opencc.convert(result[key_name])
                 content[i].pre_zh = result[key_name]
                 content[i].post_zh = result[key_name]
-                content[i].trans_by = "GPT-3.5"
+                content[i].trans_by = self.chatbot.engine
 
             if self.transl_style == "auto" and not warn_flag:
                 self._set_gpt_style("precise")

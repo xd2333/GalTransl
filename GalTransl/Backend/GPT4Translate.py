@@ -340,7 +340,7 @@ class CGPT4Translate:
                         break
                 if self.target_lang != "English":
                     if "can't fullfill" in line_json[key_name]:
-                        error_message = f"-> GPt4拒绝了翻译"
+                        error_message = f"-> GPT4拒绝了翻译"
                         error_flag = True
                         break
 
@@ -350,7 +350,7 @@ class CGPT4Translate:
                 if not proofread:
                     trans_list[i].pre_zh = line_json[key_name]
                     trans_list[i].post_zh = line_json[key_name]
-                    trans_list[i].trans_by = "GPT-4"
+                    trans_list[i].trans_by = self.chatbot.engine
                     if "conf" in line_json:
                         trans_list[i].trans_conf = line_json["conf"]
                     if "doub" in line_json:
@@ -360,7 +360,7 @@ class CGPT4Translate:
                     result_trans_list.append(trans_list[i])
                 else:
                     trans_list[i].proofread_zh = line_json[key_name]
-                    trans_list[i].proofread_by = "GPT-4"
+                    trans_list[i].proofread_by = self.chatbot.engine
                     trans_list[i].post_zh = line_json[key_name]
                     result_trans_list.append(trans_list[i])
 
@@ -374,11 +374,11 @@ class CGPT4Translate:
                         if not proofread:
                             trans_list[i].pre_zh = "Failed translation"
                             trans_list[i].post_zh = "Failed translation"
-                            trans_list[i].trans_by = "GPT-4(Failed)"
+                            trans_list[i].trans_by = f"{self.chatbot.engine}(Failed)"
                         else:
                             trans_list[i].proofread_zh = trans_list[i].pre_zh
                             trans_list[i].post_zh = trans_list[i].pre_zh
-                            trans_list[i].proofread_by = "GPT-4(Failed)"
+                            trans_list[i].proofread_by = f"{self.chatbot.engine}(Failed)"
                         result_trans_list.append(trans_list[i])
                         i = i + 1
                     return i, result_trans_list

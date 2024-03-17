@@ -35,8 +35,8 @@ OUTPUT_FOLDERNAME = "gt_output"
 CACHE_FOLDERNAME = "transl_cache"
 TRANSLATOR_SUPPORTED = {
     "gpt35-0613": "GPT3.5-Turbo-0613 API模式",
-    "gpt35-1106": "GPT3.5-Turbo-1106 API模式",
-    "gpt4-turbo": "GPT4-Turbo-1125 API模式(兼容claude3-opus第三方中转API)",
+    "gpt35-1106": "GPT3.5-Turbo-1106 API模式 (兼容claude-3-sonnet/haiku第三方中转API)",
+    "gpt4-turbo": "GPT4-Turbo-1125 API模式 (兼容claude-3-opus第三方中转API)",
     "newbing": "NewBing 模拟网页模式",
     "sakura-010": "SakuraLLM翻译模型 -- 适用0.10模型",
     "sakura-009": "SakuraLLM翻译模型 -- 适用0.09模型",

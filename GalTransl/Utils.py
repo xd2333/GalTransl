@@ -46,7 +46,7 @@ def contains_japanese(text: str) -> bool:
     # 日文字符范围
     hiragana_range = (0x3040, 0x309F)
     katakana_range = (0x30A0, 0x30FF)
-    hankaku_range = (0xFF66, 0xFF9F)
+    katakana_range2 = (0xFF66, 0xFF9F)
 
     # 检查字符串中的每个字符
     for char in text:
@@ -59,7 +59,7 @@ def contains_japanese(text: str) -> bool:
         if (
             hiragana_range[0] <= code_point <= hiragana_range[1]
             or katakana_range[0] <= code_point <= katakana_range[1]
-            or hankaku_range[0] <= code_point <= hankaku_range[1]
+            or katakana_range2[0] <= code_point <= katakana_range2[1]
         ):
             return True
     return False

@@ -16,7 +16,7 @@ common:
   gpt.recordConfidence: false # (NewBing/GPT4)记录确信度、存疑句，GPT4 API关掉可节约token。[True/False]
   # GPT3.5/GPT4
   gpt.restoreContextMode: true # (GPT3.5/4)重启时恢复上一轮的译文前文。[True/False]
-  gpt.fullContextMode: false # (GPT3.5/4)保留更多前文。默认关闭，节约token消耗。[True/False]
+  gpt.fullContextMode: false # (GPT3.5/4)(将废弃)保留更多前文。默认关闭，节约token消耗。[True/False]
 # 插件设置
 plugin:
   filePlugin: file_galtransl_json # 指定文件读取插件，默认使用file_galtransl_json
@@ -50,20 +50,20 @@ dictionary:
     - (project_dir)项目字典_译后.txt
 # 翻译后端相关设置
 backendSpecific:
-  GPT35: # GPT3.5 API
+  GPT35: # GPT3.5 API/claude-3-sonnet第三方中转
     tokens:
       - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         endpoint: https://api.openai.com # OpenAI API请求的域名，使用转发或第三方API时修改
       - token: sk-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
         endpoint: ""
     defaultEndpoint: https://api.openai.com # 默认 API 端点，一般不修改
-    rewriteModelName: "" # 强制使用指定的模型型号，一般不修改
-  GPT4: # GPT4 API
+    rewriteModelName: "" # 强制使用指定的模型型号，可用于claude-3-sonnet第三方中转
+  GPT4: # GPT4 API/claude-3-opus第三方中转
     tokens:
       - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
         endpoint: https://api.openai.com # 使用转发或第三方API时修改
     defaultEndpoint: https://api.openai.com # 一般不修改
-    rewriteModelName: "" # 强制使用指定的模型型号，可用于claude3-opus第三方中转
+    rewriteModelName: "" # 强制使用指定的模型型号，可用于claude-3-opus第三方中转
   bingGPT4: # NewBing API
     cookiePath:
       - newbing_cookies/cookie1.json # 你的 cookies 文件，相对于项目目录

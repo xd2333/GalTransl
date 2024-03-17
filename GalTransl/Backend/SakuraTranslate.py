@@ -367,8 +367,8 @@ class CSakuraTranslate:
             temperature, top_p = 0.1, 0.3
             frequency_penalty, presence_penalty = 0.0, 0.0
         elif style_name == "normal":
-            temperature, top_p = 0.3, 0.3
-            frequency_penalty, presence_penalty = 0.2, 0.0
+            temperature, top_p = 0.4, 0.9
+            frequency_penalty, presence_penalty = 0.3, 0.0
 
         self.chatbot.temperature = temperature
         self.chatbot.top_p = top_p

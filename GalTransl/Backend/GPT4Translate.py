@@ -378,7 +378,9 @@ class CGPT4Translate:
                         else:
                             trans_list[i].proofread_zh = trans_list[i].pre_zh
                             trans_list[i].post_zh = trans_list[i].pre_zh
-                            trans_list[i].proofread_by = f"{self.chatbot.engine}(Failed)"
+                            trans_list[i].proofread_by = (
+                                f"{self.chatbot.engine}(Failed)"
+                            )
                         result_trans_list.append(trans_list[i])
                         i = i + 1
                     return i, result_trans_list
@@ -572,7 +574,9 @@ class CGPT4Translate:
                 [json.dumps(obj, ensure_ascii=False) for obj in tmp_context]
             )
             self.chatbot.conversation["default"].append(
-                {"role": "user", "content": "(History Translation Request)"},
+                {"role": "user", "content": "(History Translation Request)"}
+            )
+            self.chatbot.conversation["default"].append(
                 {
                     "role": "assistant",
                     "content": f"Transl: \n```jsonline\n{json_lines}\n```",

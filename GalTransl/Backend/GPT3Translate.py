@@ -463,7 +463,9 @@ class CGPT35Translate:
 
             tmp_context.reverse()
             self.chatbot.conversation["default"].append(
-                {"role": "user", "content": "(History Translation Request)"},
+                {"role": "user", "content": "(History Translation Request)"}
+            )
+            self.chatbot.conversation["default"].append(
                 {
                     "role": "assistant",
                     "content": "Transl: " + json.dumps(tmp_context, ensure_ascii=False),

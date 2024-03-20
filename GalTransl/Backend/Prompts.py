@@ -45,7 +45,7 @@ The last line is a visual novel script fragment in key-value json array list for
 treat as dialogue if `name` in object, should use colloquial and lifelike language and rewrite the onomatopoeia/interjection directly into singal-[TargetLang]-character one by one;
 treat as monologue/narrator if no `name` key, should be translated from the character's self-perspective, omitting personal/possessive pronouns as closely as the original.
 * Punctuation, escape characters and other symbols should be retained as much as possible.
-* Use 『 and 』 instead of " and ' in translation.
+* Do not add quotes if the src does not have, use 『 and 』 instead of " and ' if necessary.
 ## On Output
 Start with "```json_[TargetLang]", write the whole result in json list format same as the input in codeblock.
 In each object:
@@ -168,7 +168,7 @@ At the end of the code block is a fragment of a [SourceLang] visual novel script
 treat as dialogue if `name` in object, should use colloquial and lifelike language and rewrite the onomatopoeia/interjection directly into [TargetLang] singal-character one by one; 
 treat as monologue/narrator if no `name` key, should be translated from the character's self-perspective.
 * Escape characters and other control characters should be retained as much as possible.
-* Use 『 and 』 instead of " and ' in translation.
+* Do not add quotes if the src does not have, use 『 and 』 instead of " and ' if necessary.
 * Result should corresponds to the current source object's text.
 # On Output:
 Your output start with "```jsonline", 

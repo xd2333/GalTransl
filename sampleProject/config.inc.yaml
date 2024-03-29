@@ -5,18 +5,18 @@ common:
   workersPerProject: 1 # 多线程，同时翻译的文件数量（单文件只能单线程）
   language: "ja2zh-cn" # 源语言2(to)目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
   linebreakSymbol: "\r\n" # 这个项目在json中使用的换行符，找问题和自动修复时用到，不影响翻译。
+  skipH: false # 跳过可能触发敏感词检测的句子。[True/False]
   skipRetry: false # 开启则解析结果出错时跳过循环重试，直接用"Fail Translation"占位。[True/False]
   retranslFail: false # 重启时重翻所有"Fail Translation"的句子。[True/False]
   retranslKey: "" # 重启时主动重翻在problem或pre_jp中包含此关键字的句子，例如"残留日文"
   gpt.numPerRequestTranslate: 10 # 单次翻译句子数量，推荐值 < 15
   gpt.streamOutputMode: true # 流式输出效果，多线程下无效。[True/False]
   # NewBing/GPT4
-  gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。[True/False]
+  gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。（不建议使用，很久未维护）[True/False]
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
-  gpt.recordConfidence: false # (NewBing/GPT4)记录确信度、存疑句，GPT4 API关掉可节约token。[True/False]
+  gpt.recordConfidence: false # (NewBing/GPT4)记录确信度、存疑句，GPT4 API关掉可节约token。（将废弃）[True/False]
   # GPT3.5/GPT4
   gpt.restoreContextMode: true # (GPT3.5/4)重启时恢复上一轮的译文前文。[True/False]
-  gpt.fullContextMode: false # (GPT3.5/4)(将废弃)保留更多前文。默认关闭，节约token消耗。[True/False]
 # 插件设置
 plugin:
   filePlugin: file_galtransl_json # 指定文件读取插件，默认使用file_galtransl_json

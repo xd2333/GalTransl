@@ -28,6 +28,7 @@ from GalTransl.Backend.Prompts import (
     GPT35_1106_TRANS_PROMPT,
     GPT35_0125_SYSTEM_PROMPT,
     GPT35_0125_TRANS_PROMPT,
+    H_WORDS_LIST,
 )
 
 
@@ -71,6 +72,11 @@ class CGPT35Translate:
             self.restore_context_mode = val
         else:
             self.restore_context_mode = False
+        # 跳过h
+        if val := config.getKey("skipH"):
+            self.skipH = val
+        else:
+            self.skipH = False
         # 跳过重试
         if val := config.getKey("skipRetry"):
             self.skipRetry = val
@@ -355,7 +361,9 @@ class CGPT35Translate:
                     LOGGER.warning("-> 单句仍错，重置会话")
                 # 单句5次重试则中止
                 if self.retry_count == 5:
-                    raise RuntimeError(f"-> 单句反复出错，已中止。最后错误为：{error_message}")
+                    raise RuntimeError(
+                        f"-> 单句反复出错，已中止。最后错误为：{error_message}"
+                    )
                 continue
 
             if warn_flag:
@@ -494,6 +502,15 @@ class CGPT35Translate:
             retry_failed=retry_failed,
             retran_key=retran_key,
         )
+
+        if self.skipH:
+            LOGGER.warning("skipH: 将跳过含有敏感词的句子")
+            trans_list_unhit = [
+                tran
+                for tran in trans_list_unhit
+                if not any(word in tran.post_jp for word in H_WORDS_LIST)
+            ]
+
         if len(trans_list_unhit) == 0:
             return []
 

@@ -21,6 +21,7 @@ from GalTransl.Backend.Prompts import (
     NewBing_NAME_PROMPT3,
     NewBing_PROOFREAD_PROMPT,
     NewBing_TRANS_PROMPT,
+    H_WORDS_LIST
 )
 
 
@@ -60,6 +61,11 @@ class CBingGPT4Translate:
             self.force_NewBing_hs_mode = val
         else:
             self.force_NewBing_hs_mode = False
+        # 跳过h
+        if val := config.getKey("skipH"):
+            self.skipH = val
+        else:
+            self.skipH = False
         # 跳过重试
         if val := config.getKey("skipRetry"):
             self.skipRetry = val
@@ -385,6 +391,14 @@ class CBingGPT4Translate:
             proofread=proofread,
             retran_key=retran_key,
         )
+        if self.skipH:
+            LOGGER.warning("skipH: 将跳过含有敏感词的句子")
+            trans_list_unhit = [
+                tran
+                for tran in trans_list_unhit
+                if not any(word in tran.post_jp for word in H_WORDS_LIST)
+            ]
+            
         if len(trans_list_unhit) == 0:
             return []
         # 新文件重置chatbot

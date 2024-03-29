@@ -25,6 +25,7 @@ from GalTransl.Backend.Prompts import (
     GPT4Turbo_TRANS_PROMPT,
     GPT4Turbo_CONF_PROMPT,
     GPT4Turbo_PROOFREAD_PROMPT,
+    H_WORDS_LIST
 )
 
 
@@ -86,6 +87,11 @@ class CGPT4Translate:
             self.skipRetry = val
         else:
             self.skipRetry = False
+        # 跳过h
+        if val := config.getKey("skipH"):
+            self.skipH = val
+        else:
+            self.skipH = False
         # 流式输出模式
         if val := config.getKey("gpt.streamOutputMode"):
             self.streamOutputMode = val
@@ -436,9 +442,14 @@ class CGPT4Translate:
             retran_key=retran_key,
         )
 
-        # 校对模式多喂上一行
-        # if proofread and trans_list_unhit[0].prev_tran != None:
-        #    trans_list_unhit.insert(0, trans_list_unhit[0].prev_tran)
+        if self.skipH:
+            LOGGER.warning("skipH: 将跳过含有敏感词的句子")
+            trans_list_unhit = [
+                tran
+                for tran in trans_list_unhit
+                if not any(word in tran.post_jp for word in H_WORDS_LIST)
+            ]
+
         if len(trans_list_unhit) == 0:
             return []
         # 新文件重置chatbot

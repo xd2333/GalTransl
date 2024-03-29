@@ -147,7 +147,7 @@ class CGPT4Translate:
             from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
             self.token = self.tokenProvider.getToken(False, True)
-            eng_name = "gpt-4-0125-preview" if eng_name == "" else eng_name
+            eng_name = "gpt-4-1106-preview" if eng_name == "" else eng_name
             system_prompt = GPT4Turbo_SYSTEM_PROMPT
             self.chatbot = ChatbotV3(
                 api_key=self.token.token,

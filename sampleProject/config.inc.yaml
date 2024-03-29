@@ -23,6 +23,7 @@ plugin:
   textPlugins: # 文本处理插件列表，按顺序执行
     - text_common_normalfix # 默认插件，修复常规通用问题
     - (project_dir)text_common_example # 示例，(project_dir)代表插件在项目的plugins目录里
+    #- (project_dir)text_common_2333 # 示例，在 - 前加#号可以禁用插件
 # 代理设置
 proxy:
   enableProxy: false # 是否启用代理。[True/False]

@@ -12,7 +12,7 @@ from random import choice
 from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
-from GalTransl.Utils import extract_code_blocks
+from GalTransl.Utils import extract_code_blocks, fix_quotes
 from GalTransl.Backend.Prompts import (
     GPT4_CONF_PROMPT,
     GPT4_TRANS_PROMPT,
@@ -287,6 +287,8 @@ class CGPT4Translate:
                 .replace(", conf:", ', "conf":')
                 .replace(", unkn:", ', "unkn":')
             )
+            result_text = fix_quotes(result_text)
+
             i = -1
             result_trans_list = []
             key_name = "dst" if not proofread else "newdst"

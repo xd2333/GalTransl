@@ -96,3 +96,17 @@ def get_file_list(directory: str):
 
 def process_escape(text: str) -> str:
     return codecs.escape_decode(bytes(text, "utf-8"))[0].decode("utf-8")
+
+pattern_fix_quotes = compile(r'"dst": *"(.+?)"}')
+
+def fix_quotes(text):
+    results = pattern_fix_quotes.findall(text)
+    for match in results:
+        new_match = match
+        for i in range(match.count('"')):
+            if i % 2 == 0:
+                new_match = new_match.replace('"', "“", 1)
+            else:
+                new_match = new_match.replace('"', "”", 1)
+        text = text.replace(match, new_match)
+    return text

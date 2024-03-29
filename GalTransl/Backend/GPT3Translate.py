@@ -16,7 +16,7 @@ from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Backend.revChatGPT.typings import APIConnectionError
-from GalTransl.Utils import extract_code_blocks
+from GalTransl.Utils import extract_code_blocks, fix_quotes
 from httpx import ProtocolError
 from GalTransl import LOGGER, LANG_SUPPORTED
 from GalTransl.Backend.Prompts import (
@@ -267,6 +267,7 @@ class CGPT35Translate:
                 result_text = resp[resp.find("[{") : resp.rfind("}]") + 2].strip()
             else:
                 result_text = resp
+            result_text = fix_quotes(result_text)
 
             key_name = "dst"
             error_flag, warn_flag = False, False

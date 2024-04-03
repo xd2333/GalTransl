@@ -21,7 +21,7 @@ class text_common_fullWidthFix(GTextPlugin):
 
     def full2half(self, s):
         # 创建一个转换表，包括数字、字母和常见标点符号
-        full_to_half_dict = {chr(0xFF01 + i): chr(0x21 + i) for i in range(94)}
+        full_to_half_dict = {}
         full_to_half_dict.update({chr(0xFF10 + i): chr(0x30 + i) for i in range(10)})  # 数字
         full_to_half_dict.update({chr(0xFF21 + i): chr(0x41 + i) for i in range(26)})  # 大写字母
         full_to_half_dict.update({chr(0xFF41 + i): chr(0x61 + i) for i in range(26)})  # 小写字母

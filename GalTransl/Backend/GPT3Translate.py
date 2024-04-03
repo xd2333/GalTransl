@@ -16,7 +16,7 @@ from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Backend.revChatGPT.typings import APIConnectionError
-from GalTransl.Utils import extract_code_blocks
+from GalTransl.Utils import extract_code_blocks, fix_quotes
 from httpx import ProtocolError
 from GalTransl import LOGGER, LANG_SUPPORTED
 from GalTransl.Backend.Prompts import (
@@ -28,6 +28,7 @@ from GalTransl.Backend.Prompts import (
     GPT35_1106_TRANS_PROMPT,
     GPT35_0125_SYSTEM_PROMPT,
     GPT35_0125_TRANS_PROMPT,
+    H_WORDS_LIST,
 )
 
 
@@ -71,6 +72,11 @@ class CGPT35Translate:
             self.restore_context_mode = val
         else:
             self.restore_context_mode = False
+        # 跳过h
+        if val := config.getKey("skipH"):
+            self.skipH = val
+        else:
+            self.skipH = False
         # 跳过重试
         if val := config.getKey("skipRetry"):
             self.skipRetry = val
@@ -151,6 +157,7 @@ class CGPT35Translate:
                 system_prompt=GPT35_1106_SYSTEM_PROMPT,
                 api_address=self.token.domain + "/v1/chat/completions",
                 timeout=30,
+                response_format="json",
             )
             self.trans_prompt = GPT35_1106_TRANS_PROMPT
             self.name_prompt = GPT35_1106_NAME_PROMPT3
@@ -266,6 +273,7 @@ class CGPT35Translate:
                 result_text = resp[resp.find("[{") : resp.rfind("}]") + 2].strip()
             else:
                 result_text = resp
+            result_text = fix_quotes(result_text)
 
             key_name = "dst"
             error_flag, warn_flag = False, False
@@ -325,7 +333,7 @@ class CGPT35Translate:
                     while i < len(content):
                         content[i].pre_zh = "Failed translation"
                         content[i].post_zh = "Failed translation"
-                        content[i].trans_by = "GPT-3.5(Failed)"
+                        content[i].trans_by = f"{self.chatbot.engine}(Failed)"
                         i = i + 1
                     return len(content), content
 
@@ -353,7 +361,9 @@ class CGPT35Translate:
                     LOGGER.warning("-> 单句仍错，重置会话")
                 # 单句5次重试则中止
                 if self.retry_count == 5:
-                    raise RuntimeError(f"-> 单句反复出错，已中止。最后错误为：{error_message}")
+                    raise RuntimeError(
+                        f"-> 单句反复出错，已中止。最后错误为：{error_message}"
+                    )
                 continue
 
             if warn_flag:
@@ -365,7 +375,7 @@ class CGPT35Translate:
                     result[key_name] = self.opencc.convert(result[key_name])
                 content[i].pre_zh = result[key_name]
                 content[i].post_zh = result[key_name]
-                content[i].trans_by = "GPT-3.5"
+                content[i].trans_by = self.chatbot.engine
 
             if self.transl_style == "auto" and not warn_flag:
                 self._set_gpt_style("precise")
@@ -382,19 +392,21 @@ class CGPT35Translate:
 
     def _del_previous_message(self) -> None:
         """删除历史消息，只保留最后一次的翻译结果，节约tokens"""
-        if self.eng_type != "unoffapi":
-            last_assistant_message = None
-            for message in self.chatbot.conversation["default"]:
-                if message["role"] == "assistant":
-                    last_assistant_message = message
-            system_message = self.chatbot.conversation["default"][0]
-            if last_assistant_message != None:
-                self.chatbot.conversation["default"] = [
-                    system_message,
-                    last_assistant_message,
-                ]
-        elif self.eng_type == "unoffapi":
-            pass
+        last_assistant_message = None
+        last_user_message = None
+        for message in self.chatbot.conversation["default"]:
+            if message["role"] == "assistant":
+                last_assistant_message = message
+        for message in self.chatbot.conversation["default"]:
+            if message["role"] == "user":
+                last_user_message = message
+                last_user_message["content"] = "(History Translation Request)"
+        system_message = self.chatbot.conversation["default"][0]
+        self.chatbot.conversation["default"] = [system_message]
+        if last_user_message:
+            self.chatbot.conversation["default"].append(last_user_message)
+        if last_assistant_message:
+            self.chatbot.conversation["default"].append(last_assistant_message)
 
     def _del_last_answer(self):
         if self.eng_type != "unoffapi":
@@ -460,6 +472,9 @@ class CGPT35Translate:
 
             tmp_context.reverse()
             self.chatbot.conversation["default"].append(
+                {"role": "user", "content": "(History Translation Request)"}
+            )
+            self.chatbot.conversation["default"].append(
                 {
                     "role": "assistant",
                     "content": "Transl: " + json.dumps(tmp_context, ensure_ascii=False),
@@ -487,6 +502,15 @@ class CGPT35Translate:
             retry_failed=retry_failed,
             retran_key=retran_key,
         )
+
+        if self.skipH:
+            LOGGER.warning("skipH: 将跳过含有敏感词的句子")
+            trans_list_unhit = [
+                tran
+                for tran in trans_list_unhit
+                if not any(word in tran.post_jp for word in H_WORDS_LIST)
+            ]
+
         if len(trans_list_unhit) == 0:
             return []
 

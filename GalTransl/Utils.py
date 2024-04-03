@@ -46,7 +46,7 @@ def contains_japanese(text: str) -> bool:
     # 日文字符范围
     hiragana_range = (0x3040, 0x309F)
     katakana_range = (0x30A0, 0x30FF)
-    hankaku_range = (0xFF66, 0xFF9F)
+    katakana_range2 = (0xFF66, 0xFF9F)
 
     # 检查字符串中的每个字符
     for char in text:
@@ -59,7 +59,7 @@ def contains_japanese(text: str) -> bool:
         if (
             hiragana_range[0] <= code_point <= hiragana_range[1]
             or katakana_range[0] <= code_point <= katakana_range[1]
-            or hankaku_range[0] <= code_point <= hankaku_range[1]
+            or katakana_range2[0] <= code_point <= katakana_range2[1]
         ):
             return True
     return False
@@ -96,3 +96,17 @@ def get_file_list(directory: str):
 
 def process_escape(text: str) -> str:
     return codecs.escape_decode(bytes(text, "utf-8"))[0].decode("utf-8")
+
+pattern_fix_quotes = compile(r'"dst": *"(.+?)"}')
+
+def fix_quotes(text):
+    results = pattern_fix_quotes.findall(text)
+    for match in results:
+        new_match = match
+        for i in range(match.count('"')):
+            if i % 2 == 0:
+                new_match = new_match.replace(r'\"', "“", 1).replace('"', "“", 1)
+            else:
+                new_match = new_match.replace(r'\"', "”", 1).replace('"', "”", 1)
+        text = text.replace(match, new_match)
+    return text

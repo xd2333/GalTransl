@@ -3,14 +3,14 @@
 
 <h1><p align='center' >GalTransl</p></h1>
 <div align=center><img src="https://img.shields.io/github/v/release/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/license/XD2333/GalTransl"/>   <img src="https://img.shields.io/github/stars/XD2333/GalTransl"/></div>
-<p align='center' >支持GPT3.5/4/Newbing等大语言模型的Galgame自动化翻译解决方案</p>
+<p align='center' >支持GPT3.5/4/Newbing/Sakura等大语言模型的Galgame自动化翻译解决方案</p>
 
   [English](https://github.com/XD2333/GalTransl/blob/main/README_EN.md)
   
   GalTransl是一套将数个基础功能上的微小创新与对GPT提示工程（Prompt Engineering）的深度利用相结合的Galgame自动化翻译工具，用于制作内嵌式翻译补丁。   
    
 ## 前言
-&ensp;&ensp;&ensp;&ensp;GalTransl的核心是一组由我(cx2333)构建的自动化翻译脚本，它解决了使用ChatGPT自动化翻译Galgame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合，打通了制作补丁的完整流程，一定程度降低了上手门槛。对此感兴趣的朋友可以更容易的构建具有一定质量的机翻补丁，并(或许)可以尝试在此基础上高效的构建更高质量的汉化补丁。  
+&ensp;&ensp;&ensp;&ensp;GalTransl的核心是一组由cx2333构建的自动化翻译脚本，它解决了使用ChatGPT自动化翻译Galgame过程中已知的大部分问题，并大幅提高了整体的翻译质量。同时，通过与其他项目的组合，打通了制作补丁的完整流程，一定程度降低了上手门槛。对此感兴趣的朋友可以通过本项目更容易的构建具有一定质量的机翻补丁，并(或许)可以尝试在此框架的基础上高效的构建更高质量的汉化补丁。  
 
   * 特性：   
   1. 支持**GPT3.5、Newbing、GPT-4、Sakura**等大语言模型，并通过提示工程提高了GPT的翻译质量   
@@ -19,33 +19,21 @@
   4. 实时保存缓存、自动断点续翻   
   5. 结合其他项目支持多引擎脚本一键解包与注入，提供完整教程降低上手难度   
    
-  * 支持我：点个Star~（PS. 分享补丁时**请注明GPT翻译**，能提一下是用GalTransl翻译的就更好了）
-  * 也欢迎捐赠任意金额、任意中转的充值码到`galtransl233@gmail.com`，供我用于调试和改善翻译效果   
+  * 支持我：点个Star~（PS. 分享补丁时**请注明GPT翻译**）
 
   * 交流群：https://t.me/+xCypZf4DXmJjYzdl （无Q群）   
 
 ## 近期更新
+* 2024.4: 支持claude3第三方中转
 * 2024/02/01：更新v4版，支持插件系统  
 * 2024/01/02：提供exe一键包，免安装环境   
 * 2023/12/28：增加设置项，允许通过字典在译前译后替换name，可用于汉化name字段   
 * 2023/12/23：支持Sakura-13B-Galgame离线翻译模型   
 * 2023/12/17：更新v3版，支持基于文件的多线程 by @ryank231231   
 
-## 使用GalTransl翻译的游戏
-
-* 《指尖连结/ゆびさきコネクション》 [链接](https://tieba.baidu.com/p/8282814801?pid=146960460177)   
-这是**全网首个**完整使用chatgpt翻译的galgame，使用了GalTransl的早期版本。  
-翻译：主线-NewBing，hs-GPT3.5   
-
-* 《甜蜜女友2+/アマカノ2+》 [链接](https://www.2dfan.com/downloads/16596)   
-这是**首次将自动化校润用于Gal翻译**，基本可以代表GalTransl在未逐文本精修的前提下目前能达到的质量上限（但不代表GPT4的上限）。   
-翻译：主线-cx2333使用NewBing翻译+自动校润+部分手工修正；hs-云忆夕使用GPT4   
-美工：cx2333   
-
 ## 导航
 * [环境准备](https://github.com/XD2333/GalTransl#环境准备)：环境与软件的安装   
 * [上手教程](https://github.com/XD2333/GalTransl#上手教程)：全流程介绍如何制作一个机翻补丁，只想看怎么使用本工具的话，可以只看第2章   
-* [翻译引擎介绍](https://github.com/XD2333/GalTransl#翻译引擎介绍)：本篇介绍各个翻译引擎的优缺点与推荐的组合   
 * [配置文件与翻译引擎设置](https://github.com/XD2333/GalTransl#配置文件与翻译引擎设置)：本篇详细介绍各个翻译引擎API的调用与配置方式。   
 * [GalTransl核心功能介绍](https://github.com/XD2333/GalTransl#galtransl核心功能介绍)：介绍GPT字典、缓存、普通字典、找问题等功能。  
 
@@ -103,10 +91,11 @@
 （点击展开详细说明）   
 <details>
 
-<summary> <b> 
+<summary>
 
 ### 第一章 识别与解包   
-</b> </summary>
+
+</summary>
 识别引擎其实很简单，通常来说，使用GARbro打开游戏目录内的任意资源包，在左下方的状态栏中就会显示引擎名称： 
 
 或者，参考[资源包后缀表](https://morkt.github.io/GARbro/supported.html)，比较资源包的后缀。   
@@ -120,10 +109,12 @@
 </details>
 <details>
 
-<summary> <b> 
+<summary>
 
 ### 第二章 提取与翻译   
-</b> </summary>
+
+</summary>
+
 * **【2.1. 提取脚本文本】**   
 &ensp;&ensp;&ensp;&ensp;通常情况下，本项目是结合[VNTextPatch工具](https://github.com/arcusmaximus/VNTranslationTools)来解包脚本的。 VNTextPatch是由外国大佬arcusmaximus开发的[支持许多引擎](https://github.com/arcusmaximus/VNTranslationTools#vntextpatch)脚本的提取与注入的通用工具。（但并不是这些引擎都能搞定了，实测有的游戏是会提取失败的）   
    
@@ -205,10 +196,11 @@ backendSpecific:
 
 <details>
 
-<summary> <b> 
+<summary> 
 
 ### 第三章 封包或免封   
-</b> </summary>
+
+ </summary>
 
 &ensp;&ensp;&ensp;&ensp;构建好中文脚本后，下一步就是想办法让游戏读取。首先目前主流引擎基本都是支持免封包读取的，可以继续参考Dir-A佬的[教程](https://space.bilibili.com/8144708/)，看看你要搞的引擎支不支持免封包读取。   
 &ensp;&ensp;&ensp;&ensp;特别的，针对krkr/krkrz引擎，可以使用arcusmaximus大佬的[KirikiriTools工具](https://github.com/arcusmaximus/KirikiriTools)，下载里面的version.dll，丢到游戏目录里，然后在游戏目录里新建一个"unencrypted"文件夹，将脚本直接丢进去（不用新建二级目录），就可以让krkr读取   
@@ -217,10 +209,11 @@ backendSpecific:
 
 <details>
 
-<summary> <b> 
+<summary>
 
 ### 第四章 引擎与编码   
-</b> </summary>
+
+</summary>
 
 &ensp;&ensp;&ensp;&ensp;在这一章首先需要了解一下unicode、sjis(shift jis)、gbk编码的基础知识，为了偷懒在这里我还是放[Dir-A佬的文章](https://www.bilibili.com/read/cv12367744/)，如果你对这块不了解的话，先去读一下。   
 
@@ -254,80 +247,6 @@ GalTransl提取注入工具的VNTextPatch模式注入脚本时默认是以sjis�
 
 </details>
 
-
-## 翻译引擎介绍   
-本篇主要介绍引擎优缺点，具体使用见后面的章节。   
-
-<details>
-<summary> <b>
-  
-### 【引擎档案】（点击展开）
-  
-</b> </summary>
-
-* **NewBing**:+1::+1::+1:   
-NewBing是微软的Bing ai助手，它[基于GPT-4](https://blogs.bing.com/search/march_2023/Confirmed-the-new-Bing-runs-on-OpenAI%E2%80%99s-GPT-4)，且不收费，是当你想创建高质量翻译时我推的LLM  
-   
-  * 优点：   
-  ✔ **白嫖GPT-4**   
-  ✔ 高质量的逻辑推理、上下文分析与保持原文风格能力   
-  ✔ 支持记录翻译确信度、存疑片段、未知专有名词，方便人工校对   
-  ✔ 支持对初翻做二次自动化校对润色   
-   
-  * 缺点：   
-  🔞 **涩涩打咩**，只能用于非h内容，需要结合其他引擎   
-  ❔ 每账号目前24小时提问200次   
-  🚸 速度较慢，如果开启自动化再校润，会慢更多   
-  ❔ 目前自动化校润、记录确信度不稳定   
-  🛫 目前需要翻墙   
-    
-  * 总结：它很强，但它运行在青少年模式(NewBing大小姐拒绝了本次请求🙏)   
-  ---   
-* **GPT-3.5**:+1::+1:   
-初代ChatGPT背后的OpenAI的大语言模型，模型代号为gpt-3.5-turbo，也就是GPT-3.5。本项目提供通过官方api~~与模拟网页操作两种方式~~调用ChatGPT，优化了token用量，并通过提示工程优化了翻译质量，解除了涩涩限制。   
-   
-  * 优点：   
-  ✔ 涩涩解禁，~~很会涩涩~~   
-  ✔ 翻译质量弱于GPT4，但在提示工程的优化下**仍然吊打老式机翻**   
-     
-  * 缺点：   
-  🫰 需要一定费用，可以通过买key、买api代理、使用模拟网页的方式一定程度节省(API开销大约是5刀额度翻译60w-70w字)   
-  🛫 使用官方API和官方地址的话，需要翻墙。可以通过自建转发的方式解决   
-  🚩 使用模拟网页操作方式的话，**可能因此被封号**（模拟网页操作模式暂不可用）   
-  ❔ 经常丢失换行符，偶发遗留日文、窜行、过度脑补、逻辑混乱，可通过找问题系统部分解决   
-  👎 **不支持**自动化校润、提供确信度、记录存疑片段和未知名词，似乎已超出它的能力极限   
-    
-  * 总结：速度与价格都尚可，搞个拔作绰绰有余。~~它已经很努力了，只是不太聪明~~   
-  ---   
-* **GPT-4**:+1:  
-OpenAI的*最先进*、~~最安全~~的大语言模型，模型代号为GPT-4。本项目提供通过官方API~~与模拟网页操作两种方式~~调用GPT-4，并通过提示工程解除了涩涩限制。   
-  
-  * 优点：   
-  ✔ 高质量的逻辑推理、上下文分析与保持原文风格能力，直译准确率最高   
-  ✔ 其他特性同NewBing   
-   
-  * 缺点：   
-  🫰 贵，不推荐使用   
-  🚸 速度较慢，每账号目前24小时提问200次   
-  🚩 模拟网页操作方式是逆向网页版GPT4的，**可能因此被封号**（模拟网页操作模式暂不可用）   
-
-  * 总结：~~氪服困难~~，泰贵鸟。   
-  ---   
-* **Sakura-13B-Galgame**:+1::+1:  
-基于一系列开源大模型构建，在通用日文语料与轻小说/Galgame等领域的中日语料上进行继续预训练与微调，旨在提供性能接近GPT3.5且完全离线的Galgame/轻小说翻译大语言模型。[项目地址](https://github.com/SakuraLLM/Sakura-13B-Galgame)   
-  
-  * 优点：   
-  ✔ 完全离线，支持本地化部署，不会哪一天突然不可用   
-  ✔ 质量接近并在部分场景下优于GPT3.5，明显优于传统机翻（基于v0.9.0pre3模型主观测试）   
-   
-  * 缺点：   
-  🚩 目前不支持GPT字典，可以用译前字典来固定片假名人名   
-  🚩 需要一块显存大一点的显卡，或尝试[白嫖免费算力](https://github.com/Isotr0py/SakuraLLM-Notebooks)   
-
-  * 总结：未来可期！在大公司的模型越来越"安全"的将来，本地模型可成为有效替代。   
-  
-</details>
-
 ## GalTransl核心功能介绍
 介绍GPT字典、缓存、普通字典、找问题等功能。    
 （点击展开详细说明）     
@@ -336,7 +255,7 @@ OpenAI的*最先进*、~~最安全~~的大语言模型，模型代号为GPT-4。
 <summary>   
    
 ### GPT字典
-&ensp;&ensp;&ensp;&ensp;GPT字典系统是使用GalTransl翻译时想提高质量的关键功能，通过补充设定的方式大幅提高翻译质量。适用于gpt35、gpt4、newbing。   
+&ensp;&ensp;&ensp;&ensp;GPT字典系统是使用GalTransl翻译时想提高质量的关键功能，通过补充设定的方式大幅提高翻译质量，是GPT翻译区别于传统机翻的核心。适用于gpt35、gpt4、newbing。   
 在程序目录中，`Dict`文件夹内有"通用GPT字典.txt"，在项目文件夹内可以新建"项目GPT字典.txt"，一般人名定义写进项目字典，通用提高翻译质量的词汇写进通用字典。   
    
 </summary>   

@@ -55,7 +55,7 @@ class file_plugin(GFilePlugin):
                 if self.上下双语1左右双语2 == 2:
                     result += f"{item['index']}\n{item['timestamp']}\n{item['message']} {item['org_message']}\n\n"
                 elif self.上下双语1左右双语2 == 1:
-                    result += f"{item['index']}\n{item['timestamp']}\n{item['message']}{item['org_message']}\n\n"
+                    result += f"{item['index']}\n{item['timestamp']}\n{item['message']}\n{item['org_message']}\n\n"
 
         with open(file_path, "w", encoding="utf-8") as file:
             file.write(result.strip())

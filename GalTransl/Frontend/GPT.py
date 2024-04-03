@@ -200,7 +200,7 @@ async def doLLMTranslate(
             for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
                 cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
             gptapi = CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
-        case "sakura0.9":
+        case "sakura-009" | "sakura-010":
             gptapi = CSakuraTranslate(projectConfig, eng_type, proxyPool)
             workersPerProject = 1
         case "rebuildr" | "rebuilda":

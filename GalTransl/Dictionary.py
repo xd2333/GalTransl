@@ -46,10 +46,15 @@ class CBasicDicElement:
         "if_word_list",  # 条件字典中的条件词列表
         "spl_word",  # if_word_list的连接关键字
         "note",  # For GPT
+        "dic_name",  # 字典名
     ]
 
     def __init__(
-        self, search_word: str = "", replace_word: str = "", special_key: str = ""
+        self,
+        search_word: str = "",
+        replace_word: str = "",
+        special_key: str = "",
+        dic_name: str = "",
     ) -> None:
         self.search_word: str = search_word
         self.replace_word: str = replace_word
@@ -71,6 +76,8 @@ class CBasicDicElement:
         self.is_conditionaDic: bool = False
         self.if_word_list: List[ifWord] = None  # 条件字典中的条件词列表
         self.spl_word: str = ""  # if_word_list的连接关键字
+        self.note: str = ""  # For GPT
+        self.dic_name: str = dic_name  # 字典名
 
     def __repr__(self) -> str:
         return f"{self.search_word} -> {self.replace_word}"
@@ -133,23 +140,25 @@ class CNormalDic:
         normalDic_count = 0
         conditionaDic_count = 0
         situationsDic_count = 0
+        dic_name = path.basename(dic_path)
+        dic_name = path.splitext(dic_name)[0]
 
         for line in dic_lines:
             if line.startswith("\n"):
                 continue
-            elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
-                continue
+            # elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
+            #     continue
 
             # 四个空格换成Tab
             line = line.replace("    ", "\t")
-
-            # 处理转义字符
-            line = process_escape(line)
 
             sp = line.rstrip("\r\n").split("\t")  # 去多余换行符，Tab分割
             len_sp = len(sp)
             if len_sp < 2:  # 至少是2个元素
                 continue
+            # 处理转义字符
+            for i in range(len_sp):
+                sp[i]=process_escape(sp[i])
 
             is_conditionaDic_line = True if sp[0] in self.conditionaDic_key else False
             is_situationsDic_line = True if sp[0] in self.situationsDic_key else False
@@ -163,27 +172,35 @@ class CNormalDic:
                 spl_word = "[and]" if "[and]" in if_word else "[or]"  # 判断连接字符
                 # 初始化ifWord的list
                 if_word_list = [ifWord(w.strip()) for w in if_word.split(spl_word)]
-                con_dic = CBasicDicElement(sp[2], sp[3], sp[0])
+                con_dic = CBasicDicElement(sp[2], sp[3], sp[0], dic_name)
                 con_dic.is_conditionaDic = True
                 con_dic.if_word_list = if_word_list
                 con_dic.spl_word = spl_word
                 self.dic_list.append(con_dic)
                 conditionaDic_count += 1
             elif is_situationsDic_line:
-                sit_dic = CBasicDicElement(sp[1], sp[2], sp[0])
+                sit_dic = CBasicDicElement(sp[1], sp[2], sp[0], dic_name)
                 sit_dic.is_situationsDic = True
                 self.dic_list.append(sit_dic)
                 situationsDic_count += 1
             else:
-                self.dic_list.append(CBasicDicElement(sp[0], sp[1]))
+                self.dic_list.append(CBasicDicElement(sp[0], sp[1], dic_name=dic_name))
                 normalDic_count += 1
         LOGGER.info(
             "载入 普通字典："
             + path.basename(dic_path)
             + "  "
             + (str(normalDic_count) + "普通词条 " if normalDic_count != 0 else "")
-            + (str(conditionaDic_count) + "条件词条 " if conditionaDic_count != 0 else "")
-            + (str(situationsDic_count) + "场景词条 " if situationsDic_count != 0 else "")
+            + (
+                str(conditionaDic_count) + "条件词条 "
+                if conditionaDic_count != 0
+                else ""
+            )
+            + (
+                str(situationsDic_count) + "场景词条 "
+                if situationsDic_count != 0
+                else ""
+            )
         )
 
     def do_replace(self, input_text: str, input_tran: CSentense) -> str:
@@ -229,11 +246,13 @@ class CNormalDic:
                             # 需要给判断词加上对应的format
                             if input_tran.is_dialogue:
                                 if_word_now = (
-                                    input_tran.dia_format.split("#句子")[0] + if_word_now
+                                    input_tran.dia_format.split("#句子")[0]
+                                    + if_word_now
                                 )
                             else:
                                 if_word_now = (
-                                    input_tran.mono_format.split("#句子")[0] + if_word_now
+                                    input_tran.mono_format.split("#句子")[0]
+                                    + if_word_now
                                 )
 
                     if if_word_now in ["~", "(同上)", "（同上）"]:  # 同上flag判断
@@ -297,13 +316,15 @@ class CGptDict:
         if len(dic_lines) == 0:
             return
 
+        dic_name = path.basename(dic_path)
+        dic_name = path.splitext(dic_name)[0]
         normalDic_count = 0
 
         for line in dic_lines:
             if line.startswith("\n"):
                 continue
-            elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
-                continue
+            # elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
+            #     continue
 
             # 四个空格换成Tab
             line = line.replace("    ", "\t")
@@ -314,14 +335,16 @@ class CGptDict:
             if len_sp < 2:  # 至少是2个元素
                 continue
 
-            dic = CBasicDicElement(sp[0], sp[1])
+            dic = CBasicDicElement(sp[0], sp[1], dic_name=dic_name)
             if len_sp > 2 and sp[2]:
                 dic.note = sp[2]
             else:
                 dic.note = ""
             self._dic_list.append(dic)
             normalDic_count += 1
-        LOGGER.info(f"载入 GPT字典: {path.basename(dic_path)} {normalDic_count}普通词条")
+        LOGGER.info(
+            f"载入 GPT字典: {path.basename(dic_path)} {normalDic_count}普通词条"
+        )
 
     def gen_prompt(self, trans_list: CTransList, type="gpt"):
         promt = ""
@@ -376,6 +399,8 @@ class CGptDict:
                     break
 
             if not flag:
-                problem_list.append(f"GPT字典 {dic.search_word} -> {dic.replace_word} 未使用")
+                problem_list.append(
+                    f"{dic.dic_name} {dic.search_word} -> {dic.replace_word} 未使用"
+                )
 
         return ", ".join(problem_list)

@@ -135,6 +135,9 @@ class COpenAITokenPool:
                         isGPT4Available = True
                     elif "gpt-3.5" in model_name:
                         isGPT3Available = True
+                    else:
+                        isGPT4Available, isGPT3Available = True, True
+
                     return True, isGPT3Available, isGPT4Available, token
         except:
             LOGGER.debug(
@@ -155,6 +158,8 @@ class COpenAITokenPool:
         model_name = TRANSLATOR_ENGINE.get(eng_type, "gpt-3.5-turbo")
         if self.force_eng_name:
             model_name = self.force_eng_name
+        if model_name == "gpt-3.5-turbo-0125":
+            raise RuntimeError("gpt-3.5-turbo-0125质量太差，请更换其他模型！")
         LOGGER.info(f"测试key是否能调用{model_name}模型...")
         fs = []
         for _, token in self.tokens:

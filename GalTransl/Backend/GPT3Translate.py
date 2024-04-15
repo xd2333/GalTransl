@@ -250,9 +250,6 @@ class CGPT35Translate:
                     LOGGER.warning("-> 请求受限，1分钟后继续尝试")
                     await asyncio.sleep(60)
                     continue
-                elif "expired" in str_ex:
-                    LOGGER.error("-> access_token过期，请更换")
-                    exit()
                 elif "try reload" in str_ex:
                     self.reset_conversation()
                     LOGGER.error("-> 报错重置会话")

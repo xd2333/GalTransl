@@ -105,8 +105,8 @@ def fix_quotes(text):
         new_match = match
         for i in range(match.count('"')):
             if i % 2 == 0:
-                new_match = new_match.replace(r'\"', "“", 1).replace('"', "“", 1)
+                new_match = new_match.replace('"', "“", 1).replace(r'\“', "“", 1)
             else:
-                new_match = new_match.replace(r'\"', "”", 1).replace('"', "”", 1)
+                new_match = new_match.replace('"', "”", 1).replace(r'\”', "”", 1)
         text = text.replace(match, new_match)
     return text

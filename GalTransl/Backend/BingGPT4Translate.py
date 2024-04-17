@@ -212,7 +212,7 @@ class CBingGPT4Translate:
                 continue
             
             try:
-                result_text = resp["item"]["messages"][1]["text"]
+                result_text = resp["item"]["messages"][-1]["text"]
             except:
                 LOGGER.error("-> 没有获取到有效结果，重置会话")
                 await self.chatbot.reset()
@@ -222,6 +222,9 @@ class CBingGPT4Translate:
                 LOGGER.info(result_text)
             else:
                 print("")
+
+            if "I'm sorry" in result_text.split("\n")[0]:
+                bing_reject = True
 
             if "```json" in result_text:
                 lang_list, code_list = extract_code_blocks(result_text)

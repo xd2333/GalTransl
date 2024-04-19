@@ -26,8 +26,6 @@ from GalTransl.Backend.Prompts import (
     GPT35_1106_SYSTEM_PROMPT,
     GPT35_1106_NAME_PROMPT3,
     GPT35_1106_TRANS_PROMPT,
-    GPT35_0125_SYSTEM_PROMPT,
-    GPT35_0125_TRANS_PROMPT,
     H_WORDS_LIST,
 )
 
@@ -164,25 +162,7 @@ class CGPT35Translate:
             self.chatbot.update_proxy(
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
             )
-        elif eng_type == "gpt35-0125":
-            from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
 
-            self.token = self.tokenProvider.getToken(True, False)
-            eng_name = "gpt-3.5-turbo-0125" if eng_name == "" else eng_name
-            # it's a workarounds, and we'll replace this soloution with a custom OpenAI API wrapper?
-            self.chatbot = ChatbotV3(
-                api_key=self.token.token,
-                engine=eng_name,
-                system_prompt=GPT35_0125_SYSTEM_PROMPT,
-                api_address=self.token.domain + "/v1/chat/completions",
-                timeout=30,
-                response_format="json",
-            )
-            self.trans_prompt = GPT35_0125_TRANS_PROMPT
-            self.name_prompt = GPT35_1106_NAME_PROMPT3
-            self.chatbot.update_proxy(
-                self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
-            )
         if self.transl_style == "auto":
             self._set_gpt_style("precise")
         else:

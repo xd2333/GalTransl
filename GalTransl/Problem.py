@@ -64,7 +64,7 @@ def find_problems(
                         if chars not in post_zh:
                             problem_list.append(f"本有{error}")
         if CProblemType.残留日文 in find_type:
-            if contains_japanese(post_zh):
+            if contains_japanese(pre_zh):
                 problem_list.append("残留日文")
         if CProblemType.丢失换行 in find_type:
             if pre_jp.count(lb_symbol) > post_zh.count(lb_symbol):

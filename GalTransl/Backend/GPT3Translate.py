@@ -200,7 +200,7 @@ class CGPT35Translate:
                 LOGGER.info(f"-> 翻译输入：\n{gptdict}\n{input_json}\n")
                 if self.streamOutputMode:
                     LOGGER.info("-> 输出：\n")
-                resp = ""
+                resp, data = "", ""
                 if self.eng_type != "unoffapi":
                     if not self.full_context_mode:
                         self._del_previous_message()

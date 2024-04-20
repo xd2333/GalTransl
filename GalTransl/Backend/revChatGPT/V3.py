@@ -305,6 +305,8 @@ class Chatbot:
                     break
                 if "{" not in line:
                     continue
+                if "flagged" in line and "403" in line:
+                    yield "输入被openrouter.ai标记为有害，考虑更换中转。"
                 resp: dict = json.loads(line)
                 choices = resp.get("choices")
                 if not choices:

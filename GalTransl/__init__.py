@@ -35,8 +35,8 @@ OUTPUT_FOLDERNAME = "gt_output"
 CACHE_FOLDERNAME = "transl_cache"
 TRANSLATOR_SUPPORTED = {
     "gpt35-0613": "GPT3.5-Turbo-0613 API模式",
-    "gpt35-1106": "GPT3.5-Turbo API模式 默认1106模型 (兼容claude-3-sonnet/haiku第三方中转API)",
-    "gpt4-turbo": "GPT4-Turbo API模式 默认1106模型 (兼容claude-3-opus第三方中转API)",
+    "gpt35-1106": "GPT3.5-Turbo API模式 默认1106模型 (兼容claude-3-haiku第三方中转API)",
+    "gpt4-turbo": "GPT4-Turbo API模式 默认1106模型 (兼容claude-3-sonnet/opus第三方中转API)",
     "newbing": "NewBing 模拟网页模式",
     "sakura-010": "SakuraLLM翻译模型 -- 适用v0.10模型",
     "sakura-009": "SakuraLLM翻译模型 -- 适用v0.9模型",
@@ -52,6 +52,15 @@ LANG_SUPPORTED = {
     "ko": "Korean",
     "ru": "Russian",
     "fr": "French",
+}
+LANG_SUPPORTED_W = {
+    "zh-cn": "简体中文",
+    "zh-tw": "繁體中文",
+    "en": "English",
+    "ja": "日本語",
+    "ko": "한국어",
+    "ru": "русский",
+    "fr": "Français",
 }
 DEBUG_LEVEL = {
     "debug": logging.DEBUG,

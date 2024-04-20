@@ -241,7 +241,6 @@ class CGPT4Translate:
                         if self.streamOutputMode:
                             print(data, end="", flush=True)
                         resp += data
-                    print(data, end="\n")
                 elif self.eng_type == "unoffapi":
                     async for data in self.chatbot.ask_async(prompt_req):
                         if self.streamOutputMode:
@@ -286,7 +285,8 @@ class CGPT4Translate:
                 lang_list, code_list = extract_code_blocks(result_text)
                 if len(lang_list) > 0 and len(code_list) > 0:
                     result_text = code_list[0]
-            result_text = result_text[result_text.find('{"id') :]
+            if '{"id' in result_text:
+                result_text = result_text[result_text.find('{"id') :]
 
             result_text = (
                 result_text.replace(", doub:", ', "doub":')

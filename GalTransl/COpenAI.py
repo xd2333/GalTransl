@@ -123,7 +123,7 @@ class COpenAITokenPool:
                         "messages": [{"role": "user", "content": "Echo OK"}],
                         "temperature": 0.7,
                     },
-                    timeout=10,
+                    timeout=4,
                 )
                 if chatResponse.status_code != 200:
                     # token not available, may token has been revoked
@@ -225,7 +225,7 @@ class COpenAITokenPool:
         while True:
             if rounds > 20:
                 raise RuntimeError(
-                    "COpenAITokenPool::getToken: 可用的OpenAI token耗尽！"
+                    "COpenAITokenPool::getToken: 可用的API key耗尽！"
                 )
             try:
                 available, token = choice(self.tokens)
@@ -237,4 +237,4 @@ class COpenAITokenPool:
                     return token
                 rounds += 1
             except IndexError:
-                raise RuntimeError("没有可用的 OpenAI token！")
+                raise RuntimeError("没有可用的 API key！")

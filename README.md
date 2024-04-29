@@ -151,10 +151,10 @@ backendSpecific:
     defaultEndpoint: https://api.openai.com # 默认 API 端点，一般不修改
 ```   
 &ensp;&ensp;&ensp;&ensp;在这里需要一个openai的api key，以及需要魔法上网来走代理访问openai官方api端点。   
-&ensp;&ensp;&ensp;&ensp;如果没有api key或魔法上网的话，你还可以使用第三方api转发项目：   
-* [GPT-API-free](https://github.com/chatanywhere/GPT_API_free)，这是一个openai api的第三方代理，提供每小时60次请求的**免费API**。   
-* [GPT水龙头](https://faucet.openkey.cloud/)，每24小时可领取一个 $1.00 令牌用于开发测试 AI 产品   
-* 一些收费api转发项目，例如：[openai-sb](https://openai-sb.com/)、[Keya api](https://api.keya.pw/)等，比官方定价便宜。**这不是推广，我也不担保它们的稳定性，建议充多少用多少**   
+&ensp;&ensp;&ensp;&ensp;如果没有api key或魔法上网的话，你还可以使用一些第三方api中转项目，例如：   
+* [GPT-API-free](https://github.com/chatanywhere/GPT_API_free)，免费API中转，提供有请求频率限制的用于测试。   
+* [GPT水龙头](https://faucet.openkey.cloud/)，免费API中转，每24小时可领取一个 $1.00 令牌用于开发测试 AI 产品   
+* 一些收费api转发项目，例如：[Name api](https://29qg.com/register/?aff_code=U7YH)、[happy api](https://ngedlktfticp.cloud.sealos.io/register?aff=QsU0)等等，比官方定价便宜，更多中转可以谷歌，以上只是举例，本项目不担保它们的稳定性及可用性。   
    
 &ensp;&ensp;&ensp;&ensp;但要注意这里获取的key是第三方的key，不能用于官方API端点。如果你使用类似项目的话，做以下额外的修改：   
 ```python

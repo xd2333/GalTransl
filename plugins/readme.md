@@ -2,7 +2,7 @@
 
 ## 插件介绍
 
-插件系统是GalTransl v4在基础功能上又一的微小升级。插件可以分为两种类型：文本插件和文件插件。
+插件系统是GalTransl v4的一项升级。插件可以分为两种类型：文本插件和文件插件。
 - 文本插件可以对文本进行自定义的处理，例如清洁文本、修复文本、修复人名位置等。
 - 文件插件可以使GalTransl支持更多格式的文件，例如字幕文件、文本文件等。
 
@@ -82,9 +82,8 @@ Settings: # 这里存放插件的设置
 - `load_file(self, file_path: str) -> list`: 加载文件，返回一个包含message和name(可空)的dict list。
 - `save_file(self, file_path: str, transl_json: list)`: 保存文件，transl_json为load_file提供的json在翻译message和name后的结果。
 
-* 在load_file中，可以通过两种方式把与message无关的内容带到结果里
+* 在load_file中，可以通过以下方式把与message无关的内容带到结果里
 1. 直接在每个dict里插其他的信息，save_file里会原样将其他内容送回，然后还原成原文件并保存文件（例如file_subtitle_srt插件）
-2. 先把原文件存在self里，然后在load_file里对结果进行替换并保存文件（例如file_i18n_json）
 ## 3. 注意事项
 
 - 所有的插件方法都应该有适当的错误处理。

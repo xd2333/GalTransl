@@ -1,4 +1,5 @@
 import json, re
+from collections import OrderedDict
 from GalTransl import LOGGER
 from GalTransl.GTPlugin import GFilePlugin
 
@@ -28,13 +29,13 @@ class file_plugin(GFilePlugin):
         if type(raw_dict) is not dict:
             raise TypeError("File content is not a dictionary.")
 
-        self.flat_dict = flatten(raw_dict)
+        flat_dict = flatten(raw_dict)
         result_list = []
-        for key, value in self.flat_dict.items():
-            if "🅣" in key:
-                continue
+        for key, value in flat_dict.items():
             if type(value) is str:
-                result_list.append({"key": key, "message": value})
+                result_list.append({"key": key,"value":value, "message": value})
+            else:
+                result_list.append({"key": key,"value":value, "message": ""})
 
         return result_list
 
@@ -47,13 +48,13 @@ class file_plugin(GFilePlugin):
         :return: None.
         """
         i = 0
-        for key, value in self.flat_dict.items():
-            if "🅣" in key:
-                continue
-            if type(value) is str:
-                self.flat_dict[key] = transl_json[i]["message"]
-                i += 1
-        result_dict = unflatten(self.flat_dict)
+        result_dict= {}
+        for item in transl_json:
+            if type(item["value"]) is str:
+                result_dict[item["key"]] = item["message"]
+            else:
+                result_dict[item["key"]] = item["value"]
+        result_dict = unflatten(result_dict)
         with open(file_path, "w", encoding="utf-8") as f:
             json.dump(result_dict, f, ensure_ascii=False, indent=4)
 
@@ -95,7 +96,7 @@ def _object_to_rows(obj, prefix=None):
 def flatten(obj):
     if not isinstance(obj, dict):
         raise TypeError("Expected dict, got {}".format(type(obj)))
-    return dict(_object_to_rows(obj))
+    return OrderedDict(_object_to_rows(obj))
 
 
 _types_re = re.compile(r".*🅣(none|bool|int|float|empty|emptylist)$")

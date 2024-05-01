@@ -25,7 +25,7 @@ PROGRAM_SPLASH2 = r"""
 ALL_BANNERS = [PROGRAM_SPLASH1, PROGRAM_SPLASH2]
 PROGRAM_SPLASH = ALL_BANNERS[localtime().tm_mday % 2]
 
-GALTRANSL_VERSION = "4.2.2 Final"
+GALTRANSL_VERSION = "4.2.3 Final"
 AUTHOR = "cx2333"
 CONTRIBUTORS = "ryank231231, Isotr0py, Noriverwater, pipixia244, gulaodeng, PiDanShouRouZhouXD"
 

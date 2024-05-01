@@ -39,7 +39,8 @@ async def doLLMTranslateSingleFile(
     gpt_dic: CGptDict,
     tlugins: list,
     fPlugins: list,
-    gptapi,
+    proxyPool: CProxyPool,
+    tokenPool: COpenAITokenPool,
 ) -> bool:
     async with semaphore:
         st = time()
@@ -55,6 +56,23 @@ async def doLLMTranslateSingleFile(
         makedirs(output_file_dir, exist_ok=True)
         cache_file_path = joinpath(cache_dir, file_name)
 
+        match eng_type:
+            case "gpt35-0613" | "gpt35-1106" | "gpt35-0125":
+                gptapi = CGPT35Translate(projectConfig, eng_type, proxyPool, tokenPool)
+            case "gpt4" | "gpt4-turbo":
+                gptapi = CGPT4Translate(projectConfig, eng_type, proxyPool, tokenPool)
+            case "newbing":
+                cookiePool: list[str] = []
+                for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
+                    cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
+                gptapi = CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
+            case "sakura-009" | "sakura-010":
+                gptapi = CSakuraTranslate(projectConfig, eng_type, proxyPool)
+            case "rebuildr" | "rebuilda":
+                gptapi = CRebuildTranslate(projectConfig, eng_type)
+            case _:
+                raise ValueError(f"不支持的翻译引擎类型 {eng_type}")
+        
         # 1、初始化trans_list
         origin_input = ""
 
@@ -190,24 +208,9 @@ async def doLLMTranslate(
     gpt_dic = CGptDict(initDictList(gpt_dic_dir, default_dic_dir, project_dir))
 
     workersPerProject = projectConfig.getKey("workersPerProject")
-    match eng_type:
-        case "gpt35-0613" | "gpt35-1106" | "gpt35-0125":
-            gptapi = CGPT35Translate(projectConfig, eng_type, proxyPool, tokenPool)
-        case "gpt4" | "gpt4-turbo":
-            gptapi = CGPT4Translate(projectConfig, eng_type, proxyPool, tokenPool)
-        case "newbing":
-            cookiePool: list[str] = []
-            for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
-                cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
-            gptapi = CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
-        case "sakura-009" | "sakura-010":
-            gptapi = CSakuraTranslate(projectConfig, eng_type, proxyPool)
-            workersPerProject = 1
-        case "rebuildr" | "rebuilda":
-            gptapi = CRebuildTranslate(projectConfig, eng_type)
-        case _:
-            raise ValueError(f"不支持的翻译引擎类型 {eng_type}")
-
+    if "sakura" in eng_type:
+        workersPerProject = 1 
+        LOGGER.warning("当前引擎为sakura，并发被限制为1")
     file_list = get_file_list(projectConfig.getInputPath())
     if not file_list:
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
@@ -223,7 +226,8 @@ async def doLLMTranslate(
             gpt_dic,
             tPlugins,
             fPlugins,
-            gptapi,
+            proxyPool,
+            tokenPool,
         )
         for file_name in file_list
     ]

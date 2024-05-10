@@ -55,7 +55,7 @@ class Chatbot:
         engine: str = os.environ.get("GPT_ENGINE") or "gpt-3.5-turbo",
         proxy: str = None,
         timeout: float = None,
-        max_tokens: int = None,
+        max_tokens: int = 4096,
         temperature: float = 0.5,
         top_p: float = 1.0,
         presence_penalty: float = 0.0,
@@ -73,15 +73,7 @@ class Chatbot:
         self.api_key: str = api_key
         self.api_address: str = api_address
         self.system_prompt: str = system_prompt
-        self.max_tokens: int = max_tokens or (
-            31000
-            if "-32k" in engine
-            else 15000
-            if "-16k" in engine
-            else 7000
-            if "gpt-4" in engine
-            else 4000
-        )
+        self.max_tokens: int = max_tokens
         self.truncate_limit: int = truncate_limit or (
             30500
             if "-32k" in engine
@@ -144,15 +136,8 @@ class Chatbot:
         """
         Get token count
         """
-        if "gpt-3.5" not in self.engine and "gpt-4" not in self.engine and "claude" not in self.engine:
-            raise NotImplementedError(f"Unsupported engine {self.engine}")
 
-        tiktoken.model.MODEL_TO_ENCODING["gpt-4"] = "cl100k_base"
-
-        if "claude" in self.engine:
-            encoding = tiktoken.encoding_for_model("gpt-4")
-        else:
-            encoding = tiktoken.encoding_for_model(self.engine)
+        encoding = tiktoken.get_encoding("cl100k_base")
 
         num_tokens = 0
         for message in self.conversation[convo_id]:

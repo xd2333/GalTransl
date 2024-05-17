@@ -223,20 +223,20 @@ class CGPT35Translate:
                 LOGGER.error(f"-> {str_ex}")
                 if "quota" in str_ex:
                     self.tokenProvider.reportTokenProblem(self.token)
-                    LOGGER.error(f"-> 余额不足： {self.token.maskToken()}")
+                    LOGGER.error(f"-> [请求错误]余额不足： {self.token.maskToken()}")
                     self.token = self.tokenProvider.getToken(True, False)
                     self.chatbot.set_api_key(self.token.token)
                 elif "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.warning("-> 请求受限，1分钟后继续尝试")
+                    LOGGER.warning("-> [请求错误]请求受限，1分钟后继续尝试")
                     await asyncio.sleep(60)
                     continue
                 elif "try reload" in str_ex:
                     self.reset_conversation()
-                    LOGGER.error("-> 报错重置会话")
+                    LOGGER.error("-> [请求错误]报错重置会话")
                     continue
 
                 self._del_last_answer()
-                LOGGER.error(f"-> 报错, 5秒后重试")
+                LOGGER.error(f"-> [请求错误]报错, 5秒后重试")
                 await asyncio.sleep(5)
                 continue
 
@@ -258,11 +258,11 @@ class CGPT35Translate:
             try:
                 result_json = json.loads(result_text)  # 尝试解析json
                 if len(result_json) != len(input_list):  # 输出行数错误
-                    LOGGER.error("-> 错误的输出行数：\n" + result_text + "\n")
+                    LOGGER.error("-> [解析错误]错误的输出行数：\n" + result_text + "\n")
                     error_message = "输出行数错误"
                     error_flag = True
             except:
-                LOGGER.error("-> 非json：\n" + result_text + "\n")
+                LOGGER.error("-> [解析错误]非json：\n" + result_text + "\n")
                 error_message = "输出非json"
                 error_flag = True
 
@@ -301,11 +301,11 @@ class CGPT35Translate:
             #         error_flag = True
 
             if error_flag:
-                LOGGER.error(f"-> 解析结果出错：{error_message}")
+                LOGGER.error(f"-> [解析错误]解析结果出错：{error_message}")
                 # 跳过重试
                 if self.skipRetry:
                     self.reset_conversation()
-                    LOGGER.warning("-> 解析出错但直接跳过本轮翻译")
+                    LOGGER.warning("-> [解析错误]解析出错但直接跳过本轮翻译")
                     i = 0
                     while i < len(content):
                         content[i].pre_zh = "Failed translation"
@@ -335,16 +335,16 @@ class CGPT35Translate:
                 # 单句重试仍错则重置会话
                 if self.retry_count == 3:
                     self.reset_conversation()
-                    LOGGER.warning("-> 单句仍错，重置会话")
+                    LOGGER.warning("-> [解析错误]单句仍错，重置会话")
                 # 单句5次重试则中止
                 if self.retry_count == 5:
                     raise RuntimeError(
-                        f"-> 单句反复出错，已中止。最后错误为：{error_message}"
+                        f"-> [解析错误]单句反复出错，已中止。最后错误为：{error_message}"
                     )
                 continue
 
             if warn_flag:
-                LOGGER.warning(f"-> 解析结果有问题：{error_message}")
+                LOGGER.warning(f"-> [解析错误]解析结果有问题：{error_message}")
                 await asyncio.sleep(1)
 
             for i, result in enumerate(result_json):  # 正常输出

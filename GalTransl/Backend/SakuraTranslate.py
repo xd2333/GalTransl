@@ -154,7 +154,7 @@ class CSakuraTranslate:
                 str_ex = str(ex).lower()
                 traceback.print_exc()
                 self._del_last_answer()
-                LOGGER.info("-> 报错:%s, 即将重试" % ex)
+                LOGGER.info("-> [请求错误]报错:%s, 即将重试" % ex)
                 await asyncio.sleep(3)
                 continue
 

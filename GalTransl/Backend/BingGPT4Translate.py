@@ -190,7 +190,7 @@ class CBingGPT4Translate:
                 print(ex)
                 traceback.print_exc()
                 if "Request is throttled." in str(ex):
-                    LOGGER.info("->Request is throttled.")
+                    LOGGER.info("-> [请求错误]Request is throttled.")
                     self.throttled_cookie_list.append(self.current_cookie_file)
                     self.cookiefile_list.remove(self.current_cookie_file)
                     self.init_chatbot()
@@ -200,21 +200,21 @@ class CBingGPT4Translate:
                     await self.chatbot.reset()
                     continue
                 elif "CAPTCHA" in str(ex):
-                    LOGGER.warning("-> 验证码拦截，需要去网页Newbing随便问一句，点击验证码，然后重新复制cookie")
+                    LOGGER.warning("-> [请求错误]验证码拦截，需要去网页Newbing随便问一句，点击验证码，然后重新复制cookie")
                 LOGGER.info("Error:%s, Please wait 30 seconds" % ex)
                 traceback.print_exc()
                 await asyncio.sleep(5)
                 continue
 
             if "New topic" in str(resp):
-                LOGGER.info("->Need New topic")
+                LOGGER.info("-> [请求错误]Need New topic")
                 await self.chatbot.reset()
                 continue
             
             try:
                 result_text = resp["item"]["messages"][-1]["text"]
             except:
-                LOGGER.error("-> 没有获取到有效结果，重置会话")
+                LOGGER.error("-> [请求错误]没有获取到有效结果，重置会话")
                 await self.chatbot.reset()
                 continue
 

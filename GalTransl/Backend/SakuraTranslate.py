@@ -13,6 +13,8 @@ from GalTransl.Backend.Prompts import (
     Sakura_SYSTEM_PROMPT,
     Sakura_TRANS_PROMPT010,
     Sakura_SYSTEM_PROMPT010,
+    GalTransl_SYSTEM_PROMPT,
+    GalTransl_TRANS_PROMPT
 )
 
 
@@ -58,48 +60,33 @@ class CSakuraTranslate:
         pass
 
     def init_chatbot(self, eng_type, config: CProjectConfig):
+        from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
+        endpoint = config.getBackendConfigSection("SakuraLLM").get("endpoint")
+        endpoint = endpoint[:-1] if endpoint.endswith("/") else endpoint
+        eng_name = config.getBackendConfigSection("SakuraLLM").get("rewriteModelName", "gpt-3.5-turbo")
         if eng_type == "sakura-009":
-            from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
-
-            endpoint = config.getBackendConfigSection("Sakura").get("endpoint")
-            if endpoint.endswith("/"):
-                endpoint = endpoint[:-1]
-
-            self.chatbot = ChatbotV3(
-                api_key="sk-114514",
-                system_prompt=Sakura_SYSTEM_PROMPT,
-                engine="gpt-3.5-turbo",
-                api_address=endpoint + "/v1/chat/completions",
-                timeout=60,
-            )
-            self.chatbot.update_proxy(
-                self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
-            )
+            self.system_prompt = Sakura_SYSTEM_PROMPT
             self.trans_prompt = Sakura_TRANS_PROMPT
-            self.transl_style = "auto"
-            self._current_style = "precies"
-            self._set_gpt_style("precise")
         if eng_type == "sakura-010":
-            from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
-
-            endpoint = config.getBackendConfigSection("Sakura").get("endpoint")
-            if endpoint.endswith("/"):
-                endpoint = endpoint[:-1]
-
-            self.chatbot = ChatbotV3(
+            self.system_prompt = Sakura_SYSTEM_PROMPT010
+            self.trans_prompt = Sakura_TRANS_PROMPT010
+        if eng_type == "galtransl-v1":
+            self.system_prompt = GalTransl_SYSTEM_PROMPT
+            self.trans_prompt = GalTransl_TRANS_PROMPT
+            
+        self.chatbot = ChatbotV3(
                 api_key="sk-114514",
-                system_prompt=Sakura_SYSTEM_PROMPT010,
-                engine="gpt-3.5-turbo",
+                system_prompt=self.system_prompt,
+                engine=eng_name,
                 api_address=endpoint + "/v1/chat/completions",
                 timeout=60,
-            )
-            self.chatbot.update_proxy(
-                self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
-            )
-            self.trans_prompt = Sakura_TRANS_PROMPT010
-            self.transl_style = "auto"
-            self._current_style = "precies"
-            self._set_gpt_style("precise")
+        )
+        self.chatbot.update_proxy(
+            self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
+        )
+        self.transl_style = "auto"
+        self._current_style = "precies"
+        self._set_gpt_style("precise")
 
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
@@ -125,7 +112,7 @@ class CSakuraTranslate:
 
         while True:  # 一直循环，直到得到数据
             try:
-                LOGGER.info("->输入：\n" + prompt_req + "\n")
+                LOGGER.info("->输入：\n" + gptdict + "\n"+input_str)
                 resp = ""
                 last_data = ""
                 repetition_cnt = 0
@@ -157,7 +144,8 @@ class CSakuraTranslate:
                 LOGGER.info("-> [请求错误]报错:%s, 即将重试" % ex)
                 await asyncio.sleep(3)
                 continue
-
+            
+            resp = resp.replace("*EOF*", "").strip()
             result_list = resp.strip("\n").split("\n")
             # fix trick
             if result_list[0] == "——":
@@ -336,7 +324,7 @@ class CSakuraTranslate:
         for message in self.chatbot.conversation["default"]:
             if message["role"] == "user":
                 last_user_message = message
-                last_user_message["content"] = "(历史翻译请求)"
+                last_user_message["content"] = ""
         system_message = self.chatbot.conversation["default"][0]
         self.chatbot.conversation["default"] = [system_message]
         if last_user_message:
@@ -364,10 +352,10 @@ class CSakuraTranslate:
             LOGGER.info(f"-> 使用{style_name}参数预设")
 
         if style_name == "precise":
-            temperature, top_p = 0.1, 0.3
-            frequency_penalty, presence_penalty = 0.0, 0.0
+            temperature, top_p = 0.1, 0.8
+            frequency_penalty, presence_penalty = 0.1, 0.0
         elif style_name == "normal":
-            temperature, top_p = 0.4, 0.9
+            temperature, top_p = 0.4, 0.95
             frequency_penalty, presence_penalty = 0.3, 0.0
 
         self.chatbot.temperature = temperature

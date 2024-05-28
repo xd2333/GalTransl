@@ -1,5 +1,7 @@
 import logging
 from time import localtime
+import threading
+from GalTransl.Utils import check_for_tool_updates
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
@@ -94,3 +96,9 @@ DEBUG_LEVEL = {
     "warning": logging.WARNING,
     "error": logging.ERROR,
 }
+
+new_version = []
+update_thread = threading.Thread(
+    target=check_for_tool_updates, args=(new_version,)
+)
+update_thread.start()

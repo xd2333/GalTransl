@@ -6,6 +6,7 @@ import codecs
 from typing import Tuple, List
 from collections import Counter
 from re import compile
+import requests
 
 PATTERN_CODE_BLOCK = compile(r"```([\w]*)\n([\s\S]*?)\n```")
 
@@ -110,3 +111,18 @@ def fix_quotes(text):
                 new_match = new_match.replace('"', "”", 1).replace(r'\”', "”", 1)
         text = text.replace(match, new_match)
     return text
+
+
+def check_for_tool_updates(new_version):
+    try:
+        release_api = 'https://api.github.com/repos/xd2333/GalTransl/releases/latest'
+        response = requests.get(
+            release_api, timeout=5).json()
+        latest_release = response['tag_name']
+        new_version.append(latest_release)
+    except Exception:
+        pass
+
+
+if __name__ == '__main__':
+    check_for_tool_updates("4.2.1")

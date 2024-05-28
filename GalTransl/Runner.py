@@ -2,12 +2,13 @@ import os, time
 from os.path import exists as isPathExists
 from os import makedirs as mkdir
 import logging, colorlog
-from GalTransl import LOGGER, TRANSLATOR_SUPPORTED
+from GalTransl import LOGGER, TRANSLATOR_SUPPORTED,new_version,GALTRANSL_VERSION
 from GalTransl.GTPlugin import GTextPlugin, GFilePlugin
 from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl.yapsy.PluginManager import PluginManager
 from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.Frontend.GPT import doLLMTranslate
+
 
 CONSOLE_FORMAT = colorlog.ColoredFormatter(
     "[%(asctime)s]%(log_color)s[%(levelname)s]%(reset)s%(message)s",
@@ -147,6 +148,12 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         )
     else:
         OpenAITokenPool = None
+    
+    # 检查更新
+    if new_version and new_version[0]!=GALTRANSL_VERSION:
+        LOGGER.info(f"\033[32m检测到新版本: {new_version[0]}\033[0m  当前版本: {GALTRANSL_VERSION}")
+        LOGGER.info(f"\033[32m更新地址：https://github.com/xd2333/GalTransl/releases\033[0m")
+
 
     await doLLMTranslate(
         cfg, OpenAITokenPool, proxyPool, text_plugins, file_plugins, translator

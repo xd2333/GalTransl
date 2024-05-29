@@ -50,7 +50,7 @@ def initGPTToken(config: CProjectConfig, eng_type: str) -> Optional[list[COpenAI
     if val := config.getKey("gpt.degradeBackend"):
         degradeBackend = val
 
-    defaultEndpoint = config.getBackendConfigSection("GPT35")["defaultEndpoint"]
+    defaultEndpoint = "https://api.openai.com"
     gpt35_tokens = config.getBackendConfigSection("GPT35").get("tokens")
     if "gpt35" in eng_type and gpt35_tokens:
         for tokenEntry in gpt35_tokens:

@@ -61,6 +61,7 @@ class CSakuraTranslate:
 
     def init_chatbot(self, eng_type, config: CProjectConfig):
         from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
+        section_name = "SakuraLLM" if "SakuraLLM" in config.keyValues else "Sakura"
         endpoint = config.getBackendConfigSection("SakuraLLM").get("endpoint")
         endpoint = endpoint[:-1] if endpoint.endswith("/") else endpoint
         eng_name = config.getBackendConfigSection("SakuraLLM").get("rewriteModelName", "gpt-3.5-turbo")

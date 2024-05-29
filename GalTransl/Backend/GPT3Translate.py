@@ -99,7 +99,7 @@ class CGPT35Translate:
             self.proxyProvider = proxy_pool
         else:
             self.proxyProvider = None
-            LOGGER.warning("不使用代理")
+            
 
         # 翻译风格
         if val := config.getKey("gpt.translStyle"):
@@ -404,12 +404,6 @@ class CGPT35Translate:
         if self._current_style == style_name:
             return
         self._current_style = style_name
-
-        LOGGER.info(
-            f"-> 自动切换至{style_name}参数预设"
-            if self.transl_style == "auto"
-            else f"-> 使用{style_name}参数预设"
-        )
 
         if style_name == "precise":
             temperature, top_p = 1.0, 0.4

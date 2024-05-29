@@ -50,7 +50,7 @@ class CSakuraTranslate:
             self.proxyProvider = proxy_pool
         else:
             self.proxyProvider = None
-            LOGGER.warning("不使用代理")
+            
 
         # 现在只有简体
         self.opencc = OpenCC("t2s.json")
@@ -346,10 +346,6 @@ class CSakuraTranslate:
         if self._current_style == style_name:
             return
         self._current_style = style_name
-        if self.transl_style == "auto":
-            LOGGER.info(f"-> 自动切换至{style_name}参数预设")
-        else:
-            LOGGER.info(f"-> 使用{style_name}参数预设")
 
         if style_name == "precise":
             temperature, top_p = 0.1, 0.8

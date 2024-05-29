@@ -106,7 +106,7 @@ class CGPT4Translate:
             self.proxyProvider = proxy_pool
         else:
             self.proxyProvider = None
-            LOGGER.warning("不使用代理")
+            
         # 翻译风格
         if val := config.getKey("gpt.translStyle"):
             self.transl_style = val
@@ -540,10 +540,6 @@ class CGPT4Translate:
         if self._current_style == style_name:
             return
         self._current_style = style_name
-        if self.transl_style == "auto":
-            LOGGER.info(f"-> 自动切换至{style_name}参数预设")
-        else:
-            LOGGER.info(f"-> 使用{style_name}参数预设")
         # normal default
         temperature, top_p = 1.0, 1.0
         frequency_penalty, presence_penalty = 0.3, 0.0

@@ -56,7 +56,7 @@ class CBingGPT4Translate:
             self.proxyProvider = proxyPool
         else:
             self.proxyProvider = None
-            LOGGER.warning("不使用代理")
+            
         if val := config.getKey("gpt.forceNewBingHs"):
             self.force_NewBing_hs_mode = val
         else:

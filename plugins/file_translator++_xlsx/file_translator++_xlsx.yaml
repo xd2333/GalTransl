@@ -1,0 +1,13 @@
+Core:
+  Name: Translator++ xlsx文件
+  Type: file
+  Module: file_translator++_xlsx
+
+Documentation:
+  Author: PiDanShouRouZhou
+  Version: 1.0
+  Description: Translator++ 导出的 xlsx 文件，将会写入到 Machine translation 栏目中。
+
+Settings: # 这里存放插件的设置
+  是否自动识别名称: True 
+  名称识别正则表达式: ^(?P<name>.*?)「(?P<message>.*?)」$ # 用于识别名称的正则表达式，两个part分别标识name和message

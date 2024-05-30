@@ -9,3 +9,4 @@ tenacity
 tiktoken
 tqdm
 colorlog
+openpyxl

@@ -60,7 +60,11 @@ class CSakuraTranslate:
             self.transl_style = val
         else:
             self.transl_style = "流畅"
-
+        # transl_dropout
+        if val := config.getKey("gpt.transl_dropout"):
+            self.transl_dropout = val
+        else:
+            self.transl_dropout = 0
         # 现在只有简体
         self.opencc = OpenCC("t2s.json")
 
@@ -315,6 +319,11 @@ class CSakuraTranslate:
             )
             num, trans_result = await self.translate(trans_list_split, dic_prompt)
 
+            if self.transl_dropout>0 and num==num_pre_request:
+                if self.transl_dropout<num:
+                    num-=self.transl_dropout
+                    trans_result=trans_result[:num]
+
             i += num if num > 0 else 0
             transl_step_count+=1
             if transl_step_count>=self.save_steps:
@@ -345,6 +354,12 @@ class CSakuraTranslate:
         if last_user_message:
             self.chatbot.conversation["default"].append(last_user_message)
         if last_assistant_message:
+            last_assistant_message["content"] = last_assistant_message["content"].replace("*EOF*", "").strip()
+            if self.transl_dropout>0:
+                sp=last_assistant_message["content"].split("\n")
+                if len(sp)>self.transl_dropout:
+                    sp=sp[:0-self.transl_dropout]
+                    last_assistant_message["content"]="\n".join(sp)
             self.chatbot.conversation["default"].append(last_assistant_message)
 
     def _del_last_answer(self):

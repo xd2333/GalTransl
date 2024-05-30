@@ -53,6 +53,11 @@ class CGPT4Translate:
         self.last_file_name = ""
         self.restore_context_mode = config.getKey("gpt.restoreContextMode")
         self.retry_count = 0
+        # 保存间隔
+        if val := config.getKey("save_steps"):
+            self.save_steps = val
+        else:
+            self.save_steps = 1
         # 记录确信度
         if val := config.getKey("gpt.recordConfidence"):
             self.record_confidence = val
@@ -469,6 +474,7 @@ class CGPT4Translate:
 
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
+        transl_step_count=0
         while i < len_trans_list:
             await asyncio.sleep(1)
             trans_list_split = (
@@ -490,7 +496,10 @@ class CGPT4Translate:
                 result_output = result_output + repr(trans)
             LOGGER.info(result_output)
             trans_result_list += trans_result
-            save_transCache_to_json(trans_list, cache_file_path)
+            transl_step_count+=1
+            if transl_step_count>=self.save_steps:
+                save_transCache_to_json(trans_list, cache_file_path)
+                transl_step_count=0
             LOGGER.info(
                 f"{filename}: {str(len(trans_result_list))}/{str(len_trans_list)}"
             )

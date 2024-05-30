@@ -41,6 +41,11 @@ class CGPT35Translate:
         self.eng_type = eng_type
         self.last_file_name = ""
         self.retry_count = 0
+        # 保存间隔
+        if val := config.getKey("save_steps"):
+            self.save_steps = val
+        else:
+            self.save_steps = 1
         # 语言设置
         if val := config.getKey("language"):
             sp = val.split("2")
@@ -502,6 +507,7 @@ class CGPT35Translate:
         i = 0
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
+        transl_step_count = 0
         while i < len_trans_list:
             await asyncio.sleep(1)
             trans_list_split = trans_list_unhit[i : i + num_pre_req]
@@ -513,7 +519,10 @@ class CGPT35Translate:
             trans_result_list += trans_result
             i += num if num > 0 else 0
 
-            save_transCache_to_json(trans_list, cache_path)
+            transl_step_count+=1
+            if transl_step_count>=self.save_steps:
+                save_transCache_to_json(trans_list, cache_path)
+                transl_step_count=0
             LOGGER.info("".join([repr(tran) for tran in trans_result]))
             LOGGER.info(f"{filename}: {len(trans_result_list)}/{len_trans_list}")
 

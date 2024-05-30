@@ -31,6 +31,11 @@ class CSakuraTranslate:
         self.restore_context_mode = config.getKey("gpt.restoreContextMode")
         self.retry_count = 0
 
+        # 保存间隔
+        if val := config.getKey("save_steps"):
+            self.save_steps = val
+        else:
+            self.save_steps = 1
         # 跳过重试
         if val := config.getKey("skipRetry"):
             self.skipRetry = val
@@ -50,7 +55,11 @@ class CSakuraTranslate:
             self.proxyProvider = proxy_pool
         else:
             self.proxyProvider = None
-            
+        # transl_style
+        if val := config.getKey("gpt.transl_style"):
+            self.transl_style = val
+        else:
+            self.transl_style = "流畅"
 
         # 现在只有简体
         self.opencc = OpenCC("t2s.json")
@@ -108,6 +117,7 @@ class CSakuraTranslate:
         prompt_req = self.trans_prompt
         prompt_req = prompt_req.replace("[Input]", input_str)
         prompt_req = prompt_req.replace("[Glossary]", gptdict)
+        prompt_req = prompt_req.replace("[tran_style]", self.transl_style)
 
         once_flag = False
 
@@ -293,6 +303,7 @@ class CSakuraTranslate:
 
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
+        transl_step_count=0
         while i < len_trans_list:
             await asyncio.sleep(1)
 
@@ -305,9 +316,12 @@ class CSakuraTranslate:
             num, trans_result = await self.translate(trans_list_split, dic_prompt)
 
             i += num if num > 0 else 0
+            transl_step_count+=1
+            if transl_step_count>=self.save_steps:
+                save_transCache_to_json(trans_list, cache_file_path)
+                transl_step_count=0
             LOGGER.info("".join([repr(tran) for tran in trans_result]))
             trans_result_list += trans_result
-            save_transCache_to_json(trans_list, cache_file_path)
             LOGGER.info(f"{filename}: {len(trans_result_list)}/{len_trans_list}")
 
         return trans_result_list

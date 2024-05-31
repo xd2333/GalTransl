@@ -117,6 +117,11 @@ class file_plugin(GFilePlugin):
             workbook = openpyxl.load_workbook(file_path)
             sheet = workbook.active
 
+            # 判断文件是否是空的
+            if sheet.max_row < 2:
+                LOGGER.warning(f"File {file_path} is empty.")
+                return json_list
+
             # 获取第一列的所有内容
             first_column_values = [cell.value for cell in sheet['A']]
 

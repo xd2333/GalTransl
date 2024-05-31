@@ -17,6 +17,9 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, post_save=F
         cache_file_path (str): 要保存到的 JSON 文件的路径。
         post_save (bool, optional): 是否是翻译结束后的存储。默认为 False。
     """
+    if not cache_file_path.endswith(".json"):
+        cache_file_path += ".json"
+
     cache_json = []
 
     for tran in trans_list:
@@ -76,6 +79,8 @@ def get_transCache_from_json(
     Returns:
         Tuple[List[CTrans], List[CTrans]]: 包含两个列表的元组：击中缓存的翻译列表和未击中缓存的翻译列表。
     """
+    if not cache_file_path.endswith(".json"):
+        cache_file_path += ".json"
 
     trans_list_hit = []
     trans_list_unhit = []

@@ -67,7 +67,6 @@ def initGPTToken(config: CProjectConfig, eng_type: str) -> Optional[list[COpenAI
         if not degradeBackend:
             return result
 
-    defaultEndpoint = config.getBackendConfigSection("GPT4")["defaultEndpoint"]
     if gpt4_tokens := config.getBackendConfigSection("GPT4").get("tokens"):
         for tokenEntry in gpt4_tokens:
             token = tokenEntry["token"]

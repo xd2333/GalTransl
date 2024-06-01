@@ -7,34 +7,31 @@ import re
 class file_plugin(GFilePlugin):
     def gtp_init(self, plugin_conf: dict, project_conf: dict):
         """
-        This method is called when the plugin is loaded.在插件加载时被调用。
-        :param plugin_conf: The settings for the plugin.插件yaml中所有设置的dict。
-        :param project_conf: The settings for the project.项目yaml中common下设置的dict。
+        This method is called when the plugin is loaded. 在插件加载时被调用。
+        :param plugin_conf: The settings for the plugin. 插件yaml中所有设置的dict。
+        :param project_conf: The settings for the project. 项目yaml中common下设置的dict。
         """
         # 打印提示的方法，打印时请带上模块名，以便区分日志。
         self.pname = plugin_conf["Core"].get("Name", "")
         settings = plugin_conf["Settings"]
         LOGGER.debug(
-            f"[{self.pname}] 当前配置：是否自动识别名称:{settings.get('是否自动识别名称', False)}")
+            f"[{self.pname}] 当前配置：是否自动识别名称:{settings.get('是否自动识别名称', True)}")
         # 读取配置文件中的设置，并保存到变量中。
         self.是否自动识别名称 = settings.get("是否自动识别名称", True)
-        self.名称识别正则表达式 = settings.get(
-            "名称识别正则表达式", r"^(?P<name>.*?)「(?P<message>.*?)」$")
+        self.名称识别正则表达式 = re.compile(
+            settings.get("名称识别正则表达式", r"^(?P<name>.*?)「(?P<message>.*?)」$"), re.DOTALL)
 
     def load_file(self, file_path: str) -> list:
         """
         This method is called to load a file.
         加载文件时被调用。
-        :param file_path: The path of the file to load.文件路径。
-        :return: A list of objects with message and name(optional).返回一个包含message和name(可空)的对象列表。
+        :param file_path: The path of the file to load. 文件路径。
+        :return: A list of objects with message and name(optional). 返回一个包含message和name(可空)的对象列表。
         """
         if not file_path.endswith(".xlsx"):
             # 检查不支持的文件类型并抛出TypeError
             raise TypeError("File type not supported.")
-
-        json_list = self.read_xlsx_to_json(file_path)
-
-        return json_list
+        return self.read_xlsx_to_json(file_path)
 
     def save_file(self, file_path: str, transl_json: list):
         """
@@ -51,12 +48,7 @@ class file_plugin(GFilePlugin):
         original_file_path_01 = file_path.replace("gt_output", "gt_input")
         original_file_path_02 = file_path.replace("gt_output", "json_input")
         # 读取原文件
-        if original_file_path_01:
-            original_file_path = original_file_path_01
-        elif original_file_path_02:
-            original_file_path = original_file_path_02
-        else:
-            original_file_path = ""
+        original_file_path = original_file_path_01 or original_file_path_02
 
         try:
             # 读取原文件的Original Text
@@ -79,17 +71,14 @@ class file_plugin(GFilePlugin):
 
             # 重组翻译结果
             for i, transl_obj in enumerate(transl_json):
-                if self.是否自动识别名称 and transl_obj["name"] is not None and transl_obj["name"]!= "":
+                if self.是否自动识别名称 and transl_obj["name"] is not None and transl_obj["name"] != "":
                     translated_text = f"{transl_obj['name']}\n「{transl_obj['message']}」"
                 else:
                     translated_text = transl_obj["message"]
 
                 # 写入 Original Text 栏
-                if i < len(original_texts):
-                    sheet.cell(row=i+2, column=1, value=original_texts[i])
-                else:
-                    sheet.cell(row=i+2, column=1, value=translated_text)
-
+                sheet.cell(
+                    row=i+2, column=1, value=original_texts[i] if i < len(original_texts) else translated_text)
                 # 写入 Machine translation 栏
                 sheet.cell(row=i+2, column=3, value=translated_text)
 
@@ -114,7 +103,7 @@ class file_plugin(GFilePlugin):
         json_list = []
 
         try:
-            workbook = openpyxl.load_workbook(file_path)
+            workbook = openpyxl.load_workbook(file_path, read_only=True)
             sheet = workbook.active
 
             # 判断文件是否是空的
@@ -123,26 +112,30 @@ class file_plugin(GFilePlugin):
                 return json_list
 
             # 获取第一列的所有内容
-            first_column_values = [cell.value for cell in sheet['A']]
+            first_column_values = [row[0].value for row in sheet.iter_rows(
+                min_col=1, max_col=1, min_row=1)]
 
             # 检查并跳过标题行
             if first_column_values and first_column_values[0] == "Original Text":
                 first_column_values = first_column_values[1:]
 
             for row in first_column_values:
+<<<<<<< Updated upstream
                 # 转换为字符串
                 row = str(row)
 
+=======
+>>>>>>> Stashed changes
                 # 跳过空行
                 if row is None or row == "":
                     json_list.append({"name": "", "message": ""})
                     continue
 
-                name = ""
-                message = row.strip()
+                row = str(row).strip()
+                name, message = "", row
 
                 if self.是否自动识别名称:
-                    match = re.search(self.名称识别正则表达式, row, re.DOTALL)
+                    match = self.名称识别正则表达式.search(row)
                     if match:
                         name = match.group("name").strip()
                         message = match.group("message").strip()

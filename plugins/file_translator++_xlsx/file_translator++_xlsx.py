@@ -130,7 +130,11 @@ class file_plugin(GFilePlugin):
                 first_column_values = first_column_values[1:]
 
             for row in first_column_values:
-                if row is None:
+                # 转换为字符串
+                row = str(row)
+
+                # 跳过空行
+                if row is None or row == "":
                     json_list.append({"name": "", "message": ""})
                     continue
 

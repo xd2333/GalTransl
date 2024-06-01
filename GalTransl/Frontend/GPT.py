@@ -220,7 +220,7 @@ async def doLLMTranslate(
     gpt_dic = CGptDict(initDictList(gpt_dic_dir, default_dic_dir, project_dir))
 
     workersPerProject = projectConfig.getKey("workersPerProject")
-    if "sakura" in eng_type:
+    if "sakura" in eng_type or "galtransl" in eng_type:
         endpoint_queue = Queue()
         endpoints = projectConfig.getBackendConfigSection("SakuraLLM")["endpoints"]
         repeated = (workersPerProject+ len(endpoints) -1) // len(endpoints)

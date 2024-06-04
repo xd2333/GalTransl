@@ -1,0 +1,23 @@
+QGroupBox {
+        border: 1px solid #222222;
+        border-radius: 8px;
+        margin-top: 7px;  /* <- Adds space for title to exist above border */
+        background: transparent;
+        }
+
+QGroupBox::title {  
+            subcontrol-origin: margin;  /* <- Explicitly define or will be set to padding */
+            subcontrol-position: top center;  
+            margin-left: 3px;
+            margin-right: 3px;
+            background-color: #272727;
+            color: white;
+            left: 5px;}
+
+QLabel {
+        color: #dadada;
+        }
+
+CheckBox {
+        color: #dadada;
+        }

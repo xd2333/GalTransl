@@ -1,0 +1,73 @@
+common:
+  saveLog: false
+  workersPerProject: 1
+  language: ja2zh-cn
+  save_steps: 1
+  linebreakSymbol: \r\n
+  skipH: false
+  skipRetry: false
+  retranslFail: false
+  retranslKey: ''
+  gpt.numPerRequestTranslate: 8
+  gpt.streamOutputMode: true
+  gpt.enableProofRead: false
+  gpt.numPerRequestProofRead: 7
+  gpt.restoreContextMode: true
+  gpt.transl_dropout: 0
+  gpt.transl_style: 流畅
+plugin:
+  filePlugin: file_galtransl_json
+  textPlugins:
+  - text_common_normalfix
+  - (project_dir)text_common_example
+proxy:
+  enableProxy: false
+  proxies:
+  - address: http://127.0.0.1:7890
+dictionary:
+  defaultDictFolder: Dict
+  usePreDictInName: false
+  usePostDictInName: false
+  preDict:
+  - 01H字典_矫正_译前.txt
+  - 00通用字典_译前.txt
+  - (project_dir)项目字典_译前.txt
+  gpt.dict:
+  - GPT字典.txt
+  - (project_dir)项目GPT字典.txt
+  postDict:
+  - 00通用字典_符号_译后.txt
+  - 00通用字典_译后.txt
+  - (project_dir)项目字典_译后.txt
+backendSpecific:
+  GPT35:
+    tokens:
+    - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      endpoint: https://api.openai.com
+    - token: sk-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+      endpoint: https://api.openai.com
+    rewriteModelName: ''
+  GPT4:
+    tokens:
+    - token: sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      endpoint: https://api.openai.com
+    rewriteModelName: ''
+  bingGPT4:
+    cookiePath:
+    - newbing_cookies/cookie1.json
+    - newbing_cookies/cookie2.json
+  SakuraLLM:
+    endpoint: http://127.0.0.1:8080
+    rewriteModelName: ''
+problemAnalyze:
+  problemList:
+  - 词频过高
+  - 标点错漏
+  - 残留日文
+  - 丢失换行
+  - 多加换行
+  - 比日文长
+  - 字典使用
+  arinashiDict:
+    aaa: bbb
+    ccc: ddd

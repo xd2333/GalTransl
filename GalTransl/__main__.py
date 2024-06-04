@@ -1,4 +1,4 @@
-import argparse, traceback
+import argparse, traceback, logging
 from asyncio import get_event_loop, run, new_event_loop, set_event_loop
 from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.Runner import run_galtransl
@@ -70,6 +70,52 @@ def main() -> int:
     print(f"Contributors: {CONTRIBUTORS}")
 
     return worker(args.project_dir, "config.yaml", args.translator)
+
+# 自定义LoggingHandler用于发送日志信号
+class LoggingHandler(logging.Handler):
+    def __init__(self, signal):
+        super().__init__(level=logging.INFO)
+        self.signal = signal
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.signal.emit(log_entry)
+
+def worker_with_progress(project_dir: str, config_file_name: str, translator: str, show_banner=True, progress_signal=None):
+    if show_banner:
+        print(PROGRAM_SPLASH)
+        print(f"GalTransl Core version: {GALTRANSL_VERSION}")
+        print(f"Author: {AUTHOR}")
+        print(f"Contributors: {CONTRIBUTORS}")
+
+    cfg = CProjectConfig(project_dir, config_file_name)
+    try:
+        loop = get_event_loop()
+    except RuntimeError:
+        loop = new_event_loop()
+        set_event_loop(loop)
+
+    handler = LoggingHandler(progress_signal)
+    handler.setFormatter(logging.Formatter('[%(asctime)s][%(levelname)s] %(message)s', datefmt='%m-%d %H:%M:%S'))
+    LOGGER.addHandler(handler)
+
+    try:
+        run(run_galtransl(cfg, translator))
+    except KeyboardInterrupt:
+        LOGGER.info("正在等待现有请求返回...")
+        loop.stop()
+        LOGGER.info("Goodbye.")
+    except RuntimeError as ex:
+        LOGGER.error("程序遇到问题，即将退出（诊断信息：%s）", ex)
+        raise ex
+    except BaseException as ex:
+        print(ex)
+        traceback.print_exception(type(ex), ex, ex.__traceback__)
+    finally:
+        handler.flush()
+        LOGGER.removeHandler(handler)
+        loop.close()
+        return True
 
 
 if __name__ == "__main__":

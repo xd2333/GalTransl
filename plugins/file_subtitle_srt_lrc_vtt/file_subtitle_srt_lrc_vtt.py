@@ -1,6 +1,14 @@
-import json, re
+import os
+import sys
+import json
+import re
 from GalTransl import LOGGER
 from GalTransl.GTPlugin import GFilePlugin
+
+
+webvtt_path = os.path.abspath("plugins/file_subtitle_vtt/webvtt")
+sys.path.append(webvtt_path)
+import webvtt
 
 
 class file_plugin(GFilePlugin):
@@ -25,9 +33,9 @@ class file_plugin(GFilePlugin):
         :param file_path: The path of the file to load.
         :return: A list of CSentense objects.
         """
-        if not any(file_path.endswith(ext) for ext in [".srt", ".lrc"]):
+        if not any(file_path.endswith(ext) for ext in [".srt", ".lrc", ".vtt"]):
             raise TypeError("File type not supported.")
-        
+
         with open(file_path, "r", encoding="utf-8") as file:
             text = file.read()
 
@@ -35,21 +43,42 @@ class file_plugin(GFilePlugin):
             try:
                 matches = self.srt_pattern.findall(text)
                 result = [
-                    {"index": int(m[0]), "timestamp": m[1], "message": m[2].strip(),"org_message": m[2].strip()}
+                    {
+                        "index": int(m[0]),
+                        "timestamp": m[1],
+                        "message": m[2].strip(),
+                        "org_message": m[2].strip(),
+                    }
                     for m in matches
                 ]
             except Exception as e:
                 raise e
-        if file_path.endswith(".lrc"):
+        elif file_path.endswith(".lrc"):
             try:
                 matches = self.pattern.findall(text)
                 LOGGER.debug(f"matches: {matches}")
                 result = [
-                    {"timestamp": m[0], "message": m[1].strip(), "org_message": m[1].strip()}
+                    {
+                        "timestamp": m[0],
+                        "message": m[1].strip(),
+                        "org_message": m[1].strip(),
+                    }
                     for m in matches
                 ]
             except Exception as e:
                 raise e
+        elif file_path.endswith(".vtt"):
+            vtt = webvtt.read(file_path)
+            result = []
+            for caption in vtt:
+                result.append(
+                    {
+                        # "index": caption.index,
+                        "timestamp": f"{caption.start} --> {caption.end}",
+                        "message": caption.text,
+                        "org_message": caption.text,
+                    }
+                )
 
         return result
 
@@ -66,22 +95,39 @@ class file_plugin(GFilePlugin):
         if file_path.endswith(".srt"):
             for item in transl_json:
                 if not self.保存双语字幕:
-                    result += f"{item['index']}\n{item['timestamp']}\n{item['message']}\n\n"
+                    result += (
+                        f"{item['index']}\n{item['timestamp']}\n{item['message']}\n\n"
+                    )
                 else:
                     if self.上下双语1左右双语2 == 2:
                         result += f"{item['index']}\n{item['timestamp']}\n{item['message']} {item['org_message']}\n\n"
                     elif self.上下双语1左右双语2 == 1:
                         result += f"{item['index']}\n{item['timestamp']}\n{item['message']}\n{item['org_message']}\n\n"
-                        
-        if file_path.endswith(".lrc"):
+        elif file_path.endswith(".lrc"):
             for item in transl_json:
                 if not self.保存双语字幕:
                     result += f"[{item['timestamp']}]{item['message']}\n"
                 else:
                     result += f"[{item['timestamp']}]{item['message']} {item['org_message']}\n"
+        elif file_path.endswith(".vtt"):
+            vtt = webvtt.WebVTT()
+            for item in transl_json:
+                caption = webvtt.Caption(
+                    item["timestamp"].split(" --> ")[0],
+                    item["timestamp"].split(" --> ")[1],
+                    item["message"],
+                )
+                if self.保存双语字幕:
+                    if self.上下双语1左右双语2 == 2:
+                        caption.text = f"{item['message']} {item['org_message']}"
+                    elif self.上下双语1左右双语2 == 1:
+                        caption.text = f"{item['message']}\n{item['org_message']}"
+                vtt.captions.append(caption)
+            vtt.save(file_path)
 
-        with open(file_path, "w", encoding="utf-8") as file:
-            file.write(result.strip())
+        if file_path.endswith(".srt") or file_path.endswith(".lrc"):
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.write(result.strip())
 
     def gtp_final(self):
         """

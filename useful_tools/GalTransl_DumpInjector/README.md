@@ -1,1 +1,1 @@
-# 沉迷塞尔达还没时间写
+https://github.com/xd2333/GalTransl_DumpInjector

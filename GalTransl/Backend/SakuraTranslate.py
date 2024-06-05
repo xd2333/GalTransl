@@ -24,9 +24,11 @@ class CSakuraTranslate:
         self,
         config: CProjectConfig,
         eng_type: str,
+        endpoint: str,
         proxy_pool: Optional[CProxyPool],
     ):
         self.eng_type = eng_type
+        self.endpoint = endpoint
         self.last_file_name = ""
         self.restore_context_mode = config.getKey("gpt.restoreContextMode")
         self.retry_count = 0
@@ -75,9 +77,9 @@ class CSakuraTranslate:
     def init_chatbot(self, eng_type, config: CProjectConfig):
         from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
         section_name = "SakuraLLM" if "SakuraLLM" in config.keyValues else "Sakura"
-        endpoint = config.getBackendConfigSection("SakuraLLM").get("endpoint")
+        endpoint = self.endpoint
         endpoint = endpoint[:-1] if endpoint.endswith("/") else endpoint
-        eng_name = config.getBackendConfigSection("SakuraLLM").get("rewriteModelName", "gpt-3.5-turbo")
+        eng_name = config.getBackendConfigSection(section_name).get("rewriteModelName", "gpt-3.5-turbo")
         if eng_type == "sakura-009":
             self.system_prompt = Sakura_SYSTEM_PROMPT
             self.trans_prompt = Sakura_TRANS_PROMPT
@@ -87,7 +89,6 @@ class CSakuraTranslate:
         if eng_type == "galtransl-v1":
             self.system_prompt = GalTransl_SYSTEM_PROMPT
             self.trans_prompt = GalTransl_TRANS_PROMPT
-            
         self.chatbot = ChatbotV3(
                 api_key="sk-114514",
                 system_prompt=self.system_prompt,
@@ -127,7 +128,7 @@ class CSakuraTranslate:
 
         while True:  # 一直循环，直到得到数据
             try:
-                LOGGER.info("->输入：\n" + gptdict + "\n"+input_str)
+                LOGGER.info("->输入：\n" + gptdict + "\n" + repr(input_str))
                 resp = ""
                 last_data = ""
                 repetition_cnt = 0
@@ -147,7 +148,7 @@ class CSakuraTranslate:
                         break
                 # print(data, end="\n")
                 if not self.streamOutputMode:
-                    LOGGER.info("->输出：\n" + resp)
+                    LOGGER.info("->输出：\n" + repr(resp))
                 else:
                     print("")
             except asyncio.CancelledError:
@@ -309,7 +310,7 @@ class CSakuraTranslate:
         len_trans_list = len(trans_list_unhit)
         transl_step_count=0
         while i < len_trans_list:
-            await asyncio.sleep(1)
+            # await asyncio.sleep(1)
 
             trans_list_split = trans_list_unhit[i : i + num_pre_request]
             dic_prompt = (

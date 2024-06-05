@@ -50,10 +50,10 @@ PROGRAM_SPLASH4 = r"""
 ALL_BANNERS = [PROGRAM_SPLASH1, PROGRAM_SPLASH2, PROGRAM_SPLASH3, PROGRAM_SPLASH4]
 PROGRAM_SPLASH = ALL_BANNERS[localtime().tm_mday % 4]
 
-GALTRANSL_VERSION = "5.0.1"
+GALTRANSL_VERSION = "5.1.0"
 AUTHOR = "xd2333"
 CONTRIBUTORS = (
-    "ryank231231, Isotr0py, Noriverwater, PiDanShouRouZhouXD, pipixia244, gulaodeng"
+    "ryank231231, PiDanShouRouZhouXD, Noriverwater, Isotr0py, adsf0427, pipixia244, gulaodeng"
 )
 
 CONFIG_FILENAME = "config.yaml"

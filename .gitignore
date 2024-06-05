@@ -8,3 +8,10 @@ useful_tools/GalTransl_DumpInjector/VNTextPatch/names.xml
 *.log
 /Test
 /uiProjects/Project_*
+/build
+/dist
+*.spec
+/Projects
+/srt_project
+/srt_project_hiaku
+/useful_tools

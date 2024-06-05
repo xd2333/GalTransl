@@ -321,7 +321,8 @@ class Widget_About(QFrame):
         layout_pic = QHBoxLayout()
 
         self.image_label = QLabel(self)
-        pixmap = QPixmap(os.path.join("./ui/img","sticker.png"))
+        sticker_path = os.path.join(PROGRAM_PATH,"ui/img", "sticker.png")
+        pixmap = QPixmap(sticker_path)
         self.image_label.setFixedSize(350, 393)
         self.image_label.setPixmap(pixmap)
         self.image_label.setScaledContents(True)
@@ -681,13 +682,15 @@ class Window(MSFluentWindow):
 
     def initWindow(self):
         self.resize(1600, 900)
-        self.setWindowIcon(QIcon('./img/logo.png'))
+        icon_path = os.path.join(PROGRAM_PATH, 'img', 'logo.png')
+        self.setWindowIcon(QIcon(icon_path))
         self.setWindowTitle(f'Galtransl Core v{GALTRANSL_VERSION} GUI v{GALTRANSL_GUI_VERSION}')
 
         desktop = QApplication.screens()[0].availableGeometry()
         w, h = desktop.width(), desktop.height()
         self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
-        with open('./ui/qss/dark.qss', encoding='utf-8') as f:
+        qss_path = os.path.join(PROGRAM_PATH, 'ui', 'qss', 'dark.qss')
+        with open(qss_path, encoding='utf-8') as f:
             self.setStyleSheet(f.read())
 
     def openReadme(self):

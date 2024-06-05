@@ -3,7 +3,7 @@ common:
   workersPerProject: 1
   language: ja2zh-cn
   save_steps: 1
-  linebreakSymbol: \r\n
+  linebreakSymbol: "\r\n"
   skipH: false
   skipRetry: false
   retranslFail: false
@@ -57,7 +57,8 @@ backendSpecific:
     - newbing_cookies/cookie1.json
     - newbing_cookies/cookie2.json
   SakuraLLM:
-    endpoint: http://127.0.0.1:8080
+    endpoints:
+    - http://127.0.0.1:8080
     rewriteModelName: ''
 problemAnalyze:
   problemList:

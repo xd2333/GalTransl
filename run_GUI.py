@@ -31,7 +31,7 @@ from GalTransl import (
 from GalTransl.__main__ import worker_with_progress
 from ui import OtherCustomWidgets
 
-GALTRANSL_GUI_VERSION = "0.0.1"
+GALTRANSL_GUI_VERSION = "0.0.2"
 
 PROGRAM_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -141,7 +141,8 @@ class WidgetRun(QFrame):
         project_dict = self.direct_run.project_dict_input.toPlainText().strip().split('\n')
 
         if not input_path or not output_path or not translator:
-            QMessageBox.warning(self, "警告", "请填写所有字段")
+            w = MessageBox("警告", "请填写所有字段", self)
+            w.exec()
             return
 
         if not os.makedirs(output_path, exist_ok=True):
@@ -516,7 +517,7 @@ class WidgetWriteYaml(SmoothScrollArea):
         self.backend_settings.bing_gpt4_cookies.setPlainText('\n'.join(bing_gpt4_settings.get('cookiePath', [])))
 
         sakura_settings = backend_specific_settings.get('SakuraLLM', {})
-        self.backend_settings.sakura_endpoint.setText(sakura_settings.get('endpoint', 'http://127.0.0.1:8080'))
+        self.backend_settings.sakura_endpoints.setPlainText('\n'.join(sakura_settings.get('endpoints', [])))
         self.backend_settings.sakura_model_name.setText(sakura_settings.get('rewriteModelName', ''))
 
         # 读取problemAnalyze设置
@@ -586,7 +587,7 @@ class WidgetWriteYaml(SmoothScrollArea):
                 'cookiePath': [path for path in self.backend_settings.bing_gpt4_cookies.toPlainText().split('\n') if path.strip() != '']
             },
             'SakuraLLM': {
-                'endpoint': self.backend_settings.sakura_endpoint.text(),
+                'endpoints': [endpoints for endpoints in self.backend_settings.sakura_endpoints.toPlainText().split('\n') if endpoints.strip() != ''],
                 'rewriteModelName': self.backend_settings.sakura_model_name.text()
             }
         }

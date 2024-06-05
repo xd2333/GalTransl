@@ -75,8 +75,8 @@ Settings: # 这里存放插件的设置
 - `after_dst_processed(self, tran: CSentense) -> CSentense`: 在目标句子处理之后被调用。返回修改后的`CSentense`。
 
 * 这里的"处理"，是指GalTransl一定会对日文做去掉日文对话框、字典替换，并在译后恢复对话框、译后字典替换。   
-* 所以如果有的引擎的文本在日文对话框左右有多余的字符，可以在`before_src_processed`中进行隐藏处理（挪到tran的left_symbol和right_symbol属性中），恢复对话框时会自动还原。   
-* 有的引擎的文本在日文对话框左边写了人明，可以在`before_src_processed`中进行处理，把人名挪到tran的speaker属性里，再在`after_dst_processed`中把人名还原到对话框左边（先让程序恢复对话框，所以是after）。   
+* 所以当引擎的文本在日文对话框左右有多余的字符，可以在`before_src_processed`中进行隐藏处理（挪到tran的left_symbol和right_symbol属性中），恢复对话框时会自动还原。   
+* 当引擎的文本在日文对话框左边写了人名，可以在`before_src_processed`中进行处理，把人名挪到tran的speaker属性里，再在`after_dst_processed`中把人名还原到对话框左边（先让程序恢复对话框，所以是after）。   
 
 对于处理文件的GFilePlugin插件，**必须**实现以下方法：
 - `load_file(self, file_path: str) -> list`: 加载文件，返回一个包含message和name(可空)的dict list。

@@ -21,6 +21,7 @@ def worker(project_dir: str, config_file_name: str, translator: str, show_banner
         print(f"Contributors: {CONTRIBUTORS}")
 
     cfg = CProjectConfig(project_dir, config_file_name)
+    LOGGER.setLevel(DEBUG_LEVEL[cfg.getCommonConfigSection().get("loggingLevel", "info")])
     try:
         loop = get_event_loop()
     except RuntimeError:

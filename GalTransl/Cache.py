@@ -80,7 +80,8 @@ def get_transCache_from_json(
         Tuple[List[CTrans], List[CTrans]]: 包含两个列表的元组：击中缓存的翻译列表和未击中缓存的翻译列表。
     """
     if not cache_file_path.endswith(".json"):
-        cache_file_path += ".json"
+        if not os.path.exists(cache_file_path):
+            cache_file_path += ".json"
 
     trans_list_hit = []
     trans_list_unhit = []

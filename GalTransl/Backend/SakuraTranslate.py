@@ -79,7 +79,7 @@ class CSakuraTranslate:
         section_name = "SakuraLLM" if "SakuraLLM" in config.keyValues else "Sakura"
         endpoint = self.endpoint
         endpoint = endpoint[:-1] if endpoint.endswith("/") else endpoint
-        eng_name = config.getBackendConfigSection("SakuraLLM").get("rewriteModelName", "gpt-3.5-turbo")
+        eng_name = config.getBackendConfigSection(section_name).get("rewriteModelName", "gpt-3.5-turbo")
         if eng_type == "sakura-009":
             self.system_prompt = Sakura_SYSTEM_PROMPT
             self.trans_prompt = Sakura_TRANS_PROMPT

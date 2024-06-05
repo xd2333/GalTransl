@@ -222,7 +222,11 @@ async def doLLMTranslate(
     workersPerProject = projectConfig.getKey("workersPerProject")
     if "sakura" in eng_type or "galtransl" in eng_type:
         endpoint_queue = Queue()
-        endpoints = projectConfig.getBackendConfigSection("SakuraLLM")["endpoints"]
+        section_name = "SakuraLLM" if "SakuraLLM" in projectConfig.keyValues else "Sakura"
+        if "endpoints" in projectConfig.getBackendConfigSection(section_name):
+            endpoints = projectConfig.getBackendConfigSection(section_name)["endpoints"]
+        else:
+            endpoints = [projectConfig.getBackendConfigSection(section_name)["endpoint"]]
         repeated = (workersPerProject+ len(endpoints) -1) // len(endpoints)
         for _ in range(repeated):
             for endpoint in endpoints:

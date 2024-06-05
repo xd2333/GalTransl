@@ -21,3 +21,7 @@ QLabel {
 CheckBox {
         color: #dadada;
         }
+
+AcrylicWindow{
+        background-color: #272727;
+        }

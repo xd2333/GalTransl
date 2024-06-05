@@ -14,8 +14,10 @@ from PySide6.QtGui import QIcon, QPainter, QImage, QColor, QBrush, QFont, QDeskt
 from qfluentwidgets import (
     PushButton, LineEdit, CheckBox, SpinBox, PrimaryPushButton, TextEdit, SmoothScrollArea, NavigationWidget, EditableComboBox,TransparentPushButton,
     NavigationInterface, NavigationItemPosition, InfoBarPosition, Dialog, FluentIcon as FIF,TableWidget,ProgressBar,IndeterminateProgressRing,ProgressRing, IndeterminateProgressBar,
-    MessageBox, setTheme, Theme, MSFluentWindow, NavigationAvatarWidget, qrouter, SubtitleLabel, setFont, setThemeColor
+    MessageBox, setTheme, Theme, MSFluentWindow, NavigationAvatarWidget, qrouter, SubtitleLabel, setFont, setThemeColor, 
 )
+
+from qframelesswindow import FramelessWindow
 
 
 from ui import *
@@ -31,7 +33,7 @@ from GalTransl import (
 from GalTransl.__main__ import worker_with_progress
 from ui import OtherCustomWidgets
 
-GALTRANSL_GUI_VERSION = "0.0.2"
+GALTRANSL_GUI_VERSION = "0.0.3"
 
 PROGRAM_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -387,7 +389,7 @@ class WidgetWriteYaml(SmoothScrollArea):
         self.config_file_path_absolute = os.path.join(PROGRAM_PATH, "uiProjects/_Config/config.yaml")
         print(self.config_file_path_absolute)
         self.setStyleSheet("""
-                    background-color: #272727;
+                    background: transparent;
                     border-radius: 8px;
                     QFrame{
                     border: 1px solid #000000;

@@ -6,7 +6,7 @@ from GalTransl import LOGGER
 from GalTransl.GTPlugin import GFilePlugin
 
 
-webvtt_path = os.path.abspath("plugins/file_subtitle_vtt/webvtt")
+webvtt_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(webvtt_path)
 import webvtt
 
@@ -55,7 +55,7 @@ class file_plugin(GFilePlugin):
                 raise e
         elif file_path.endswith(".lrc"):
             try:
-                matches = self.pattern.findall(text)
+                matches = self.lrc_pattern.findall(text)
                 LOGGER.debug(f"matches: {matches}")
                 result = [
                     {

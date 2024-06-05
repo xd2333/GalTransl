@@ -14,7 +14,7 @@ from GalTransl.Backend.Prompts import (
     Sakura_TRANS_PROMPT010,
     Sakura_SYSTEM_PROMPT010,
     GalTransl_SYSTEM_PROMPT,
-    GalTransl_TRANS_PROMPT
+    GalTransl_TRANS_PROMPT,
 )
 
 
@@ -76,10 +76,14 @@ class CSakuraTranslate:
 
     def init_chatbot(self, eng_type, config: CProjectConfig):
         from GalTransl.Backend.revChatGPT.V3 import Chatbot as ChatbotV3
-        section_name = "SakuraLLM" if "SakuraLLM" in config.keyValues else "Sakura"
+
+        backendSpecific = config.projectConfig["backendSpecific"]
+        section_name = "SakuraLLM" if "SakuraLLM" in backendSpecific else "Sakura"
         endpoint = self.endpoint
         endpoint = endpoint[:-1] if endpoint.endswith("/") else endpoint
-        eng_name = config.getBackendConfigSection(section_name).get("rewriteModelName", "gpt-3.5-turbo")
+        eng_name = config.getBackendConfigSection(section_name).get(
+            "rewriteModelName", "gpt-3.5-turbo"
+        )
         if eng_type == "sakura-009":
             self.system_prompt = Sakura_SYSTEM_PROMPT
             self.trans_prompt = Sakura_TRANS_PROMPT
@@ -90,11 +94,11 @@ class CSakuraTranslate:
             self.system_prompt = GalTransl_SYSTEM_PROMPT
             self.trans_prompt = GalTransl_TRANS_PROMPT
         self.chatbot = ChatbotV3(
-                api_key="sk-114514",
-                system_prompt=self.system_prompt,
-                engine=eng_name,
-                api_address=endpoint + "/v1/chat/completions",
-                timeout=60,
+            api_key="sk-114514",
+            system_prompt=self.system_prompt,
+            engine=eng_name,
+            api_address=endpoint + "/v1/chat/completions",
+            timeout=60,
         )
         self.chatbot.update_proxy(
             self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
@@ -160,7 +164,7 @@ class CSakuraTranslate:
                 LOGGER.info("-> [请求错误]报错:%s, 即将重试" % ex)
                 await asyncio.sleep(3)
                 continue
-            
+
             resp = resp.replace("*EOF*", "").strip()
             result_list = resp.strip("\n").split("\n")
             # fix trick
@@ -243,10 +247,8 @@ class CSakuraTranslate:
                     if len(trans_list) > 1:
                         LOGGER.warning("-> 对半拆分重试")
                         half_len = len(trans_list) // 3
-                        half_len=1 if half_len<1 else half_len
-                        return await self.translate(
-                            trans_list[: half_len], gptdict
-                        )
+                        half_len = 1 if half_len < 1 else half_len
+                        return await self.translate(trans_list[:half_len], gptdict)
                     # 拆成单句后，才开始计算重试次数
                     self.retry_count += 1
                     # 5次重试则填充原文
@@ -308,7 +310,7 @@ class CSakuraTranslate:
 
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
-        transl_step_count=0
+        transl_step_count = 0
         while i < len_trans_list:
             # await asyncio.sleep(1)
 
@@ -320,16 +322,16 @@ class CSakuraTranslate:
             )
             num, trans_result = await self.translate(trans_list_split, dic_prompt)
 
-            if self.transl_dropout>0 and num==num_pre_request:
-                if self.transl_dropout<num:
-                    num-=self.transl_dropout
-                    trans_result=trans_result[:num]
+            if self.transl_dropout > 0 and num == num_pre_request:
+                if self.transl_dropout < num:
+                    num -= self.transl_dropout
+                    trans_result = trans_result[:num]
 
             i += num if num > 0 else 0
-            transl_step_count+=1
-            if transl_step_count>=self.save_steps:
+            transl_step_count += 1
+            if transl_step_count >= self.save_steps:
                 save_transCache_to_json(trans_list, cache_file_path)
-                transl_step_count=0
+                transl_step_count = 0
             LOGGER.info("".join([repr(tran) for tran in trans_result]))
             trans_result_list += trans_result
             LOGGER.info(f"{filename}: {len(trans_result_list)}/{len_trans_list}")
@@ -355,12 +357,14 @@ class CSakuraTranslate:
         if last_user_message:
             self.chatbot.conversation["default"].append(last_user_message)
         if last_assistant_message:
-            last_assistant_message["content"] = last_assistant_message["content"].replace("*EOF*", "").strip()
-            if self.transl_dropout>0:
-                sp=last_assistant_message["content"].split("\n")
-                if len(sp)>self.transl_dropout:
-                    sp=sp[:0-self.transl_dropout]
-                    last_assistant_message["content"]="\n".join(sp)
+            last_assistant_message["content"] = (
+                last_assistant_message["content"].replace("*EOF*", "").strip()
+            )
+            if self.transl_dropout > 0:
+                sp = last_assistant_message["content"].split("\n")
+                if len(sp) > self.transl_dropout:
+                    sp = sp[: 0 - self.transl_dropout]
+                    last_assistant_message["content"] = "\n".join(sp)
             self.chatbot.conversation["default"].append(last_assistant_message)
 
     def _del_last_answer(self):

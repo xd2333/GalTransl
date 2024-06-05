@@ -32,7 +32,7 @@ from GalTransl.Utils import get_file_list
 
 async def doLLMTranslateSingleFile(
     semaphore: Semaphore,
-    endpoint_queue : Queue,
+    endpoint_queue: Queue,
     file_path: str,
     projectConfig: CProjectConfig,
     eng_type: str,
@@ -47,7 +47,7 @@ async def doLLMTranslateSingleFile(
     async with semaphore:
         if endpoint_queue is not None:
             endpoint = await endpoint_queue.get()
-        try:            
+        try:
             st = time()
             proj_dir = projectConfig.getProjectDir()
             input_dir = projectConfig.getInputPath()
@@ -60,25 +60,35 @@ async def doLLMTranslateSingleFile(
             output_file_dir = dirname(output_file_path)
             makedirs(output_file_dir, exist_ok=True)
             cache_file_path = joinpath(cache_dir, file_name)
-            LOGGER.info(f"engine type: {eng_type}, file: {file_name}, start translating..")
+            LOGGER.info(
+                f"engine type: {eng_type}, file: {file_name}, start translating.."
+            )
 
             match eng_type:
                 case "gpt35-0613" | "gpt35-1106" | "gpt35-0125":
-                    gptapi = CGPT35Translate(projectConfig, eng_type, proxyPool, tokenPool)
+                    gptapi = CGPT35Translate(
+                        projectConfig, eng_type, proxyPool, tokenPool
+                    )
                 case "gpt4" | "gpt4-turbo":
-                    gptapi = CGPT4Translate(projectConfig, eng_type, proxyPool, tokenPool)
+                    gptapi = CGPT4Translate(
+                        projectConfig, eng_type, proxyPool, tokenPool
+                    )
                 case "newbing":
                     cookiePool: list[str] = []
-                    for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
+                    for i in projectConfig.getBackendConfigSection("bingGPT4")[
+                        "cookiePath"
+                    ]:
                         cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
                     gptapi = CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
                 case "sakura-009" | "sakura-010" | "galtransl-v1":
-                    gptapi = CSakuraTranslate(projectConfig, eng_type, endpoint, proxyPool)
+                    gptapi = CSakuraTranslate(
+                        projectConfig, eng_type, endpoint, proxyPool
+                    )
                 case "rebuildr" | "rebuilda":
                     gptapi = CRebuildTranslate(projectConfig, eng_type)
                 case _:
                     raise ValueError(f"不支持的翻译引擎类型 {eng_type}")
-            
+
             # 1、初始化trans_list
             origin_input = ""
 
@@ -196,10 +206,12 @@ async def doLLMTranslateSingleFile(
     LOGGER.info(f"文件 {file_name} 翻译完成，用时 {et-st:.3f}s.")
     return True
 
+
 async def run_task(task, progress_bar):
     result = await task  # Wait for the individual task to complete
     progress_bar.update(1)  # Update the progress bar
     return result
+
 
 async def doLLMTranslate(
     projectConfig: CProjectConfig,
@@ -220,44 +232,50 @@ async def doLLMTranslate(
     gpt_dic = CGptDict(initDictList(gpt_dic_dir, default_dic_dir, project_dir))
 
     workersPerProject = projectConfig.getKey("workersPerProject")
-    
+
     if "sakura" in eng_type or "galtransl" in eng_type:
         endpoint_queue = Queue()
-        section_name = "SakuraLLM" if "SakuraLLM" in projectConfig.keyValues else "Sakura"
+        backendSpecific = projectConfig.projectConfig["backendSpecific"]
+        section_name = "SakuraLLM" if "SakuraLLM" in backendSpecific else "Sakura"
         if "endpoints" in projectConfig.getBackendConfigSection(section_name):
             endpoints = projectConfig.getBackendConfigSection(section_name)["endpoints"]
         else:
-            endpoints = [projectConfig.getBackendConfigSection(section_name)["endpoint"]]
-        repeated = (workersPerProject+ len(endpoints) -1) // len(endpoints)
+            endpoints = [
+                projectConfig.getBackendConfigSection(section_name)["endpoint"]
+            ]
+        repeated = (workersPerProject + len(endpoints) - 1) // len(endpoints)
         for _ in range(repeated):
             for endpoint in endpoints:
                 endpoint_queue.put_nowait(endpoint)
         LOGGER.info(f"当前使用 {workersPerProject} 个Sakura worker引擎")
     else:
         endpoint_queue = None
-        
+
     file_list = get_file_list(projectConfig.getInputPath())
     if not file_list:
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
     semaphore = Semaphore(workersPerProject)
     progress_bar = atqdm(total=len(file_list), desc="Processing files")
     tasks = [
-        run_task(doLLMTranslateSingleFile(
-            semaphore,
-            endpoint_queue,
-            file_name,
-            projectConfig,
-            eng_type,
-            pre_dic,
-            post_dic,
-            gpt_dic,
-            tPlugins,
-            fPlugins,
-            proxyPool,
-            tokenPool,
-        ), progress_bar)
+        run_task(
+            doLLMTranslateSingleFile(
+                semaphore,
+                endpoint_queue,
+                file_name,
+                projectConfig,
+                eng_type,
+                pre_dic,
+                post_dic,
+                gpt_dic,
+                tPlugins,
+                fPlugins,
+                proxyPool,
+                tokenPool,
+            ),
+            progress_bar,
+        )
         for file_name in file_list
     ]
     # await atqdm.gather(*tasks)
     await gather(*tasks)  # run
-    progress_bar.close() 
+    progress_bar.close()

@@ -74,8 +74,8 @@ backendSpecific:
       - newbing_cookies/cookie2.json # 你的 cookies 文件2，会自动切换
   SakuraLLM: # Sakura/Galtransl API
     endpoints: 
-      - http://127.0.0.1:5000
-      - http://127.0.0.1:5001
+      - http://127.0.0.1:8080
+      #- http://127.0.0.1:5001 # 可以填入多个endpoints，用于多线程
     rewriteModelName: "" # 使用指定的模型型号替换默认模型
 # 自动问题分析配置
 problemAnalyze: 

@@ -1,12 +1,12 @@
 Core:
-  Name: srt字幕文件读取
+  Name: srt,lrc,vtt字幕文件读取
   Type: file
-  Module: file_subtitle_srt
+  Module: file_subtitle_srt_lrc
 
 Documentation:
-  Author: cx2333
+  Author: cx2333, PiDanShouRouZhou
   Version: 1.0
-  Description: 可以直接处理.srt字幕文件并翻译。
+  Description: 可以直接处理.srt|.lrc|.vtt字幕文件并翻译。
 
 Settings: # 这里存放插件的设置
   保存双语字幕: true # 是否保存双语字幕

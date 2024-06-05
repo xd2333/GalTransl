@@ -220,6 +220,7 @@ async def doLLMTranslate(
     gpt_dic = CGptDict(initDictList(gpt_dic_dir, default_dic_dir, project_dir))
 
     workersPerProject = projectConfig.getKey("workersPerProject")
+    
     if "sakura" in eng_type or "galtransl" in eng_type:
         endpoint_queue = Queue()
         section_name = "SakuraLLM" if "SakuraLLM" in projectConfig.keyValues else "Sakura"
@@ -234,6 +235,7 @@ async def doLLMTranslate(
         LOGGER.info(f"当前使用 {workersPerProject} 个Sakura worker引擎")
     else:
         endpoint_queue = None
+        
     file_list = get_file_list(projectConfig.getInputPath())
     if not file_list:
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")

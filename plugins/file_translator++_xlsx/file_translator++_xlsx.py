@@ -18,6 +18,7 @@ class file_plugin(GFilePlugin):
             f"[{self.pname}] 当前配置：是否自动识别名称:{settings.get('是否自动识别名称', True)}")
         # 读取配置文件中的设置，并保存到变量中。
         self.是否自动识别名称 = settings.get("是否自动识别名称", True)
+        self.名称识别拼接方案 = settings.get("名称识别拼接方案", "{name}\n「{message}」")
         self.名称识别正则表达式 = re.compile(
             settings.get("名称识别正则表达式", r"^(?P<name>.*?)「(?P<message>.*?)」$"), re.DOTALL)
 
@@ -46,7 +47,7 @@ class file_plugin(GFilePlugin):
         LOGGER.debug(f"[{self.pname}] Saving file {file_path}")
 
         original_file_path_01 = file_path.replace("gt_output", "gt_input")
-        original_file_path_02 = file_path.replace("gt_output", "json_input")
+        original_file_path_02 = file_path.replace("gt_output", "json_jp")
         # 读取原文件
         original_file_path = original_file_path_01 or original_file_path_02
 
@@ -72,7 +73,9 @@ class file_plugin(GFilePlugin):
             # 重组翻译结果
             for i, transl_obj in enumerate(transl_json):
                 if self.是否自动识别名称 and transl_obj["name"] is not None and transl_obj["name"] != "":
-                    translated_text = f"{transl_obj['name']}\n「{transl_obj['message']}」"
+                    name = transl_obj["name"]
+                    message = transl_obj["message"]
+                    translated_text = self.名称识别拼接方案.format(name=name, message=message)
                 else:
                     translated_text = transl_obj["message"]
 
@@ -120,12 +123,7 @@ class file_plugin(GFilePlugin):
                 first_column_values = first_column_values[1:]
 
             for row in first_column_values:
-<<<<<<< Updated upstream
-                # 转换为字符串
-                row = str(row)
 
-=======
->>>>>>> Stashed changes
                 # 跳过空行
                 if row is None or row == "":
                     json_list.append({"name": "", "message": ""})

@@ -18,5 +18,6 @@ def load_name_table(name_table_path: str) -> Dict[str, str]:
         # Skip the header
         next(reader)
         for row in reader:
-            name_table[row[0]] = row[1]
+            if row[1] !=  "":
+                name_table[row[0]] = row[1]
     return name_table

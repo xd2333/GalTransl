@@ -84,7 +84,7 @@ async def doLLMTranslateSingleFile(
                     gptapi = CSakuraTranslate(
                         projectConfig, eng_type, endpoint, proxyPool
                     )
-                case "rebuildr" | "rebuilda":
+                case "rebuildr" | "rebuilda" | "dump-name":
                     gptapi = CRebuildTranslate(projectConfig, eng_type)
                 case _:
                     raise ValueError(f"不支持的翻译引擎类型 {eng_type}")
@@ -114,6 +114,16 @@ async def doLLMTranslateSingleFile(
             except Exception as e:
                 LOGGER.error(f"文件 {file_name} 加载翻译列表失败: {e}")
                 return False
+            
+            # 导出人名表功能
+            if "dump-name" in eng_type:
+                global name_dict
+                for tran in trans_list:
+                    if tran.speaker and type(tran.speaker) == str:
+                        if tran.speaker not in name_dict:
+                            name_dict[tran.speaker] = 0
+                        name_dict[tran.speaker] += 1
+                return True
 
             # 2、翻译前处理
             for i, tran in enumerate(trans_list):
@@ -250,6 +260,11 @@ async def doLLMTranslate(
         LOGGER.info(f"当前使用 {workersPerProject} 个Sakura worker引擎")
     else:
         endpoint_queue = None
+    
+    # 人名表初始化
+    if "dump-name" in eng_type:
+        global name_dict
+        name_dict = {}
 
     file_list = get_file_list(projectConfig.getInputPath())
     if not file_list:
@@ -279,3 +294,14 @@ async def doLLMTranslate(
     # await atqdm.gather(*tasks)
     await gather(*tasks)  # run
     progress_bar.close()
+
+    if "dump-name" in eng_type:
+        import csv
+        proj_dir = projectConfig.getProjectDir()
+        name_dict = dict(sorted(name_dict.items(), key=lambda item: item[1], reverse=True))
+        with open(joinpath(proj_dir, "人名替换表.csv"), "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["JP_Name", "CN_Name", "Count"])  # 写入表头
+            for name, count in name_dict.items():
+                writer.writerow([name, "", count])
+            LOGGER.info(f"name已保存到'人名替换表.csv'（UTF-8编码，用Emeditor编辑），填入CN_Name后可用于后续翻译name字段。")

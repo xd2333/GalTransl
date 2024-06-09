@@ -135,7 +135,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
 
     # proxyPool初始化
     proxyPool = CProxyPool(cfg) if cfg.getKey("internals.enableProxy") else None
-    if proxyPool and translator != "Rebuild":
+    if proxyPool and translator not in ["rebuildr","rebuilda","dump-name","showplugs"]:
         await proxyPool.checkAvailablity()
         if not proxyPool.proxies:
             raise Exception("没有可用的代理，请检查代理设置")

@@ -1,5 +1,5 @@
-import os, sys
-
+import os
+import sys
 from command import BulletMenu
 from GalTransl import (
     AUTHOR,
@@ -11,9 +11,7 @@ from GalTransl import (
 )
 from GalTransl.__main__ import worker
 
-
 INPUT_PROMPT_TMP = "请输入/拖入项目文件夹，或项目文件夹内的yaml配置文件[default]："
-
 
 class ProjectManager:
     def __init__(self):
@@ -85,15 +83,20 @@ class ProjectManager:
                     self.get_user_input()
                 except KeyboardInterrupt:
                     print("\nGoodbye.")
-                    sys.exit(0)
+                    return
 
             try:
                 self.choose_translator()
             except KeyboardInterrupt:
                 print("\nGoodbye.")
-                sys.exit(0)
+                return
 
             worker(self.project_dir, self.config_file_name, self.translator, show_banner=False)
+
+            print("翻译任务完成，准备重新开始...")
+            self.user_input = ""
+            self.translator = ""
+
             os.system("pause")
             os.system("cls")
 

@@ -342,6 +342,7 @@ class CSakuraTranslate:
             progress_bar.update(num)
             print("\n",flush=True)
             LOGGER.info("".join([repr(tran) for tran in trans_result]))
+        progress_bar.close()
 
         return trans_result_list
 

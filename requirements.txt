@@ -10,3 +10,4 @@ tiktoken
 tqdm
 colorlog
 openpyxl
+orjson

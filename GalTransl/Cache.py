@@ -4,7 +4,7 @@
 from GalTransl.CSentense import CTransList
 from GalTransl import LOGGER
 from typing import List
-from json import dump, load, JSONDecodeError
+import orjson
 import os
 
 
@@ -52,8 +52,8 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, post_save=F
             cache_obj["post_zh_preview"] = tran.post_zh
         cache_json.append(cache_obj)
 
-    with open(cache_file_path, mode="w", encoding="utf8") as f:
-        dump(cache_json, f, ensure_ascii=False, indent=4)
+    with open(cache_file_path, mode="wb") as f:
+        f.write(orjson.dumps(cache_json, option=orjson.OPT_INDENT_2))
 
 
 def get_transCache_from_json(
@@ -89,7 +89,7 @@ def get_transCache_from_json(
     if os.path.exists(cache_file_path):
         with open(cache_file_path, encoding="utf8") as f:
             try:
-                cache_dictList = load(f)
+                cache_dictList = orjson.loads(f.read())
                 cache_dict = {cache["index"]: cache for cache in cache_dictList}
             except Exception as e:
                 f.close()

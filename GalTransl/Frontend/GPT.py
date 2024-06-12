@@ -61,7 +61,7 @@ async def doLLMTranslateSingleFile(
             makedirs(output_file_dir, exist_ok=True)
             cache_file_path = joinpath(cache_dir, file_name)
             LOGGER.info(
-                f"engine type: {eng_type}, file: {file_name}, start translating.."
+                f"start translating: {file_name}, engine type: {eng_type}"
             )
 
             match eng_type:
@@ -220,6 +220,7 @@ async def doLLMTranslateSingleFile(
 async def run_task(task, progress_bar):
     result = await task  # Wait for the individual task to complete
     progress_bar.update(1)  # Update the progress bar
+    print("\n")
     return result
 
 
@@ -270,7 +271,8 @@ async def doLLMTranslate(
     if not file_list:
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
     semaphore = Semaphore(workersPerProject)
-    progress_bar = atqdm(total=len(file_list), desc="Processing files")
+    custom_bar='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}]'
+    progress_bar = atqdm(total=len(file_list), desc="Processing files", bar_format=custom_bar, dynamic_ncols=True, leave=False)
     tasks = [
         run_task(
             doLLMTranslateSingleFile(

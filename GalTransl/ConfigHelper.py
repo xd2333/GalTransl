@@ -146,6 +146,10 @@ class CProjectConfig:
         return result
 
     def getProblemAnalyzeArinashiDict(self) -> dict:
+        if "arinashiDict" not in self.projectConfig["problemAnalyze"]:
+            return {}
+        elif not self.projectConfig["problemAnalyze"]["arinashiDict"]:
+            return {}
         return self.projectConfig["problemAnalyze"]["arinashiDict"]
 
 

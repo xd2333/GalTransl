@@ -133,7 +133,8 @@ class CSakuraTranslate:
 
         while True:  # 一直循环，直到得到数据
             try:
-                LOGGER.info("->输入：\n" + gptdict + "\n" + repr(input_str))
+                with logging_redirect_tqdm(loggers=[LOGGER]):
+                    LOGGER.info("->输入：\n" + gptdict + "\n" + repr(input_str))
                 print("\n",flush=True)
                 resp = ""
                 last_data = ""
@@ -323,8 +324,8 @@ class CSakuraTranslate:
                 if gpt_dic != None
                 else ""
             )
-            with logging_redirect_tqdm():
-                num, trans_result = await self.translate(trans_list_split, dic_prompt)
+
+            num, trans_result = await self.translate(trans_list_split, dic_prompt)
 
             if self.transl_dropout > 0 and num == num_pre_request:
                 if self.transl_dropout < num:

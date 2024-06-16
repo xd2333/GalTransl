@@ -1,4 +1,4 @@
-import os, time
+import os, time, sys
 from os.path import exists as isPathExists
 from os import makedirs as mkdir
 import logging, colorlog
@@ -73,7 +73,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     # 日志初始化
     for handler in LOGGER.handlers:
         LOGGER.removeHandler(handler)
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(stream=sys.stdout)
     handler.setFormatter(CONSOLE_FORMAT)
     LOGGER.addHandler(handler)
     if cfg.getCommonConfigSection().get("saveLog", False):

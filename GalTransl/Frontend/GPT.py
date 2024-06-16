@@ -213,7 +213,7 @@ async def doLLMTranslateSingleFile(
     save_func(output_file_path, new_json_list)
 
     et = time()
-    LOGGER.info(f"文件 {file_name} 翻译完成，用时 {et-st:.3f}s.")
+    LOGGER.info(f"  end translating: {file_name} 翻译完成，用时 {et-st:.3f}s.")
     return True
 
 
@@ -271,8 +271,7 @@ async def doLLMTranslate(
     if not file_list:
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
     semaphore = Semaphore(workersPerProject)
-    custom_bar='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}]'
-    progress_bar = atqdm(total=len(file_list), desc="Processing files", bar_format=custom_bar, dynamic_ncols=True, leave=False)
+    progress_bar = atqdm(total=len(file_list), desc="Processing files", dynamic_ncols=True, leave=False)
     tasks = [
         run_task(
             doLLMTranslateSingleFile(

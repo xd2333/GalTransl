@@ -161,7 +161,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         cfg, OpenAITokenPool, proxyPool, text_plugins, file_plugins, translator
     )
 
-    for plugin in text_plugins:
+    for plugin in file_plugins + text_plugins:
         plugin.plugin_object.gtp_final()
 
     end_time = time.time()

@@ -60,6 +60,7 @@ async def doLLMTranslateSingleFile(
             output_file_dir = dirname(output_file_path)
             makedirs(output_file_dir, exist_ok=True)
             cache_file_path = joinpath(cache_dir, file_name)
+            print("\n", flush=True)
             LOGGER.info(
                 f"start translating: {file_name}, engine type: {eng_type}"
             )
@@ -220,7 +221,6 @@ async def doLLMTranslateSingleFile(
 async def run_task(task, progress_bar):
     result = await task  # Wait for the individual task to complete
     progress_bar.update(1)  # Update the progress bar
-    print("\n")
     return result
 
 

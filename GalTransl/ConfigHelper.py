@@ -46,6 +46,7 @@ class CProblemType(Enum):
     多加换行 = 5
     比日文长 = 6
     字典使用 = 7
+    引入英文 = 8
 
 
 class CProjectConfig:

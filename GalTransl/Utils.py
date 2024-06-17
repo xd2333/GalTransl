@@ -65,6 +65,35 @@ def contains_japanese(text: str) -> bool:
             return True
     return False
 
+def contains_english(text: str) -> bool:
+    """
+    此函数接受一个字符串作为输入，检查其中是否包含英文字符。
+
+    参数:
+    - text: 要检查的字符串。
+
+    返回值:
+    - 如果字符串中包含英文字符，则返回 True，否则返回 False。
+    """
+    # 英文字符范围
+    english_range = (0x0041, 0x005A)
+    english_range2 = (0x0061, 0x007A)
+    english_range3 = (0xFF21, 0xFF3A)
+    english_range4 = (0xFF41, 0xFF5A)
+
+    # 检查字符串中的每个字符
+    for char in text:
+        # 获取字符的 Unicode 码点
+        code_point = ord(char)
+        # 检查字符是否在英文字符范围内
+        if (
+            english_range[0] <= code_point <= english_range[1]
+            or english_range2[0] <= code_point <= english_range2[1]
+            or english_range3[0] <= code_point <= english_range3[1]
+            or english_range4[0] <= code_point <= english_range4[1]
+        ):
+            return True
+    return False
 
 def extract_code_blocks(content: str) -> Tuple[List[str], List[str]]:
     # 匹配带语言标签的代码块
@@ -125,4 +154,4 @@ def check_for_tool_updates(new_version):
 
 
 if __name__ == '__main__':
-    check_for_tool_updates("4.2.1")
+    print(contains_english("機密レベルＡＡ以上のファイルを一覧"))

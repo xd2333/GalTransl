@@ -3,7 +3,7 @@
 """
 from GalTransl.CSentense import CTransList
 from GalTransl.ConfigHelper import CProjectConfig, CProblemType
-from GalTransl.Utils import get_most_common_char, contains_japanese
+from GalTransl.Utils import get_most_common_char, contains_japanese, contains_english
 from GalTransl.Dictionary import CGptDict
 
 
@@ -80,6 +80,10 @@ def find_problems(
         if CProblemType.字典使用 in find_type:
             if val := gpt_dict.check_dic_use(pre_zh, tran):
                 problem_list.append(val)
+        if CProblemType.引入英文 in find_type:
+            if not contains_english(post_jp) and contains_english(pre_zh):
+                if contains_english(post_zh): # 修了的不显示
+                    problem_list.append("引入英文")
         if arinashi_dict != {}:
             for key, value in arinashi_dict.items():
                 if key not in pre_jp and value in post_zh:

@@ -46,6 +46,7 @@ class CProblemType(Enum):
     多加换行 = 5
     比日文长 = 6
     字典使用 = 7
+    引入英文 = 8
 
 
 class CProjectConfig:
@@ -179,8 +180,7 @@ class CProxyPool:
             LOGGER.debug("we got exception in testing proxy %s", proxy.addr)
             return False, proxy
         except:
-            LOGGER.debug("we got exception in testing proxy %s", proxy.addr)
-            raise
+            LOGGER.error("代理 %s 无法连接", proxy.addr)
             return False, proxy
         finally:
             et = time()
@@ -204,7 +204,7 @@ class CProxyPool:
         rounds: int = 0
         while True:
             if rounds > 10:
-                raise RuntimeError("CProxyPool::getProxy: 迭代次数过多！")
+                raise RuntimeError("CProxyPool::getProxy: 没有可用的代理！")
             available, proxy = choice(self.proxies)
             if not available:
                 rounds += 1

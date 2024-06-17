@@ -123,6 +123,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     for plugin in file_plugins + text_plugins:
         plugin_conf = plugin.yaml_dict
         project_conf = cfg.getCommonConfigSection()
+        project_conf["project_dir"] = cfg.getProjectDir()
         try:
             LOGGER.info(f'加载插件"{plugin.name}"...')
             plugin.plugin_object.gtp_init(plugin_conf, project_conf)
@@ -161,7 +162,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         cfg, OpenAITokenPool, proxyPool, text_plugins, file_plugins, translator
     )
 
-    for plugin in text_plugins:
+    for plugin in file_plugins + text_plugins:
         plugin.plugin_object.gtp_final()
 
     end_time = time.time()

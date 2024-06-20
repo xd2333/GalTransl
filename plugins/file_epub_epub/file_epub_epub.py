@@ -17,14 +17,14 @@ class FilePlugin(GFilePlugin):
         """
         self.pname = plugin_conf["Core"].get("Name", "")
         settings = plugin_conf["Settings"]
-        self.是否自动识别名称 = settings.get("是否自动识别名称", True)
+        self.是否自动识别名称 = settings.get("是否自动识别名称", False)
         self.名称识别拼接方案 = settings.get("名称识别拼接方案", "{name}\n「{message}」")
         self.名称识别正则表达式 = re.compile(settings.get("名称识别正则表达式", r"^(?P<name>.*?)「(?P<message>.*?)」$"), re.DOTALL)
         self.原文颜色 = settings.get("原文颜色", "#808080")
         self.缩小比例 = settings.get("缩小比例", "0.8")
         self.双语显示 = settings.get("双语显示", True)
         self.project_dir = project_conf["project_dir"]
-        self.是否拆分文件以支持单文件多线程 = settings.get("是否拆分文件以支持单文件多线程", True)
+        self.是否拆分文件以支持单文件多线程 = settings.get("是否拆分文件以支持单文件多线程", False)
 
         if self.是否拆分文件以支持单文件多线程:
             self.extract_epub()
@@ -102,19 +102,53 @@ class FilePlugin(GFilePlugin):
         :param file_path: HTML或XHTML文件路径。
         :return: 包含message和name(可空)的对象列表。
         """
+
+        from ebooklib.epub import EpubHtml
+        from ebooklib.epub import CHAPTER_XML
         json_list = []
-        with open(file_path, 'r', encoding='utf-8') as file:
-            html_content = file.read()
+        
+        # 模拟 EpubBook 对象
+        class MockEpubBook:
+            def __init__(self):
+                self.IDENTIFIER_ID = 'id'
+                self.language = 'jp'
+                self.title = 'Mock Book'
+                self.direction = None
+
+            def get_template(self, name):
+                return CHAPTER_XML  # 这是在epub库中定义的常量
+
+            def get_metadata(self, namespace, name):
+                return []
+
+        # 创建一个临时的 EpubHtml 对象
+        temp_item = EpubHtml()
+        temp_item.file_name = os.path.basename(file_path)
+        temp_item.book = MockEpubBook()  # 设置模拟的 book 属性
+        temp_item.lang = 'en'  # 设置语言属性
+        temp_item.direction = None  # 设置方向属性
+        
+        # 读取文件内容
+        with open(file_path, 'rb') as file:
+            temp_item.content = file.read()
+        
+        # 使用 get_content 方法获取处理后的内容
+        html_content = temp_item.get_content()
+        
+        # 如果 html_content 是 bytes 类型，解码为字符串
+        if isinstance(html_content, bytes):
+            html_content = html_content.decode('utf-8')
+        
         paragraphs = self.extract_paragraphs(html_content)
         if not paragraphs or paragraphs == [''] or paragraphs == ['\n'] or paragraphs == []:
             return [{"index": 1, "name": "", "message": "", "original_message": "", "html": ""}]
         
         i = 1
         for p in paragraphs:
-            cleaned_text, text_content, item_id = self.process_paragraph(p)
+            cleaned_text, text_content, _ = self.process_paragraph(p)
 
             if not text_content.strip():
-                return [{"index": 1, "name": "", "message": "", "original_message": "", "html": ""}]
+                continue
 
             name, message = self.extract_name_message(text_content)
             json_list.append({
@@ -375,9 +409,9 @@ class FilePlugin(GFilePlugin):
         shutil.rmtree(temp_dir)
         shutil.rmtree(epub_rebuild_dir)
         for file in os.listdir(gt_output):
-            if file.endswith(".xhtml", ".html"):
+            if file.endswith((".xhtml", ".html")): 
                 os.remove(os.path.join(gt_output, file))
         for file in os.listdir(gt_input):
-            if file.endswith(".xhtml", ".html"):
+            if file.endswith((".xhtml", ".html")): 
                 os.remove(os.path.join(gt_input, file))
         LOGGER.info("EPUB文件重建完成，缓存已经清理。")

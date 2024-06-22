@@ -79,15 +79,16 @@ class ProjectManager:
     def create_shortcut_win(self):
         TEMPLATE = 'cd /d "{0}"\n{1} "{2}" {3}\npause'
         run_com = "python.exe " + os.path.basename(__file__)
-        pg_dir = os.path.dirname(os.path.abspath(__file__))
+        program_dir = os.path.dirname(os.path.abspath(__file__))
         shortcut_path = f"{self.project_dir}{os.sep}run_GalTransl_v{GALTRANSL_VERSION}_{self.translator}.bat"
+        conf_path = os.path.join(self.project_dir, self.config_file_name)
         if "nt" not in os.name:  # not windows
             return
         if getattr(sys, "frozen", False):  # PyInstaller
             run_com = os.path.basename(sys.executable)
-            pg_dir = os.path.dirname(sys.executable)
+            program_dir = os.path.dirname(sys.executable)
         with open(shortcut_path, "w") as f:
-            text = TEMPLATE.format(pg_dir, run_com, self.user_input, self.translator)
+            text = TEMPLATE.format(program_dir, run_com, conf_path, self.translator)
             f.write(text)
 
     def run(self):
@@ -116,7 +117,8 @@ class ProjectManager:
                 except KeyboardInterrupt:
                     print("\nGoodbye.")
                     return
-            self.create_shortcut_win()
+            if self.translator not in ["showplugs","dump-name"]:
+                self.create_shortcut_win()
             worker(
                 self.project_dir,
                 self.config_file_name,

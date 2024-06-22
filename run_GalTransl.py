@@ -87,7 +87,7 @@ class ProjectManager:
         if getattr(sys, "frozen", False):  # PyInstaller
             run_com = os.path.basename(sys.executable)
             program_dir = os.path.dirname(sys.executable)
-        with open(shortcut_path, "w") as f:
+        with open(shortcut_path, "w", encoding="utf-8") as f:
             text = TEMPLATE.format(program_dir, run_com, conf_path, self.translator)
             f.write(text)
 

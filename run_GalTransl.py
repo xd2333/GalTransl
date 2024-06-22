@@ -13,6 +13,7 @@ from GalTransl.__main__ import worker
 
 INPUT_PROMPT_TMP = "请输入/拖入项目文件夹，或项目文件夹内的yaml配置文件[default]："
 
+
 class ProjectManager:
     def __init__(self):
         self.user_input = ""
@@ -30,7 +31,9 @@ class ProjectManager:
             project_dir = user_input
 
         if not os.path.exists(os.path.join(project_dir, config_file_name)):
-            print(f"{project_dir}文件夹内不存在配置文件{config_file_name}，请检查后重新输入\n")
+            print(
+                f"{project_dir}文件夹内不存在配置文件{config_file_name}，请检查后重新输入\n"
+            )
             return None, None, None
         return user_input, project_dir, config_file_name
 
@@ -38,14 +41,16 @@ class ProjectManager:
         while True:
             input_prompt = INPUT_PROMPT_TMP.replace(
                 "[default]",
-                f"(留空继续『{self.project_name()}』项目)" if self.project_dir else ""
+                f"(留空继续『{self.project_name()}』项目)" if self.project_dir else "",
             )
             user_input = input(input_prompt).strip('"') or self.user_input
 
             if not user_input:
                 continue
 
-            self.user_input, self.project_dir, self.config_file_name = self.validate_project_path(user_input)
+            self.user_input, self.project_dir, self.config_file_name = (
+                self.validate_project_path(user_input)
+            )
             if not self.project_dir:
                 continue
 
@@ -58,21 +63,42 @@ class ProjectManager:
         print(f"Contributors: {CONTRIBUTORS}\n")
 
     def choose_translator(self):
-        default_choice = list(TRANSLATOR_SUPPORTED.keys()).index(self.translator) if self.translator else 0
+        default_choice = (
+            list(TRANSLATOR_SUPPORTED.keys()).index(self.translator)
+            if self.translator
+            else 0
+        )
         os.system("")  # 解决cmd的ANSI转义bug
         self.translator = BulletMenu(
-            f"请为『{self.project_name()}』项目选择翻译器：",
-            TRANSLATOR_SUPPORTED
+            f"请为『{self.project_name()}』项目选择翻译器：", TRANSLATOR_SUPPORTED
         ).run(default_choice)
 
     def project_name(self):
         return self.project_dir.split(os.sep)[-1] if self.project_dir else ""
 
+    def create_shortcut_win(self):
+        TEMPLATE = 'cd /d "{0}"\n{1} "{2}" {3}\npause'
+        run_com = "python.exe " + os.path.basename(__file__)
+        pg_dir = os.path.dirname(os.path.abspath(__file__))
+        shortcut_path = f"{self.project_dir}{os.sep}run_GalTransl_v{GALTRANSL_VERSION}_{self.translator}.bat"
+        if "nt" not in os.name:  # not windows
+            return
+        if getattr(sys, "frozen", False):  # PyInstaller
+            run_com = os.path.basename(sys.executable)
+            pg_dir = os.path.dirname(sys.executable)
+        with open(shortcut_path, "w") as f:
+            text = TEMPLATE.format(pg_dir, run_com, self.user_input, self.translator)
+            f.write(text)
+
     def run(self):
         # 检查命令行参数
         if len(sys.argv) > 1:
             self.user_input = sys.argv[1]
-            self.user_input, self.project_dir, self.config_file_name = self.validate_project_path(self.user_input)
+            self.user_input, self.project_dir, self.config_file_name = (
+                self.validate_project_path(self.user_input)
+            )
+            if len(sys.argv) > 2 and sys.argv[2] in TRANSLATOR_SUPPORTED.keys():
+                self.translator = sys.argv[2]
 
         while True:
             self.print_program_info()
@@ -84,14 +110,19 @@ class ProjectManager:
                 except KeyboardInterrupt:
                     print("\nGoodbye.")
                     return
-
-            try:
-                self.choose_translator()
-            except KeyboardInterrupt:
-                print("\nGoodbye.")
-                return
-
-            worker(self.project_dir, self.config_file_name, self.translator, show_banner=False)
+            if not self.translator:
+                try:
+                    self.choose_translator()
+                except KeyboardInterrupt:
+                    print("\nGoodbye.")
+                    return
+            self.create_shortcut_win()
+            worker(
+                self.project_dir,
+                self.config_file_name,
+                self.translator,
+                show_banner=False,
+            )
 
             print("翻译任务完成，准备重新开始...")
             self.user_input = ""

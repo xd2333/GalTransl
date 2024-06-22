@@ -20,19 +20,19 @@ common:
   # GPT3.5/GPT4
   gpt.restoreContextMode: true # (GPT3.5/4)重启时恢复上一轮的译文前文。[True/False]
   # Sakura/GalTransl
-  gpt.transl_dropout: 0 # (Sakura/Galtransl)（实验性）丢弃翻译结果末尾的n行，可能会提高上下文准确性。[0-2]
+  gpt.transl_dropout: 0 # (Sakura/Galtransl-v1)（实验性）丢弃翻译结果末尾的n行，可能会提高上下文准确性。[0-2]
   # GalTransl
-  gpt.transl_style: "流畅" # (GalTransl)翻译风格[流畅/文艺]
+  gpt.transl_style: "流畅" # (GalTransl-v1)翻译风格[流畅/文艺]
 
-# 插件设置
+# 插件选择，插件介绍可在启动程序后选择showplugs查看
+# 某个插件自己的设置进入plugins的插件目录内修改对应的yaml文件
 plugin:
   filePlugin: file_galtransl_json # 指定文件读取插件，默认使用file_galtransl_json
   textPlugins: # 文本处理插件列表，按顺序执行
     - text_common_normalfix # 默认插件，修复常规通用问题
-    - (project_dir)text_common_example # 示例，(project_dir)代表插件在项目的plugins目录里
-    #- (project_dir)text_common_2333 # 示例，在 - 前加#号可以禁用插件
+    #- (project_dir)text_common_example # 示例，(project_dir)代表插件在项目的plugins目录里
 
-# 代理设置
+# 代理设置，使用中转供应商时一般不用开代理
 proxy:
   enableProxy: false # 是否启用代理。[True/False]
   proxies:
@@ -94,6 +94,6 @@ problemAnalyze:
     - 比日文长 # 比日文长1.3倍以上
     - 字典使用 # LLM没有按GPT字典要求翻译
     #- 引入英文 # 本来没有英文，译文引入了英文
-  arinashiDict: # 格式为 aaa:<空格>bbb
+  arinashiDict: # 格式为 aaa:<空格>bbb（将被废弃）
     aaa: bbb
     ccc: ddd

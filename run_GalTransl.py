@@ -77,7 +77,7 @@ class ProjectManager:
         return self.project_dir.split(os.sep)[-1] if self.project_dir else ""
 
     def create_shortcut_win(self):
-        TEMPLATE = 'cd /d "{0}"\n{1} "{2}" {3}\npause'
+        TEMPLATE = 'chcp 65001\ncd /d "{0}"\n{1} "{2}" {3}\npause'
         run_com = "python.exe " + os.path.basename(__file__)
         program_dir = os.path.dirname(os.path.abspath(__file__))
         shortcut_path = f"{self.project_dir}{os.sep}run_GalTransl_v{GALTRANSL_VERSION}_{self.translator}.bat"
@@ -87,7 +87,7 @@ class ProjectManager:
         if getattr(sys, "frozen", False):  # PyInstaller
             run_com = os.path.basename(sys.executable)
             program_dir = os.path.dirname(sys.executable)
-        with open(shortcut_path, "w", errors="ignore") as f:
+        with open(shortcut_path, "w", encoding="utf-8") as f:
             text = TEMPLATE.format(program_dir, run_com, conf_path, self.translator)
             f.write(text)
 
@@ -117,7 +117,7 @@ class ProjectManager:
                 except KeyboardInterrupt:
                     print("\nGoodbye.")
                     return
-            if self.translator not in ["showplugs","dump-name"]:
+            if self.translator not in ["showplugs", "dump-name"]:
                 self.create_shortcut_win()
             worker(
                 self.project_dir,

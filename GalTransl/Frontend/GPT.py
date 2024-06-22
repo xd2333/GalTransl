@@ -242,6 +242,10 @@ async def doLLMTranslate(
     post_dic = CNormalDic(initDictList(post_dic_dir, default_dic_dir, project_dir))
     gpt_dic = CGptDict(initDictList(gpt_dic_dir, default_dic_dir, project_dir))
 
+    if projectConfig.getDictCfgSection().get("sortPrePostDict", False):
+        pre_dic.sort_dic()
+        post_dic.sort_dic()
+
     workersPerProject = projectConfig.getKey("workersPerProject")
 
     if "sakura" in eng_type or "galtransl" in eng_type:

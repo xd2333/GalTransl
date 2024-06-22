@@ -23,6 +23,7 @@ common:
   gpt.transl_dropout: 0 # (Sakura/Galtransl)（实验性）丢弃翻译结果末尾的n行，可能会提高上下文准确性。[0-2]
   # GalTransl
   gpt.transl_style: "流畅" # (GalTransl)翻译风格[流畅/文艺]
+
 # 插件设置
 plugin:
   filePlugin: file_galtransl_json # 指定文件读取插件，默认使用file_galtransl_json
@@ -30,16 +31,19 @@ plugin:
     - text_common_normalfix # 默认插件，修复常规通用问题
     - (project_dir)text_common_example # 示例，(project_dir)代表插件在项目的plugins目录里
     #- (project_dir)text_common_2333 # 示例，在 - 前加#号可以禁用插件
+
 # 代理设置
 proxy:
   enableProxy: false # 是否启用代理。[True/False]
   proxies:
     - address: http://127.0.0.1:7890
-# 字典设置，所有字典、字典内词条将按顺序从上到下替换
+
+# 字典设置
 dictionary:
   defaultDictFolder: Dict # 通用字典文件夹，相对于程序目录，也可填入绝对路径
-  usePreDictInName: false # 将译前字典用在name字段，可用于改名[True/False]
-  usePostDictInName: false # 将译后字典用在name字段，可用于汉化name[True/False]
+  usePreDictInName: false # 将译前字典用在name字段，可用于改名，不会改变结果的name字段[True/False]
+  usePostDictInName: false # 将译后字典用在name字段，可用于翻译name字段[True/False]
+  sortPrePostDict: true # 将译前译后字典按查找词长度重排序。[True/False]
   # 译前字典
   preDict:
     - 01H字典_矫正_译前.txt # 用于口齿不清的矫正
@@ -54,6 +58,7 @@ dictionary:
     - 00通用字典_符号_译后.txt # 符号矫正
     - 00通用字典_译后.txt
     - (project_dir)项目字典_译后.txt
+
 # 翻译后端相关设置
 backendSpecific:
   GPT35: # GPT3.5 API
@@ -73,21 +78,22 @@ backendSpecific:
       - newbing_cookies/cookie1.json # 你的 cookies 文件，相对于项目目录
       - newbing_cookies/cookie2.json # 你的 cookies 文件2，会自动切换
   SakuraLLM: # Sakura/Galtransl API
-    endpoints: 
+    endpoints:
       - http://127.0.0.1:8080
       #- http://127.0.0.1:5001 # 可以填入多个endpoints，用于多线程
     rewriteModelName: "" # 使用指定的模型型号替换默认模型
-# 自动问题分析配置
-problemAnalyze: 
+
+# 自动问题分析配置，在-前面加#号可以禁用
+problemAnalyze:
   problemList: # 要发现的问题清单
-    - 词频过高
-    - 标点错漏
-    - 残留日文
-    - 丢失换行
-    - 多加换行
-    - 比日文长
-    - 字典使用
-    #- 引入英文
+    - 词频过高 # 重复大于20次
+    - 标点错漏 # 标点符号多加或漏加
+    - 残留日文 # 日文平假名片假名残留
+    - 丢失换行 # 缺少换行符
+    - 多加换行 # 多余的换行符
+    - 比日文长 # 比日文长1.3倍以上
+    - 字典使用 # LLM没有按GPT字典要求翻译
+    #- 引入英文 # 本来没有英文，译文引入了英文
   arinashiDict: # 格式为 aaa:<空格>bbb
     aaa: bbb
     ccc: ddd

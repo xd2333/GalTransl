@@ -126,6 +126,12 @@ class CNormalDic:
         self.dic_list: List[CBasicDicElement] = []
         for dic_path in dic_list:
             self.load_dic(dic_path)  # 加载字典
+    
+    def sort_dic(self):
+        """
+        按字典search_word的长度重排序
+        """
+        self.dic_list.sort(key=lambda x: len(x.search_word), reverse=True)
 
     def load_dic(self, dic_path: str):
         """加载一个字典txt到这个对象的内存"""
@@ -305,6 +311,12 @@ class CGptDict:
         self._dic_list: List[CBasicDicElement] = []
         for dic_path in dic_list:
             self.load_dic(dic_path)  # 加载字典
+    
+    def sort_dic(self):
+        """
+        按字典search_word的长度重排序
+        """
+        self._dic_list.sort(key=lambda x: len(x.search_word), reverse=True)
 
     def load_dic(self, dic_path: str):
         """加载一个字典txt到这个对象的内存"""

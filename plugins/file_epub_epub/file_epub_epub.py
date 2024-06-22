@@ -1,12 +1,19 @@
 import re
 import os
-import zipfile
 import shutil
-import ebooklib
-from ebooklib import epub
-from bs4 import BeautifulSoup
+import zipfile
 from GalTransl import LOGGER
 from GalTransl.GTPlugin import GFilePlugin
+
+try:
+    import ebooklib
+    from ebooklib import epub
+except ImportError:
+    LOGGER.warning("缺少依赖包ebooklib, 请更新依赖")
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    LOGGER.warning("缺少依赖包beautifulsoup4, 请更新依赖")
 
 class FilePlugin(GFilePlugin):
     def gtp_init(self, plugin_conf: dict, project_conf: dict):

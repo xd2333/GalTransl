@@ -11,5 +11,5 @@ tqdm
 colorlog
 openpyxl
 orjson
-ebooklib
-BeautifulSoup4
+EbookLib
+beautifulsoup4

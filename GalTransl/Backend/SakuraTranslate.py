@@ -113,7 +113,10 @@ class CSakuraTranslate:
         max_len = 0
         for i, trans in enumerate(trans_list):
             # 处理换行
-            tmp_text = trans.post_jp.replace("\r\n", "\\n").replace("\n", "\\n")
+            if self.eng_type in ["sakura-009", "sakura-010"]:
+                tmp_text = trans.post_jp.replace("\r\n", "↓↓").replace("\n", "↓↓")
+            else:
+                tmp_text = trans.post_jp.replace("\r\n", "\\n").replace("\n", "\\n")
             # 有name
             if trans.speaker != "":
                 tmp_text = f"{trans.speaker}「{tmp_text}」"
@@ -209,9 +212,9 @@ class CSakuraTranslate:
                 line = self.opencc.convert(line)
                 # 还原换行
                 if "\r\n" in trans_list[i].post_jp:
-                    line = line.replace("\\n", "\r\n")
+                    line = line.replace("↓↓", "\r\n").replace("\\n", "\r\n")
                 elif "\n" in trans_list[i].post_jp:
-                    line = line.replace("\\n", "\n")
+                    line = line.replace("↓↓", "\n").replace("\\n", "\n")
 
                 # fix trick
                 if line.startswith("："):

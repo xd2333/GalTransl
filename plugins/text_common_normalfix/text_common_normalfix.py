@@ -5,6 +5,12 @@ from GalTransl.GTPlugin import GTextPlugin
 class text_common_normalfix(GTextPlugin):
 
     def before_src_processed(self, tran: CSentense) -> CSentense:
+        if tran.post_jp.startswith("　"):
+            tran.post_jp = tran.post_jp[1:]
+            tran.left_symbol += "　"
+        if tran.post_jp.endswith("　"):
+            tran.post_jp = tran.post_jp[:-1]
+            tran.right_symbol = "　" + tran.right_symbol
         return tran
 
     def after_src_processed(self, tran: CSentense) -> CSentense:
@@ -20,7 +26,7 @@ class text_common_normalfix(GTextPlugin):
             if tran.post_zh.startswith("\r\n") and not tran.post_jp.startswith("\r\n"):
                 tran.post_zh = tran.post_zh[2:]
         return tran
-    
+
     def after_dst_processed(self, tran: CSentense) -> CSentense:
         return tran
 

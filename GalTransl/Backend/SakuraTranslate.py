@@ -91,7 +91,7 @@ class CSakuraTranslate:
         if eng_type == "sakura-010":
             self.system_prompt = Sakura_SYSTEM_PROMPT010
             self.trans_prompt = Sakura_TRANS_PROMPT010
-        if eng_type == "galtransl-v1":
+        if eng_type == "galtransl-v1.5":
             self.system_prompt = GalTransl_SYSTEM_PROMPT
             self.trans_prompt = GalTransl_TRANS_PROMPT
         self.chatbot = ChatbotV3(
@@ -394,7 +394,7 @@ class CSakuraTranslate:
         self._current_style = style_name
 
         if style_name == "precise":
-            temperature, top_p = 0.1, 0.8
+            temperature, top_p = 0.1618, 0.8
             frequency_penalty, presence_penalty = 0.1, 0.0
         elif style_name == "normal":
             temperature, top_p = 0.4, 0.95

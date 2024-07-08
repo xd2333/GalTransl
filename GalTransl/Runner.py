@@ -110,7 +110,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         else:
             LOGGER.warning(f"未找到文本插件: {tname}，跳过该插件")
     fname = cfg.getFilePlugin()
-    if fname and fname != "file_galtransl_json":
+    if fname:
         info_path = get_pluginInfo_path(fname)
         candidate = plugin_manager.getPluginCandidateByInfoPath(info_path)
         assert candidate, f"未找到文件插件: {fname}，请检查设置"
@@ -122,7 +122,11 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     file_plugins = plugin_manager.getPluginsOfCategory("GFilePlugin")
     for plugin in file_plugins + text_plugins:
         plugin_conf = plugin.yaml_dict
+        plugin_module = plugin_conf["Core"]["Module"]
         project_conf = cfg.getCommonConfigSection()
+        project_plugin_conf=cfg.getPluginConfigSection()
+        if plugin_module in project_plugin_conf:
+            plugin_conf["Settings"].update(project_plugin_conf[plugin_module])
         project_conf["project_dir"] = cfg.getProjectDir()
         try:
             LOGGER.info(f'加载插件"{plugin.name}"...')

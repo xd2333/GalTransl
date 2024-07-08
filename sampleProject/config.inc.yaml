@@ -27,10 +27,12 @@ common:
 # 插件选择，插件介绍可在启动程序后选择showplugs查看
 # 某个插件自己的设置进入plugins的插件目录内修改对应的yaml文件
 plugin:
-  filePlugin: file_galtransl_json # 指定文件读取插件，默认使用file_galtransl_json
+  filePlugin: file_galtransl_json # 文件插件，用于支持更多格式，默认使用file_galtransl_json
   textPlugins: # 文本处理插件列表，按顺序执行
     - text_common_normalfix # 默认插件，修复常规通用问题
-    #- (project_dir)text_common_example # 示例，(project_dir)代表插件在项目的plugins目录里
+   #- (project_dir)text_common_example # 示例，(project_dir)代表插件在项目的plugins目录里
+ #file_subtitle_srt_lrc_vtt: # 示例，可以在项目配置文件中覆盖插件的设置项
+ #   保存双语字幕: true
 
 # 代理设置，使用中转供应商时一般不用开代理
 proxy:

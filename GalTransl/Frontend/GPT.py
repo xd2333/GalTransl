@@ -81,7 +81,7 @@ async def doLLMTranslateSingleFile(
                     ]:
                         cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
                     gptapi = CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
-                case "sakura-009" | "sakura-010" | "galtransl-v1":
+                case "sakura-009" | "sakura-010" | "galtransl-v1.5":
                     gptapi = CSakuraTranslate(
                         projectConfig, eng_type, endpoint, proxyPool
                     )
@@ -101,7 +101,7 @@ async def doLLMTranslateSingleFile(
                     save_func = plugin.plugin_object.save_file
                     break
                 except TypeError as e:
-                    LOGGER.error(f"{file_name} 不是插件 {plugin.name} 支持的格式：{e}")
+                    LOGGER.error(f"{file_name} 不是文件插件'{plugin.name}'支持的格式：{e}")
                     return False
                 except Exception as e:
                     LOGGER.error(f"插件 {plugin.name} 读取文件 {file_name} 出错: {e}")

@@ -112,6 +112,9 @@ class CProjectConfig:
 
     def getCommonConfigSection(self) -> dict:
         return self.projectConfig["common"]
+    
+    def getPluginConfigSection(self) -> dict:
+        return self.projectConfig["plugin"]
 
     def getlbSymbol(self) -> str:
         lbSymbol = self.projectConfig["common"].get("linebreakSymbol", "\r\n")

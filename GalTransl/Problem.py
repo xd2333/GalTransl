@@ -92,6 +92,4 @@ def find_problems(
                     problem_list.append(f"本有 {key} 译无 {value}")
 
         if problem_list:
-            tran.problem = ", ".join(problem_list)
-        else:
-            tran.problem = ""
+            tran.problem += ", ".join(problem_list)

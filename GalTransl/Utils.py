@@ -152,6 +152,25 @@ def check_for_tool_updates(new_version):
     except Exception:
         pass
 
+def find_most_repeated_substring(text):
+    max_count = 0
+    max_substring = ""
+    n = len(text)
+
+    for i in range(n):
+        for j in range(i + 1, n + 1):
+            substring = text[i:j]
+            count = 1
+            start = j
+            while start + len(substring) <= n and text[start:start + len(substring)] == substring:
+                count += 1
+                start += len(substring)
+            
+            if count > max_count or (count == max_count and len(substring) > len(max_substring)):
+                max_count = count
+                max_substring = substring
+
+    return max_substring, max_count
 
 if __name__ == '__main__':
     print(contains_english("機密レベルＡＡ以上のファイルを一覧"))

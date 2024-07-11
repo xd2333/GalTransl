@@ -9,6 +9,7 @@ from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
 from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
+from GalTransl.Utils import find_most_repeated_substring
 from GalTransl.Backend.Prompts import (
     Sakura_TRANS_PROMPT,
     Sakura_SYSTEM_PROMPT,
@@ -110,7 +111,7 @@ class CSakuraTranslate:
 
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
-        max_len = 0
+        max_repeat = 0
         for i, trans in enumerate(trans_list):
             # 处理换行
             if self.eng_type in ["sakura-009", "sakura-010"]:
@@ -121,11 +122,13 @@ class CSakuraTranslate:
             if trans.speaker != "":
                 tmp_text = f"{trans.speaker}「{tmp_text}」"
             input_list.append(tmp_text)
-            max_len = max(max_len, len(tmp_text))
+            _, count = find_most_repeated_substring(tmp_text)
+            max_repeat = max(max_repeat, count)
         input_str = "\n".join(input_list).strip("\n")
 
         # 检测退化阈值
-        self.MAX_REPETITION_CNT = max(max_len + 5, 30)
+        self.JP_REPETITION_CNT = max_repeat
+        self.JP_LEN = len(input_str)
 
         prompt_req = self.trans_prompt
         prompt_req = prompt_req.replace("[Input]", input_str)
@@ -138,24 +141,25 @@ class CSakuraTranslate:
             try:
                 with logging_redirect_tqdm(loggers=[LOGGER]):
                     LOGGER.info("->输入：\n" + gptdict + "\n" + repr(input_str))
-                print("\n",flush=True)
+                print("\n", flush=True)
                 resp = ""
                 last_data = ""
                 repetition_cnt = 0
                 degen_flag = False
                 self._del_previous_message()
                 ask_stream = self.chatbot.ask_stream_async(prompt_req)
+                token_count = 0
                 async for data in ask_stream:
+                    token_count += 1
                     if self.streamOutputMode:
                         print(data, end="", flush=True)
                     resp += data
                     # 检测是否反复重复输出同一内容，如果超过一定次数，则判定为退化并打断。
-                    last_data, repetition_cnt, degen_flag = self.check_degen_in_process(
-                        last_data, data, repetition_cnt
-                    )
-                    if degen_flag:
-                        await ask_stream.aclose()
-                        break
+                    if token_count % 10 == 0:
+                        degen_flag = self.check_degen_in_process(resp)
+                        if degen_flag:
+                            await ask_stream.aclose()
+                            break
                 # print(data, end="\n")
                 if not self.streamOutputMode:
                     LOGGER.info("->输出：\n" + repr(resp))
@@ -317,7 +321,14 @@ class CSakuraTranslate:
         trans_result_list = []
         len_trans_list = len(trans_list_unhit)
         transl_step_count = 0
-        progress_bar = atqdm(total=len_trans_list, desc=f"Translating {filename}", unit="line", dynamic_ncols=True, leave=False, file=sys.stdout)
+        progress_bar = atqdm(
+            total=len_trans_list,
+            desc=f"Translating {filename}",
+            unit="line",
+            dynamic_ncols=True,
+            leave=False,
+            file=sys.stdout,
+        )
         while i < len_trans_list:
             # await asyncio.sleep(1)
 
@@ -343,7 +354,7 @@ class CSakuraTranslate:
 
             trans_result_list += trans_result
             progress_bar.update(num)
-            print("\n",flush=True)
+            print("\n", flush=True)
             LOGGER.info("".join([repr(tran) for tran in trans_result]))
         progress_bar.close()
 
@@ -441,16 +452,14 @@ class CSakuraTranslate:
         )
         LOGGER.info("-> 恢复了上下文")
 
-    def check_degen_in_process(self, last_data: str, data: str, repetition_cnt: int):
-        degen_flag = False
-        if last_data == data:
-            repetition_cnt += 1
-        else:
-            repetition_cnt = 0
-        if repetition_cnt > self.MAX_REPETITION_CNT:
-            degen_flag = True
-        last_data = data
-        return last_data, repetition_cnt, degen_flag
+    def check_degen_in_process(self, cn: str = ""):
+        _, max_count = find_most_repeated_substring(cn)
+        if max_count > max(self.JP_REPETITION_CNT * 2, 12):
+            return True
+        if max_count > self.JP_REPETITION_CNT:
+            if len(cn.split("\n")[-1]) > self.JP_LEN * 1.3:
+                return True
+        return False
 
 
 if __name__ == "__main__":

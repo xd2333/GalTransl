@@ -21,6 +21,7 @@ class file_plugin(GFilePlugin):
         self.名称识别拼接方案 = settings.get("名称识别拼接方案", "{name}\n「{message}」")
         self.名称识别正则表达式 = re.compile(
             settings.get("名称识别正则表达式", r"^(?P<name>.*?)「(?P<message>.*?)」$"), re.DOTALL)
+        self.清除换行符 = settings.get("清除换行符", True)
 
     def load_file(self, file_path: str) -> list:
         """
@@ -137,7 +138,9 @@ class file_plugin(GFilePlugin):
                     if match:
                         name = match.group("name").strip()
                         message = match.group("message").strip()
-
+                if self.清除换行符:
+                    message = message.replace("\n", " ")
+                    message = message.replace("\r", " ")
                 json_list.append({"name": name, "message": message})
 
         except FileNotFoundError:

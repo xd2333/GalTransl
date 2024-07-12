@@ -7,7 +7,7 @@ from GalTransl.GTPlugin import GTextPlugin, GFilePlugin
 from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl.yapsy.PluginManager import PluginManager
 from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
-from GalTransl.Frontend.GPT import doLLMTranslate
+from GalTransl.Frontend.GPT import doLLMTranslate, DictionaryCountSplitter, DictionaryCombiner, EqualPartsSplitter
 
 
 CONSOLE_FORMAT = colorlog.ColoredFormatter(
@@ -161,9 +161,17 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         LOGGER.info(f"\033[32m检测到新版本: {new_version[0]}\033[0m  当前版本: {GALTRANSL_VERSION}")
         LOGGER.info(f"\033[32m更新地址：https://github.com/xd2333/GalTransl/releases\033[0m")
 
+    # 按字典数量分割
+    input_splitter = DictionaryCountSplitter(2000)
+
+    # 或者按份数分割
+    # input_splitter = EqualPartsSplitter(5)
+
+    # 默认的输出合并器
+    output_combiner = DictionaryCombiner()
 
     await doLLMTranslate(
-        cfg, OpenAITokenPool, proxyPool, text_plugins, file_plugins, translator
+        cfg, OpenAITokenPool, proxyPool, text_plugins, file_plugins, translator, input_splitter, output_combiner
     )
 
     for plugin in file_plugins + text_plugins:

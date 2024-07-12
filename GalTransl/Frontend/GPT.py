@@ -1,23 +1,19 @@
-"""
-GPT3.5 / 4 / New Bing 前端翻译的控制逻辑
-"""
-
+import json
+from typing import List, Dict, Any, Optional, Union, Tuple
 from os import makedirs, sep as os_sep
-from os.path import join as joinpath
-from os.path import exists as isPathExists
-from os.path import getsize as getFileSize
-from os.path import basename, dirname
-from typing import Optional
+from os.path import join as joinpath, exists as isPathExists, getsize as getFileSize, basename, dirname
 from tqdm.asyncio import tqdm as atqdm
 from asyncio import Semaphore, gather, Queue
 from time import time
+import asyncio
+
 from GalTransl import LOGGER
 from GalTransl.Backend.GPT3Translate import CGPT35Translate
 from GalTransl.Backend.GPT4Translate import CGPT4Translate
 from GalTransl.Backend.BingGPT4Translate import CBingGPT4Translate
 from GalTransl.Backend.SakuraTranslate import CSakuraTranslate
 from GalTransl.Backend.RebuildTranslate import CRebuildTranslate
-from GalTransl.ConfigHelper import initDictList
+from GalTransl.ConfigHelper import initDictList, CProjectConfig, CProxyPool
 from GalTransl.Loader import load_transList
 from GalTransl.Dictionary import CGptDict, CNormalDic
 from GalTransl.Problem import find_problems
@@ -29,10 +25,106 @@ from GalTransl.ConfigHelper import CProjectConfig, initDictList, CProxyPool
 from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl.Utils import get_file_list
 
+class InputSplitter:
+    @staticmethod
+    def split(content: Union[str, List]) -> List[str]:
+        # 如果已经是列表，直接返回JSON字符串
+        if isinstance(content, list):
+            return [json.dumps(content, ensure_ascii=False, indent=2)]
+        # 如果是字符串，尝试解析为JSON，如果失败则直接返回
+        try:
+            data = json.loads(content)
+            if isinstance(data, list):
+                return [json.dumps(data, ensure_ascii=False, indent=2)]
+        except json.JSONDecodeError:
+            pass
+        return [content]
+
+class DictionaryCountSplitter(InputSplitter):
+    def __init__(self, dict_count: int):
+        self.dict_count = dict_count
+
+    def split(self, content: Union[str, List]) -> List[str]:
+        # 如果是字符串，尝试解析为JSON
+        if isinstance(content, str):
+            try:
+                data = json.loads(content)
+            except json.JSONDecodeError:
+                LOGGER.warning(f"无法解析JSON：{result[:10]}...")  # 打印前10个字符作为警告        
+                return [content]  # 如果解析失败，返回原内容
+        else:
+            data = content
+
+        # 确保data是列表
+        if not isinstance(data, list):
+            return [json.dumps(data, ensure_ascii=False, indent=2)]
+
+        result = []
+        current_chunk = []
+        for item in data:
+            current_chunk.append(item)
+            if len(current_chunk) >= self.dict_count:
+                result.append(json.dumps(current_chunk, ensure_ascii=False, indent=2))
+                current_chunk = []
+        
+        if current_chunk:
+            result.append(json.dumps(current_chunk, ensure_ascii=False, indent=2))
+        
+        return result
+
+class EqualPartsSplitter(InputSplitter):
+    def __init__(self, parts: int):
+        self.parts = parts
+
+    def split(self, content: Union[str, List]) -> List[str]:
+        # 如果是字符串，尝试解析为JSON
+        if isinstance(content, str):
+            try:
+                data = json.loads(content)
+            except json.JSONDecodeError:
+                return [content]  # 如果解析失败，返回原内容
+        else:
+            data = content
+
+        # 确保data是列表
+        if not isinstance(data, list):
+            return [json.dumps(data, ensure_ascii=False, indent=2)]
+
+        total_items = len(data)
+        items_per_part = total_items // self.parts
+        remainder = total_items % self.parts
+
+        result = []
+        start = 0
+        for i in range(self.parts):
+            end = start + items_per_part + (1 if i < remainder else 0)
+            chunk = data[start:end]
+            result.append(json.dumps(chunk, ensure_ascii=False, indent=2))
+            start = end
+
+        return result
+
+class OutputCombiner:
+    @staticmethod
+    def combine(results: List[str]) -> str:
+        # 默认实现：直接返回
+        return results[0] if results else ''
+
+class DictionaryCombiner(OutputCombiner):
+    @staticmethod
+    def combine(results: List[str]) -> str:
+        combined_data = []
+        for result in results:
+            try:
+                data = json.loads(result)
+                combined_data.extend(data)
+            except json.JSONDecodeError:
+                LOGGER.warning(f"无法解析JSON：{result[:10]}...")  # 打印前10个字符作为警告        
+        return json.dumps(combined_data, ensure_ascii=False, indent=2)
 
 async def doLLMTranslateSingleFile(
-    semaphore: Semaphore,
-    endpoint_queue: Queue,
+    semaphore: asyncio.Semaphore,
+    endpoint_queue: asyncio.Queue,
     file_path: str,
     projectConfig: CProjectConfig,
     eng_type: str,
@@ -43,7 +135,12 @@ async def doLLMTranslateSingleFile(
     fPlugins: list,
     proxyPool: CProxyPool,
     tokenPool: COpenAITokenPool,
-) -> bool:
+    input_splitter: InputSplitter = InputSplitter(),
+    output_combiner: OutputCombiner = DictionaryCombiner(),
+    split_content: str = None,
+    file_index: int = 0,
+    total_splits: int = 1
+) -> Tuple[bool, List, List, str]:
     async with semaphore:
         if endpoint_queue is not None:
             endpoint = await endpoint_queue.get()
@@ -59,170 +156,120 @@ async def doLLMTranslateSingleFile(
             output_file_path = input_file_path.replace(input_dir, output_dir)
             output_file_dir = dirname(output_file_path)
             makedirs(output_file_dir, exist_ok=True)
-            cache_file_path = joinpath(cache_dir, file_name)
+            cache_file_path = joinpath(cache_dir, f"{file_name}_{file_index}")
             print("\n", flush=True)
-            LOGGER.info(
-                f"start translating: {file_name}, engine type: {eng_type}"
-            )
+            LOGGER.info(f"start translating: {file_name} (part {file_index+1}/{total_splits}), engine type: {eng_type}")
 
             match eng_type:
                 case "gpt35-0613" | "gpt35-1106" | "gpt35-0125":
-                    gptapi = CGPT35Translate(
-                        projectConfig, eng_type, proxyPool, tokenPool
-                    )
+                    gptapi = CGPT35Translate(projectConfig, eng_type, proxyPool, tokenPool)
                 case "gpt4" | "gpt4-turbo":
-                    gptapi = CGPT4Translate(
-                        projectConfig, eng_type, proxyPool, tokenPool
-                    )
+                    gptapi = CGPT4Translate(projectConfig, eng_type, proxyPool, tokenPool)
                 case "newbing":
                     cookiePool: list[str] = []
-                    for i in projectConfig.getBackendConfigSection("bingGPT4")[
-                        "cookiePath"
-                    ]:
+                    for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
                         cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
                     gptapi = CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
                 case "sakura-009" | "sakura-010" | "galtransl-v1.5":
-                    gptapi = CSakuraTranslate(
-                        projectConfig, eng_type, endpoint, proxyPool
-                    )
+                    gptapi = CSakuraTranslate(projectConfig, eng_type, endpoint, proxyPool)
                 case "rebuildr" | "rebuilda" | "dump-name":
                     gptapi = CRebuildTranslate(projectConfig, eng_type)
                 case _:
                     raise ValueError(f"不支持的翻译引擎类型 {eng_type}")
 
-            # 1、初始化trans_list
-            origin_input = ""
+            # 如果是分割的内容，直接使用传入的 split_content
+            if split_content:
+                origin_input = split_content
+            else:
+                # 读取文件内容
+                origin_input = ""
+                if getFileSize(input_file_path) == 0:
+                    return True, [], [], file_path
+                for plugin in fPlugins:
+                    try:
+                        origin_input = plugin.plugin_object.load_file(input_file_path)
+                        break
+                    except TypeError as e:
+                        LOGGER.error(f"{file_name} 不是文件插件'{plugin.name}'支持的格式：{e}")
+                    except Exception as e:
+                        LOGGER.error(f"插件 {plugin.name} 读取文件 {file_name} 出错: {e}")
+                if not origin_input:
+                    with open(input_file_path, 'r', encoding='utf-8') as f:
+                        origin_input = f.read()
 
-            if getFileSize(input_file_path) == 0:
-                return True
-            for plugin in fPlugins:
-                try:
-                    origin_input = plugin.plugin_object.load_file(input_file_path)
-                    save_func = plugin.plugin_object.save_file
-                    break
-                except TypeError as e:
-                    LOGGER.error(f"{file_name} 不是文件插件'{plugin.name}'支持的格式：{e}")
-                    return False
-                except Exception as e:
-                    LOGGER.error(f"插件 {plugin.name} 读取文件 {file_name} 出错: {e}")
-                    return False
-            if not origin_input:
-                origin_input = input_file_path
-                save_func = save_json
+            LOGGER.info(f"origin input: {str(origin_input)[:500]}...")
 
+            # 处理内容
             try:
                 trans_list, json_list = load_transList(origin_input)
-            except Exception as e:
-                LOGGER.error(f"文件 {file_name} 加载翻译列表失败: {e}")
-                return False
-            
-            # 导出人名表功能
-            if "dump-name" in eng_type:
-                global name_dict
+                
+                # 翻译前处理
                 for tran in trans_list:
-                    if tran.speaker and type(tran.speaker) == str:
-                        if tran.speaker not in name_dict:
-                            name_dict[tran.speaker] = 0
-                        name_dict[tran.speaker] += 1
-                return True
+                    for plugin in tlugins:
+                        try:
+                            tran = plugin.plugin_object.before_src_processed(tran)
+                        except Exception as e:
+                            LOGGER.error(f"插件 {plugin.name} 执行失败: {e}")
+                    tran.analyse_dialogue()
+                    tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)
+                    if projectConfig.getDictCfgSection("usePreDictInName"):
+                        if type(tran.speaker) == type(tran._speaker) == str:
+                            tran.speaker = pre_dic.do_replace(tran.speaker, tran)
 
-            # 2、翻译前处理
-            for i, tran in enumerate(trans_list):
-                for plugin in tlugins:
-                    try:
-                        tran = plugin.plugin_object.before_src_processed(tran)
-                    except Exception as e:
-                        LOGGER.error(f"插件 {plugin.name} 执行失败: {e}")
-                        raise e
-                tran.analyse_dialogue()  # 解析是否为对话
-                tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)  # 译前字典替换
-                if projectConfig.getDictCfgSection("usePreDictInName"):  # 译前name替换
-                    if type(tran.speaker) == type(tran._speaker) == str:
-                        tran.speaker = pre_dic.do_replace(tran.speaker, tran)
-                for plugin in tlugins:
-                    try:
-                        tran = plugin.plugin_object.after_src_processed(tran)
-                    except Exception as e:
-                        LOGGER.error(f"插件 {plugin.name} 执行失败: {e}")
-                        raise e
+                # 执行翻译
+                await gptapi.batch_translate(
+                    file_name,
+                    cache_file_path,
+                    trans_list,
+                    projectConfig.getKey("gpt.numPerRequestTranslate"),
+                    retry_failed=projectConfig.getKey("retranslFail"),
+                    gpt_dic=gpt_dic,
+                    retran_key=projectConfig.getKey("retranslKey"),
+                )
 
-            # 3、读出未命中的Translate然后批量翻译
+                # 执行校对（如果启用）
+                if projectConfig.getKey("gpt.enableProofRead"):
+                    if "newbing" in eng_type or "gpt4" in eng_type:
+                        await gptapi.batch_translate(
+                            file_name,
+                            cache_file_path,
+                            trans_list,
+                            projectConfig.getKey("gpt.numPerRequestProofRead"),
+                            retry_failed=projectConfig.getKey("retranslFail"),
+                            gpt_dic=gpt_dic,
+                            proofread=True,
+                            retran_key=projectConfig.getKey("retranslKey"),
+                        )
+                    else:
+                        LOGGER.warning("当前引擎不支持校对，跳过校对步骤")
 
-            await gptapi.batch_translate(
-                file_name,
-                cache_file_path,
-                trans_list,
-                projectConfig.getKey("gpt.numPerRequestTranslate"),
-                retry_failed=projectConfig.getKey("retranslFail"),
-                gpt_dic=gpt_dic,
-                retran_key=projectConfig.getKey("retranslKey"),
-            )
-            if projectConfig.getKey("gpt.enableProofRead"):
-                if "newbing" in eng_type or "gpt4" in eng_type:
-                    await gptapi.batch_translate(
-                        file_name,
-                        cache_file_path,
-                        trans_list,
-                        projectConfig.getKey("gpt.numPerRequestProofRead"),
-                        retry_failed=projectConfig.getKey("retranslFail"),
-                        gpt_dic=gpt_dic,
-                        proofread=True,
-                        retran_key=projectConfig.getKey("retranslKey"),
-                    )
-                else:
-                    LOGGER.warning("当前引擎不支持校对，跳过校对步骤")
+                # 翻译后处理
+                for tran in trans_list:
+                    for plugin in tlugins:
+                        try:
+                            tran = plugin.plugin_object.before_dst_processed(tran)
+                        except Exception as e:
+                            LOGGER.error(f"插件 {plugin.name} 执行失败: {e}")
+                    tran.recover_dialogue_symbol()
+                    tran.post_zh = post_dic.do_replace(tran.post_zh, tran)
+                    if projectConfig.getDictCfgSection("usePostDictInName"):
+                        if tran._speaker:
+                            if type(tran.speaker) == type(tran._speaker) == list:
+                                tran._speaker = [post_dic.do_replace(s, tran) for s in tran.speaker]
+                            elif type(tran.speaker) == type(tran._speaker) == str:
+                                tran._speaker = post_dic.do_replace(tran.speaker, tran)
 
-            # 4、翻译后处理
-            for i, tran in enumerate(trans_list):
-                for plugin in tlugins:
-                    try:
-                        tran = plugin.plugin_object.before_dst_processed(tran)
-                    except:
-                        LOGGER.error(f"插件 {plugin.name} 执行失败: {e}")
-                        raise e
-                tran.recover_dialogue_symbol()  # 恢复对话框
-                tran.post_zh = post_dic.do_replace(tran.post_zh, tran)  # 译后字典替换
-                if projectConfig.getDictCfgSection("usePostDictInName"):  # 译后name替换
-                    if tran._speaker:
-                        if type(tran.speaker) == type(tran._speaker) == list:
-                            tran._speaker = [
-                                post_dic.do_replace(s, tran) for s in tran.speaker
-                            ]
-                        elif type(tran.speaker) == type(tran._speaker) == str:
-                            tran._speaker = post_dic.do_replace(tran.speaker, tran)
-                for plugin in tlugins:
-                    try:
-                        tran = plugin.plugin_object.after_dst_processed(tran)
-                    except:
-                        LOGGER.error(f"插件 {plugin.name} 执行失败: {e}")
-                        raise e
+            except Exception as e:
+                LOGGER.error(f"处理内容时出错: {e}")
+                LOGGER.error(f"问题内容: {origin_input[:500]}")
+                return False, [], [], file_path
+
+            et = time()
+            LOGGER.info(f"  end translating: {file_name} (part {file_index+1}/{total_splits}) 翻译完成，用时 {et-st:.3f}s.")
+            return True, trans_list, json_list, file_path
         finally:
             if endpoint_queue is not None:
                 endpoint_queue.put_nowait(endpoint)
-    if eng_type != "rebuildr":
-        find_problems(trans_list, projectConfig, gpt_dic)
-        # 用于保存problems
-        save_transCache_to_json(trans_list, cache_file_path, post_save=True)
-
-    # 5、整理输出
-    if isPathExists(joinpath(proj_dir, "人名替换表.csv")):
-        name_dict = load_name_table(joinpath(proj_dir, "人名替换表.csv"))
-    else:
-        name_dict = {}
-
-    new_json_list = update_json_with_transList(trans_list, json_list, name_dict)
-    save_func(output_file_path, new_json_list)
-
-    et = time()
-    LOGGER.info(f"  end translating: {file_name} 翻译完成，用时 {et-st:.3f}s.")
-    return True
-
-
-async def run_task(task, progress_bar):
-    result = await task  # Wait for the individual task to complete
-    progress_bar.update(1)  # Update the progress bar
-    return result
-
 
 async def doLLMTranslate(
     projectConfig: CProjectConfig,
@@ -231,13 +278,15 @@ async def doLLMTranslate(
     tPlugins: list,
     fPlugins: list,
     eng_type="offapi",
+    input_splitter: InputSplitter = InputSplitter(),
+    output_combiner: OutputCombiner = DictionaryCombiner(),
 ) -> bool:
     pre_dic_dir = projectConfig.getDictCfgSection()["preDict"]
     post_dic_dir = projectConfig.getDictCfgSection()["postDict"]
     gpt_dic_dir = projectConfig.getDictCfgSection()["gpt.dict"]
     default_dic_dir = projectConfig.getDictCfgSection()["defaultDictFolder"]
     project_dir = projectConfig.getProjectDir()
-    # 加载字典
+    
     pre_dic = CNormalDic(initDictList(pre_dic_dir, default_dic_dir, project_dir))
     post_dic = CNormalDic(initDictList(post_dic_dir, default_dic_dir, project_dir))
     gpt_dic = CGptDict(initDictList(gpt_dic_dir, default_dic_dir, project_dir))
@@ -249,15 +298,13 @@ async def doLLMTranslate(
     workersPerProject = projectConfig.getKey("workersPerProject")
 
     if "sakura" in eng_type or "galtransl" in eng_type:
-        endpoint_queue = Queue()
+        endpoint_queue = asyncio.Queue()
         backendSpecific = projectConfig.projectConfig["backendSpecific"]
         section_name = "SakuraLLM" if "SakuraLLM" in backendSpecific else "Sakura"
         if "endpoints" in projectConfig.getBackendConfigSection(section_name):
             endpoints = projectConfig.getBackendConfigSection(section_name)["endpoints"]
         else:
-            endpoints = [
-                projectConfig.getBackendConfigSection(section_name)["endpoint"]
-            ]
+            endpoints = [projectConfig.getBackendConfigSection(section_name)["endpoint"]]
         repeated = (workersPerProject + len(endpoints) - 1) // len(endpoints)
         for _ in range(repeated):
             for endpoint in endpoints:
@@ -274,31 +321,98 @@ async def doLLMTranslate(
     file_list = get_file_list(projectConfig.getInputPath())
     if not file_list:
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
-    semaphore = Semaphore(workersPerProject)
+    semaphore = asyncio.Semaphore(workersPerProject)
     progress_bar = atqdm(total=len(file_list), desc="Processing files", dynamic_ncols=True, leave=False)
-    tasks = [
-        run_task(
-            doLLMTranslateSingleFile(
-                semaphore,
-                endpoint_queue,
-                file_name,
-                projectConfig,
-                eng_type,
-                pre_dic,
-                post_dic,
-                gpt_dic,
-                tPlugins,
-                fPlugins,
-                proxyPool,
-                tokenPool,
-            ),
-            progress_bar,
-        )
-        for file_name in file_list
-    ]
-    # await atqdm.gather(*tasks)
-    await gather(*tasks)  # run
+    
+    async def run_task(task):
+        result = await task
+        progress_bar.update(1)
+        return result
+
+    all_tasks = []
+    file_save_funcs = {}
+
+    for file_name in file_list:
+        # 读取文件内容
+        origin_input = ""
+        save_func = None
+        for plugin in fPlugins:
+            try:
+                origin_input = plugin.plugin_object.load_file(file_name)
+                save_func = plugin.plugin_object.save_file
+                break
+            except TypeError as e:
+                LOGGER.error(f"{file_name} 不是文件插件'{plugin.name}'支持的格式：{e}")
+            except Exception as e:
+                LOGGER.error(f"插件 {plugin.name} 读取文件 {file_name} 出错: {e}")
+        
+        if not origin_input:
+            with open(file_name, 'r', encoding='utf-8') as f:
+                origin_input = f.read()
+            save_func = save_json
+
+        file_save_funcs[file_name] = save_func
+        
+        # 使用 input_splitter 拆分内容
+        split_contents = input_splitter.split(origin_input)
+        
+        # 为每个分割的内容创建一个任务
+        for i, split_content in enumerate(split_contents):
+            task = run_task(
+                doLLMTranslateSingleFile(
+                    semaphore,
+                    endpoint_queue,
+                    file_name,
+                    projectConfig,
+                    eng_type,
+                    pre_dic,
+                    post_dic,
+                    gpt_dic,
+                    tPlugins,
+                    fPlugins,
+                    proxyPool,
+                    tokenPool,
+                    input_splitter,
+                    output_combiner,
+                    split_content,
+                    i,
+                    len(split_contents)
+                )
+            )
+            all_tasks.append(task)
+
+    results = await asyncio.gather(*all_tasks)
     progress_bar.close()
+
+    # 处理结果
+    for file_name in file_list:
+        file_results = [r for r in results if r[0] and r[1] and r[2] and r[3] == file_name]
+        if file_results:
+            all_trans_list = []
+            all_json_list = []
+            for _, trans_list, json_list, _ in file_results:
+                all_trans_list.extend(trans_list)
+                all_json_list.extend(json_list)
+
+            # 使用所有处理后的 trans_list 和 json_list
+            if all_trans_list and all_json_list:
+                if isPathExists(joinpath(project_dir, "人名替换表.csv")):
+                    name_dict = load_name_table(joinpath(project_dir, "人名替换表.csv"))
+                else:
+                    name_dict = {}
+                final_result = update_json_with_transList(all_trans_list, all_json_list, name_dict)
+
+                # 保存最终结果
+                output_file_path = file_name.replace(projectConfig.getInputPath(), projectConfig.getOutputPath())
+                save_func = file_save_funcs.get(file_name, save_json)
+                save_func(output_file_path, final_result)
+
+                if eng_type != "rebuildr":
+                    find_problems(all_trans_list, projectConfig, gpt_dic)
+                    cache_file_path = joinpath(projectConfig.getCachePath(), basename(file_name))
+                    save_transCache_to_json(all_trans_list, cache_file_path, post_save=True)
+        else:
+            LOGGER.error(f"没有成功处理任何内容: {file_name}")
 
     if "dump-name" in eng_type:
         import csv
@@ -310,3 +424,5 @@ async def doLLMTranslate(
             for name, count in name_dict.items():
                 writer.writerow([name, "", count])
             LOGGER.info(f"name已保存到'人名替换表.csv'（UTF-8编码，用Emeditor编辑），填入CN_Name后可用于后续翻译name字段。")
+
+    return True

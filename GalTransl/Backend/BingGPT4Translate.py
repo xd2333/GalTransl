@@ -11,7 +11,7 @@ from typing import Optional
 from re_edge_gpt import Chatbot, ConversationStyle
 from GalTransl import LOGGER, LANG_SUPPORTED
 from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
-from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
+from GalTransl.Cache import get_transCache_from_json_new, save_transCache_to_json
 from GalTransl.CSentense import CTransList, CSentense
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Utils import extract_code_blocks
@@ -392,7 +392,7 @@ class CBingGPT4Translate:
         Returns:
             CTransList: _description_
         """
-        _, trans_list_unhit = get_transCache_from_json(
+        _, trans_list_unhit = get_transCache_from_json_new(
             trans_list,
             cache_file_path,
             retry_failed=retry_failed,

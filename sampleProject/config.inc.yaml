@@ -11,6 +11,7 @@ common:
   skipRetry: false # 开启则解析结果出错时跳过循环重试，直接用"Fail Translation"占位。[True/False]
   retranslFail: false # 重启时重翻所有显示为"Fail Translation"的句子。[True/False]
   retranslKey: "" # 重启时主动重翻在problem或pre_jp中包含此关键字的句子，例如"残留日文"
+
   # 通用翻译设置
   gpt.numPerRequestTranslate: 8 # 单次翻译句子数量，推荐值 < 15
   gpt.streamOutputMode: true # 流式输出效果，多线程下无效。[True/False]

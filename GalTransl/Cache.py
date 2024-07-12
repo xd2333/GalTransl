@@ -1,6 +1,7 @@
 """
 缓存机制
 """
+
 from GalTransl.CSentense import CTransList
 from GalTransl import LOGGER
 from typing import List
@@ -175,6 +176,146 @@ def get_transCache_from_json(
         # 不检查post_jp是否被改变, 且直接使用cache的post_jp
         if load_post_jp:
             tran.post_jp = cache_dict[tran.index]["post_jp"]
+
+        trans_list_hit.append(tran)
+
+    return trans_list_hit, trans_list_unhit
+
+
+def get_transCache_from_json_new(
+    trans_list: CTransList,
+    cache_file_path,
+    retry_failed=False,
+    proofread=False,
+    retran_key="",
+    load_post_jp=False,
+    ignr_post_jp=False,
+):
+    """
+    此函数从 JSON 文件中检索翻译缓存，并相应地更新翻译列表。
+
+    Args:
+        trans_list (CTransList): 要检索的翻译列表。
+        cache_file_path (str): 包含翻译缓存的 JSON 文件的路径。
+        retry_failed (bool, optional): 是否重试失败的翻译。默认为 False。
+        proofread (bool, optional): 是否是校对模式。默认为 False。
+        load_post_jp: 不检查post_jp是否被改变, 且直接使用cache的post_jp
+        ignr_post_jp: 仅不检查post_jp是否被改变
+
+    Returns:
+        Tuple[List[CTrans], List[CTrans]]: 包含两个列表的元组：击中缓存的翻译列表和未击中缓存的翻译列表。
+    """
+    if not cache_file_path.endswith(".json"):
+        if not os.path.exists(cache_file_path):
+            cache_file_path += ".json"
+
+    trans_list_hit = []
+    trans_list_unhit = []
+    cache_dict = {}
+    if os.path.exists(cache_file_path):
+        with open(cache_file_path, encoding="utf8") as f:
+            try:
+                cache_dictList = orjson.loads(f.read())
+                for i, cache in enumerate(cache_dictList):
+                    line_now, line_priv, line_next = "", "", ""
+                    line_now = f'{cache["name"]}{cache["pre_jp"]}'
+                    if i > 0:
+                        line_priv = f'{cache_dictList[i-1]["name"]}{cache_dictList[i-1]["pre_jp"]}'
+                    if i < len(cache_dictList) - 1:
+                        line_next = f'{cache_dictList[i+1]["name"]}{cache_dictList[i+1]["pre_jp"]}'
+                    cache_dict[line_priv + line_now + line_next] = cache
+            except Exception as e:
+                f.close()
+                LOGGER.error(f"读取缓存{cache_file_path}时出现错误，请检查错误信息")
+                raise e
+
+    for tran in trans_list:
+        # 忽略jp为空的句子
+        if tran.pre_jp == "" or tran.post_jp == "":
+            tran.pre_zh, tran.post_zh = "", ""
+            trans_list_hit.append(tran)
+            continue
+        # 忽略在读取缓存前pre_zh就有值的句子
+        if tran.pre_zh != "":
+            tran.post_zh = tran.pre_zh
+            trans_list_hit.append(tran)
+            continue
+
+        line_now, line_priv, line_next = "", "", ""
+        line_now = f"{tran._speaker}{tran.pre_jp}"
+        if tran.prev_tran:
+            line_priv = f"{tran.prev_tran._speaker}{tran.prev_tran.pre_jp}"
+        if tran.next_tran:
+            line_next = f"{tran.next_tran._speaker}{tran.next_tran.pre_jp}"
+        cache_key = line_priv + line_now + line_next
+
+        # cache_key不在缓存
+        if cache_key not in cache_dict:
+            trans_list_unhit.append(tran)
+            continue
+
+        no_proofread = cache_dict[cache_key]["proofread_zh"] == ""
+
+        if no_proofread:
+            # post_jp被改变
+            if load_post_jp == ignr_post_jp == False:
+                if tran.post_jp != cache_dict[cache_key]["post_jp"]:
+                    trans_list_unhit.append(tran)
+                    continue
+            # pre_zh为空
+            if tran.post_jp != "":
+                if (
+                    "pre_zh" not in cache_dict[cache_key]
+                    or cache_dict[cache_key]["pre_zh"] == ""
+                ):
+                    trans_list_unhit.append(tran)
+                    continue
+            # 重试失败的
+            if retry_failed and "Failed translation" in cache_dict[cache_key]["pre_zh"]:
+                if (
+                    no_proofread or "Fail" in cache_dict[cache_key]["proofread_by"]
+                ):  # 且未校对
+                    trans_list_unhit.append(tran)
+                    continue
+
+            # retran_key在pre_jp中
+            if retran_key and retran_key in cache_dict[cache_key]["pre_jp"]:
+                trans_list_unhit.append(tran)
+                continue
+            # retran_key在problem中
+            if retran_key and "problem" in cache_dict[cache_key]:
+                if retran_key in cache_dict[cache_key]["problem"]:
+                    trans_list_unhit.append(tran)
+                    continue
+
+        # 击中缓存的,post_zh初始值赋pre_zh
+        tran.pre_zh = cache_dict[cache_key]["pre_zh"]
+        if "trans_by" in cache_dict[cache_key]:
+            tran.trans_by = cache_dict[cache_key]["trans_by"]
+        if "proofread_zh" in cache_dict[cache_key]:
+            tran.proofread_zh = cache_dict[cache_key]["proofread_zh"]
+        if "proofread_by" in cache_dict[cache_key]:
+            tran.proofread_by = cache_dict[cache_key]["proofread_by"]
+        if "trans_conf" in cache_dict[cache_key]:
+            tran.trans_conf = cache_dict[cache_key]["trans_conf"]
+        if "doub_content" in cache_dict[cache_key]:
+            tran.doub_content = cache_dict[cache_key]["doub_content"]
+        if "unknown_proper_noun" in cache_dict[cache_key]:
+            tran.unknown_proper_noun = cache_dict[cache_key]["unknown_proper_noun"]
+
+        if tran.proofread_zh != "":
+            tran.post_zh = tran.proofread_zh
+        else:
+            tran.post_zh = tran.pre_zh
+
+        # 校对模式下，未校对的
+        if proofread and tran.proofread_zh == "":
+            trans_list_unhit.append(tran)
+            continue
+
+        # 不检查post_jp是否被改变, 且直接使用cache的post_jp
+        if load_post_jp:
+            tran.post_jp = cache_dict[cache_key]["post_jp"]
 
         trans_list_hit.append(tran)
 

@@ -14,7 +14,7 @@ from GalTransl.ConfigHelper import (
 from GalTransl.COpenAI import COpenAIToken, COpenAITokenPool, initGPTToken
 from GalTransl.ConfigHelper import CProxyPool
 from GalTransl.Dictionary import CGptDict
-from GalTransl.Cache import get_transCache_from_json, save_transCache_to_json
+from GalTransl.Cache import get_transCache_from_json_new, save_transCache_to_json
 from GalTransl.Backend.revChatGPT.typings import APIConnectionError
 from GalTransl.Utils import extract_code_blocks, fix_quotes
 from httpx import ProtocolError
@@ -472,7 +472,7 @@ class CGPT35Translate:
         proofread: bool = False,
         retran_key: str = "",
     ) -> CTransList:
-        _, trans_list_unhit = get_transCache_from_json(
+        _, trans_list_unhit = get_transCache_from_json_new(
             trans_list,
             cache_path,
             retry_failed=retry_failed,

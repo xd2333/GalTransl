@@ -1,7 +1,7 @@
 from GalTransl.CSentense import *
 from GalTransl.ConfigHelper import CProjectConfig
 from GalTransl.Dictionary import CGptDict
-from GalTransl.Cache import get_transCache_from_json
+from GalTransl.Cache import get_transCache_from_json_new
 from GalTransl import LOGGER
 
 
@@ -36,7 +36,7 @@ class CRebuildTranslate:
         proofread: bool = False,
         retran_key: str = "",
     ) -> CTransList:
-        trans_list_hit, _ = get_transCache_from_json(
+        trans_list_hit, _ = get_transCache_from_json_new(
             trans_list,
             cache_path,
             retry_failed=retry_failed,

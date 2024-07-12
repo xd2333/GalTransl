@@ -112,6 +112,7 @@ class CSakuraTranslate:
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
         max_repeat = 0
+        line_lens = []
         for i, trans in enumerate(trans_list):
             # 处理换行
             if self.eng_type in ["sakura-009", "sakura-010"]:
@@ -124,11 +125,12 @@ class CSakuraTranslate:
             input_list.append(tmp_text)
             _, count = find_most_repeated_substring(tmp_text)
             max_repeat = max(max_repeat, count)
+            line_lens.append(len(tmp_text))
         input_str = "\n".join(input_list).strip("\n")
 
         # 检测退化阈值
         self.JP_REPETITION_CNT = max_repeat
-        self.JP_LEN = len(input_str)
+        self.JP_LINE_LENS = line_lens
 
         prompt_req = self.trans_prompt
         prompt_req = prompt_req.replace("[Input]", input_str)
@@ -155,11 +157,13 @@ class CSakuraTranslate:
                         print(data, end="", flush=True)
                     resp += data
                     # 检测是否反复重复输出同一内容，如果超过一定次数，则判定为退化并打断。
-                    if token_count % 10 == 0:
+                    if token_count % 10 == 0:  # 每10个token检测一次
                         degen_flag = self.check_degen_in_process(resp)
                         if degen_flag:
                             await ask_stream.aclose()
                             break
+                if not degen_flag:  # 结束时再检测一次
+                    degen_flag = self.check_degen_in_process(resp)
                 # print(data, end="\n")
                 if not self.streamOutputMode:
                     LOGGER.info("->输出：\n" + repr(resp))
@@ -453,11 +457,17 @@ class CSakuraTranslate:
         LOGGER.info("-> 恢复了上下文")
 
     def check_degen_in_process(self, cn: str = ""):
-        _, max_count = find_most_repeated_substring(cn)
-        if max_count > max(self.JP_REPETITION_CNT * 2, 12):
+        # 长度不超当前行
+        line_count = cn.count("\n") + 1
+        if line_count < len(self.JP_LINE_LENS):
+            if len(cn.split("\n")[-1]) < self.JP_LINE_LENS[line_count - 1]:
+                return False
+
+        repeated_str, repeated_count = find_most_repeated_substring(cn)
+        if repeated_count > max(self.JP_REPETITION_CNT * 2, 12):
             return True
-        if max_count > self.JP_REPETITION_CNT:
-            if len(cn.split("\n")[-1]) > self.JP_LEN * 1.3:
+        if repeated_count > self.JP_REPETITION_CNT:
+            if len(repeated_str) * repeated_count > max(self.JP_LINE_LENS) * 1.3:
                 return True
         return False
 

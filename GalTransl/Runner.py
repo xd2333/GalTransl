@@ -161,14 +161,24 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         LOGGER.info(f"\033[32m检测到新版本: {new_version[0]}\033[0m  当前版本: {GALTRANSL_VERSION}")
         LOGGER.info(f"\033[32m更新地址：https://github.com/xd2333/GalTransl/releases\033[0m")
 
-    # 按字典数量分割
-    input_splitter = DictionaryCountSplitter(2000)
+    if project_conf.get("splitFile", False):
 
-    # 或者按份数分割
-    # input_splitter = EqualPartsSplitter(5)
+        splitFileNum = int(project_conf.get("splitFileNum", -1))
+        if splitFileNum == -1:
+            splitFileNum = int(project_conf.get("workersPerProject", -1))
+        splitFileMethod = project_conf.get("splitFileMethod", "EqualPartsSplitter")
+        if splitFileMethod == "DictionaryCountSplitter":
+            input_splitter = DictionaryCountSplitter(splitFileNum)
+        elif splitFileMethod == "EqualPartsSplitter":
+            input_splitter = EqualPartsSplitter(splitFileNum)
+        else:
+            raise Exception(f"不支持的分割方法: {splitFileMethod}")
 
-    # 默认的输出合并器
-    output_combiner = DictionaryCombiner()
+        # 默认的输出合并器
+        output_combiner = DictionaryCombiner()
+    else:
+        input_splitter = None
+        output_combiner = None
 
     await doLLMTranslate(
         cfg, OpenAITokenPool, proxyPool, text_plugins, file_plugins, translator, input_splitter, output_combiner

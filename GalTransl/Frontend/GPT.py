@@ -135,8 +135,6 @@ async def doLLMTranslateSingleFile(
     fPlugins: list,
     proxyPool: CProxyPool,
     tokenPool: COpenAITokenPool,
-    input_splitter: InputSplitter = InputSplitter(),
-    output_combiner: OutputCombiner = DictionaryCombiner(),
     split_content: str = None,
     file_index: int = 0,
     total_splits: int = 1
@@ -265,7 +263,7 @@ async def doLLMTranslateSingleFile(
                 return False, [], [], file_path
 
             et = time()
-            LOGGER.info(f"  end translating: {file_name} (part {file_index+1}/{total_splits}) 翻译完成，用时 {et-st:.3f}s.")
+            LOGGER.info(f"文件 {file_name} (part {file_index+1}/{total_splits}) 翻译完成，用时 {et-st:.3f}s.")
             return True, trans_list, json_list, file_path
         finally:
             if endpoint_queue is not None:
@@ -331,6 +329,8 @@ async def doLLMTranslate(
 
     all_tasks = []
     file_save_funcs = {}
+    cross_num = projectConfig.getKey("splitFileCrossNum")
+    split_file = projectConfig.getKey("splitFile")  # 新增：获取分割文件的开关
 
     for file_name in file_list:
         # 读取文件内容
@@ -353,11 +353,40 @@ async def doLLMTranslate(
 
         file_save_funcs[file_name] = save_func
         
-        # 使用 input_splitter 拆分内容
-        split_contents = input_splitter.split(origin_input)
+        # 使用 input_splitter 拆分内容，只有在 split_file 为 True 时才进行分割
+        split_contents = input_splitter.split(origin_input) if split_file else [origin_input]
         
-        # 为每个分割的内容创建一个任务
+        # 为每个分割的内容创建一个任务，并添加交叉句
         for i, split_content in enumerate(split_contents):
+            if isinstance(split_content, str):
+                try:
+                    split_content = json.loads(split_content)
+                except json.JSONDecodeError:
+                    split_content = [split_content]  # 如果不是有效的JSON，将其作为单元素列表
+
+            if split_file:
+                if i > 0:
+                    prev_content = split_contents[i-1]
+                    if isinstance(prev_content, str):
+                        try:
+                            prev_content = json.loads(prev_content)
+                        except json.JSONDecodeError:
+                            prev_content = [prev_content]
+                    split_content = prev_content[-cross_num:] + split_content
+
+                if i < len(split_contents) - 1:
+                    next_content = split_contents[i+1]
+                    if isinstance(next_content, str):
+                        try:
+                            next_content = json.loads(next_content)
+                        except json.JSONDecodeError:
+                            next_content = [next_content]
+                    split_content = split_content + next_content[:cross_num]
+
+            # 确保 split_content 是 JSON 字符串
+            if isinstance(split_content, list):
+                split_content = json.dumps(split_content, ensure_ascii=False, indent=2)
+
             task = run_task(
                 doLLMTranslateSingleFile(
                     semaphore,
@@ -372,8 +401,6 @@ async def doLLMTranslate(
                     fPlugins,
                     proxyPool,
                     tokenPool,
-                    input_splitter,
-                    output_combiner,
                     split_content,
                     i,
                     len(split_contents)
@@ -386,11 +413,26 @@ async def doLLMTranslate(
 
     # 处理结果
     for file_name in file_list:
-        file_results = [r for r in results if r[0] and r[1] and r[2] and r[3] == file_name]
+        file_results = [result for result in results if result[0] and result[1] and result[2] and result[3] == file_name]
         if file_results:
             all_trans_list = []
             all_json_list = []
-            for _, trans_list, json_list, _ in file_results:
+            for i, (success, trans_list, json_list, result_file_name) in enumerate(file_results):
+                # 处理交叉句子
+                if split_file and len(file_results) > 1:
+                    # 如果是第一个分片，只移除末尾的一半交叉句
+                    if i == 0:
+                        trans_list = trans_list[:-cross_num]
+                        json_list = json_list[:-cross_num]
+                    # 如果是最后一个分片，只移除开头的一半交叉句
+                    elif i == len(file_results) - 1:
+                        trans_list = trans_list[cross_num:]
+                        json_list = json_list[cross_num:]
+                    # 对于中间的分片，移除开头和末尾各一半的交叉句
+                    else:
+                        trans_list = trans_list[cross_num:-cross_num]
+                        json_list = json_list[cross_num:-cross_num]
+                
                 all_trans_list.extend(trans_list)
                 all_json_list.extend(json_list)
 

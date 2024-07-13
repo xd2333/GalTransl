@@ -346,7 +346,7 @@ async def doLLMTranslate(
             except Exception as e:
                 LOGGER.error(f"插件 {plugin.name} 读取文件 {file_name} 出错: {e}")
         
-        if not origin_input:
+        if not origin_input and file_name.endswith(".json"):
             with open(file_name, 'r', encoding='utf-8') as f:
                 origin_input = f.read()
             save_func = save_json

@@ -242,11 +242,11 @@ def get_transCache_from_json_new(
             continue
 
         line_now, line_priv, line_next = "", "", ""
-        line_now = f"{tran._speaker}{tran.pre_jp}"
+        line_now = f"{tran.speaker}{tran.pre_jp}"
         if tran.prev_tran:
-            line_priv = f"{tran.prev_tran._speaker}{tran.prev_tran.pre_jp}"
+            line_priv = f"{tran.prev_tran.speaker}{tran.prev_tran.pre_jp}"
         if tran.next_tran:
-            line_next = f"{tran.next_tran._speaker}{tran.next_tran.pre_jp}"
+            line_next = f"{tran.next_tran.speaker}{tran.next_tran.pre_jp}"
         cache_key = line_priv + line_now + line_next
 
         # cache_key不在缓存

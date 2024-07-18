@@ -105,13 +105,7 @@ class CGPT35Translate:
         else:
             self.proxyProvider = None
             
-
-        # 翻译风格
-        if val := config.getKey("gpt.translStyle"):
-            self.transl_style = val
-        else:
-            self.transl_style = "auto"
-        self._current_style = ""
+        self._current_temp_type = ""
 
         if self.target_lang == "Simplified_Chinese":
             self.opencc = OpenCC("t2s.json")
@@ -168,10 +162,8 @@ class CGPT35Translate:
                 self.proxyProvider.getProxy().addr if self.proxyProvider else None  # type: ignore
             )
 
-        if self.transl_style == "auto":
-            self._set_gpt_style("precise")
-        else:
-            self._set_gpt_style(self.transl_style)
+        self._set_temp_type("precise")
+
 
     async def asyncTranslate(self, content: CTransList, gptdict="") -> CTransList:
         """
@@ -328,8 +320,7 @@ class CGPT35Translate:
                 elif self.eng_type == "unoffapi":
                     self.reset_conversation()
                 # 先切换模式
-                if self.transl_style == "auto":
-                    self._set_gpt_style("normal")
+                self._set_temp_type("normal")
                 # 2次重试则对半拆
                 if self.retry_count == 2 and len(content) > 1:
                     self.retry_count -= 1
@@ -359,8 +350,8 @@ class CGPT35Translate:
                 content[i].post_zh = result[key_name]
                 content[i].trans_by = self.chatbot.engine
 
-            if self.transl_style == "auto" and not warn_flag:
-                self._set_gpt_style("precise")
+            if not warn_flag:
+                self._set_temp_type("precise")
             self.retry_count = 0
 
             break  # 输出正确，跳出循环
@@ -403,12 +394,12 @@ class CGPT35Translate:
         elif self.eng_type == "unoffapi":
             pass
 
-    def _set_gpt_style(self, style_name: str):
+    def _set_temp_type(self, style_name: str):
         if self.eng_type == "unoffapi":
             return
-        if self._current_style == style_name:
+        if self._current_temp_type == style_name:
             return
-        self._current_style = style_name
+        self._current_temp_type = style_name
 
         if style_name == "precise":
             temperature, top_p = 1.0, 0.4

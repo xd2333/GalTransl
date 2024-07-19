@@ -99,22 +99,26 @@ class DictionaryCountSplitter(InputSplitter):
                 data = json.loads(content)
             except json.JSONDecodeError:
                 LOGGER.warning(f"无法解析JSON：{content[:100]}...")
-                return [SplitChunkMetadata(0, 1, 1, 1, 0, content)]
+                return [SplitChunkMetadata(0, len(content), len(content), len(content), 0, content)]
         else:
             data = content
 
         if not isinstance(data, list):
             return [SplitChunkMetadata(0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2))]
 
+        total_items = len(data)
         result = []
-        for i in range(0, len(data), self.dict_count):
-            start = max(0, i - cross_num)
-            end = min(len(data), i + self.dict_count + cross_num)
-            chunk = data[start:end]
+
+        for start in range(0, total_items, self.dict_count):
+            end = min(start + self.dict_count, total_items)
+            chunk_start = max(0, start - cross_num)
+            chunk_end = min(total_items, end + cross_num)
+            chunk = data[chunk_start:chunk_end]
+            
             result.append(SplitChunkMetadata(
-                start_index=i,
-                end_index=min(i + self.dict_count, len(data)),
-                chunk_non_cross_size=min(self.dict_count, len(data) - i),
+                start_index=start,
+                end_index=end,
+                chunk_non_cross_size=end - start,
                 chunk_real_size=len(chunk),
                 cross_num=cross_num,
                 content=json.dumps(chunk, ensure_ascii=False, indent=2)
@@ -221,12 +225,16 @@ class DictionaryCombiner(OutputCombiner):
         sorted_results = sorted(results, key=lambda x: x[2].start_index)
 
         for i, (trans_list, json_list, metadata) in enumerate(sorted_results):
-            start = metadata.cross_num if i > 0 else 0
-            end = len(
-                trans_list) - metadata.cross_num if i < len(sorted_results) - 1 else len(trans_list)
-
-            all_trans_list.extend(trans_list[start:end])
-            all_json_list.extend(json_list[start:end])
+            if i == 0:
+                # 对于第一个块，我们取全部内容
+                all_trans_list.extend(trans_list[:metadata.chunk_non_cross_size])
+                all_json_list.extend(json_list[:metadata.chunk_non_cross_size])
+            else:
+                # 对于后续块，我们只取非交叉部分
+                start = metadata.cross_num
+                end = start + metadata.chunk_non_cross_size
+                all_trans_list.extend(trans_list[start:end])
+                all_json_list.extend(json_list[start:end])
 
         return all_trans_list, all_json_list
 
@@ -539,13 +547,22 @@ async def doLLMTranslateSingleFile(
             gptapi = await get_gptapi(projectConfig, eng_type, endpoint, proxyPool, tokenPool)
 
             origin_input = split_chunk.content
-            LOGGER.debug(f"原始输入: {str(origin_input)[:500]}...")
+            LOGGER.debug(f"原始输入: {str(origin_input)[:10]}...")
 
             try:
                 trans_list, json_list = load_transList(origin_input)
             except Exception as e:
                 LOGGER.error(f"文件 {file_name} 加载翻译列表失败: {e}")
                 return False, [], [], file_path, split_chunk
+            
+            LOGGER.debug(f"文件 {file_name} 分块 {file_index+1}/{total_splits}:")
+            LOGGER.debug(f"  原始输入长度: {len(json.loads(origin_input))}")
+            LOGGER.debug(f"  分割后长度: {len(trans_list)}")
+            LOGGER.debug(f"  开始索引: {split_chunk.start_index}")
+            LOGGER.debug(f"  结束索引: {split_chunk.end_index}")
+            LOGGER.debug(f"  非交叉大小: {split_chunk.chunk_non_cross_size}")
+            LOGGER.debug(f"  实际大小: {split_chunk.chunk_real_size}")
+            LOGGER.debug(f"  交叉数量: {split_chunk.cross_num}")
 
             # 导出人名表功能
             if "dump-name" in eng_type:
@@ -554,8 +571,8 @@ async def doLLMTranslateSingleFile(
                         if tran.speaker not in name_dict:
                             name_dict[tran.speaker] = 0
                         name_dict[tran.speaker] += 1
-                        LOGGER.debug(f"发现人名: {tran.speaker}")
-                LOGGER.debug(f"人名表: {name_dict}")
+                #         LOGGER.debug(f"发现人名: {tran.speaker}")
+                # LOGGER.debug(f"人名表: {name_dict}")
                 return True, trans_list, json_list, file_path, split_chunk
 
             trans_list, json_list = await process_input(
@@ -729,10 +746,13 @@ async def postprocess_results(
                              f"chunk_real_size={chunk_metadata.chunk_real_size}, "
                              f"cross_num={chunk_metadata.cross_num}, "
                              f"处理后长度={len(trans_list)}")
+            LOGGER.debug(f"合并前总行数: {sum(len(trans_list) for _, trans_list, _, _, _ in file_results)}")
             all_trans_list, all_json_list = output_combiner.combine(
                 [(trans_list, json_list, chunk_metadata)
-                 for _, trans_list, json_list, _, chunk_metadata in file_results]
+                for _, trans_list, json_list, _, chunk_metadata in file_results]
             )
+            LOGGER.debug(f"合并后总行数: {len(all_trans_list)}")
+
 
             if all_trans_list and all_json_list:
                 name_dict = load_name_table(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")) \

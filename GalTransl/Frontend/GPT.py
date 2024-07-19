@@ -614,8 +614,8 @@ async def doLLMTranslate(
     endpoint_queue = await init_endpoint_queue(projectConfig, workersPerProject, eng_type)
     all_tasks = []
     file_save_funcs = {}
-    cross_num = projectConfig.getKey("splitFileCrossNum")
-    split_file = projectConfig.getKey("splitFile")
+    cross_num = projectConfig.getKey("splitFileCrossNum") or 0
+    split_file = projectConfig.getKey("splitFile") or False
 
     file_list = get_file_list(projectConfig.getInputPath())
     if not file_list:
@@ -633,7 +633,6 @@ async def doLLMTranslate(
     for file_name in file_list:
         origin_input, save_func = load_input(file_name, fPlugins)
         file_save_funcs[file_name] = save_func
-
         split_chunks = input_splitter.split(origin_input, cross_num) if split_file else [
             SplitChunkMetadata(0, len(origin_input), len(origin_input), len(origin_input), 0, origin_input)]
 

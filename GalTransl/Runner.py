@@ -177,8 +177,8 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         # 默认的输出合并器
         output_combiner = DictionaryCombiner()
     else:
-        input_splitter = None
-        output_combiner = None
+        input_splitter = EqualPartsSplitter(1)
+        output_combiner = DictionaryCombiner()
 
     await doLLMTranslate(
         cfg, OpenAITokenPool, proxyPool, text_plugins, file_plugins, translator, input_splitter, output_combiner

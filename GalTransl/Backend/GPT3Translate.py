@@ -46,6 +46,7 @@ class CGPT35Translate:
             self.save_steps = val
         else:
             self.save_steps = 1
+
         # 语言设置
         if val := config.getKey("language"):
             sp = val.split("2")
@@ -65,6 +66,11 @@ class CGPT35Translate:
             raise ValueError("错误的目标语言代码：" + self.target_lang)
         else:
             self.target_lang = LANG_SUPPORTED[self.target_lang]
+        # 429等待时间
+        if val := config.getKey("gpt.tooManyRequestsWaitTime"):
+            self.wait_time = val
+        else:
+            self.wait_time = 60
         # 换行符改善模式
         if val := config.getKey("gpt.lineBreaksImprovementMode"):
             self.line_breaks_improvement_mode = val
@@ -224,8 +230,8 @@ class CGPT35Translate:
                     self.token = self.tokenProvider.getToken(True, False)
                     self.chatbot.set_api_key(self.token.token)
                 elif "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.warning("-> [请求错误]请求受限，1分钟后继续尝试")
-                    await asyncio.sleep(60)
+                    LOGGER.warning(f"-> [请求错误]请求受限，{self.wait_time}秒后继续尝试")
+                    await asyncio.sleep(self.wait_time)
                     continue
                 elif "try reload" in str_ex:
                     self.reset_conversation()

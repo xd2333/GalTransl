@@ -82,6 +82,11 @@ class CGPT4Translate:
             raise ValueError("错误的目标语言代码：" + self.target_lang)
         else:
             self.target_lang = LANG_SUPPORTED[self.target_lang]
+        # 429等待时间
+        if val := config.getKey("gpt.tooManyRequestsWaitTime"):
+            self.wait_time = val
+        else:
+            self.wait_time = 60
         # 挥霍token模式
         if val := config.getKey("gpt.fullContextMode"):
             self.full_context_mode = val
@@ -264,8 +269,8 @@ class CGPT4Translate:
                     LOGGER.warning(f"-> [请求错误]切换到token {self.token.maskToken()}")
                     continue
                 elif "try again later" in str_ex or "too many requests" in str_ex:
-                    LOGGER.warning("-> [请求错误]请求受限，1分钟后继续尝试")
-                    await asyncio.sleep(60)
+                    LOGGER.warning(f"-> [请求错误]请求受限，{self.wait_time}秒后继续尝试")
+                    await asyncio.sleep(self.wait_time)
                     continue
                 elif "try reload" in str_ex:
                     self.reset_conversation()

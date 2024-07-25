@@ -220,6 +220,10 @@ class DictionaryCombiner(OutputCombiner):
         返回:
         合并后的翻译列表和JSON列表的元组
         """
+        if len(results) == 1:
+            # 如果只有一个结果，直接返回
+            return results[0][0], results[0][1]
+
         all_trans_list = []
         all_json_list = []
         sorted_results = sorted(results, key=lambda x: x[2].start_index)
@@ -555,8 +559,9 @@ async def doLLMTranslateSingleFile(
                 LOGGER.error(f"文件 {file_name} 加载翻译列表失败: {e}")
                 return False, [], [], file_path, split_chunk
             
+            input_length = len(json.loads(origin_input)) if isinstance(origin_input, str) else len(origin_input)
             LOGGER.debug(f"文件 {file_name} 分块 {file_index+1}/{total_splits}:")
-            LOGGER.debug(f"  原始输入长度: {len(json.loads(origin_input))}")
+            LOGGER.debug(f"  原始输入长度: {input_length}")
             LOGGER.debug(f"  分割后长度: {len(trans_list)}")
             LOGGER.debug(f"  开始索引: {split_chunk.start_index}")
             LOGGER.debug(f"  结束索引: {split_chunk.end_index}")
@@ -571,8 +576,6 @@ async def doLLMTranslateSingleFile(
                         if tran.speaker not in name_dict:
                             name_dict[tran.speaker] = 0
                         name_dict[tran.speaker] += 1
-                #         LOGGER.debug(f"发现人名: {tran.speaker}")
-                # LOGGER.debug(f"人名表: {name_dict}")
                 return True, trans_list, json_list, file_path, split_chunk
 
             trans_list, json_list = await process_input(
@@ -638,18 +641,25 @@ async def doLLMTranslate(
     if not file_list:
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
     semaphore = asyncio.Semaphore(workersPerProject)
-    total_chunks = sum(len(input_splitter.split(load_input(file_name, fPlugins)[0], cross_num)) for file_name in file_list)
+    total_chunks = 0
+    for file_name in file_list:
+        origin_input, _ = load_input(file_name, fPlugins)
+        # 修改：即使不拆分文件，也创建一个包含整个文件内容的SplitChunkMetadata对象
+        split_chunks = input_splitter.split(origin_input, cross_num) if split_file else [
+            SplitChunkMetadata(0, len(origin_input), len(origin_input), len(origin_input), 0, origin_input)]
+        total_chunks += len(split_chunks)
     progress_bar = atqdm(total=total_chunks, desc="Processing chunks/files", dynamic_ncols=True, leave=False)
 
     async def run_task(task):
         result = await task
         progress_bar.update(1)
-        progress_bar.set_postfix(file=result[3], chunk=f"{result[4].start_index}-{result[4].end_index}")
+        progress_bar.set_postfix(file=result[3].split(os_sep)[-1], chunk=f"{result[4].start_index}-{result[4].end_index}")
         return result
 
     for file_name in file_list:
         origin_input, save_func = load_input(file_name, fPlugins)
         file_save_funcs[file_name] = save_func
+        # 再次使用修改后的拆分逻辑
         split_chunks = input_splitter.split(origin_input, cross_num) if split_file else [
             SplitChunkMetadata(0, len(origin_input), len(origin_input), len(origin_input), 0, origin_input)]
 
@@ -747,12 +757,13 @@ async def postprocess_results(
                              f"cross_num={chunk_metadata.cross_num}, "
                              f"处理后长度={len(trans_list)}")
             LOGGER.debug(f"合并前总行数: {sum(len(trans_list) for _, trans_list, _, _, _ in file_results)}")
+            
+            # 使用output_combiner合并结果，即使只有一个结果
             all_trans_list, all_json_list = output_combiner.combine(
                 [(trans_list, json_list, chunk_metadata)
                 for _, trans_list, json_list, _, chunk_metadata in file_results]
             )
             LOGGER.debug(f"合并后总行数: {len(all_trans_list)}")
-
 
             if all_trans_list and all_json_list:
                 name_dict = load_name_table(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")) \
@@ -764,6 +775,7 @@ async def postprocess_results(
                     projectConfig.getInputPath(), projectConfig.getOutputPath())
                 save_func = file_save_funcs.get(file_name, save_json)
                 save_func(output_file_path, final_result)
+                LOGGER.info(f"已保存文件: {output_file_path}")  # 添加保存确认日志
 
                 if eng_type != "rebuildr":
                     find_problems(all_trans_list, projectConfig, gpt_dic)
@@ -779,6 +791,9 @@ async def postprocess_results(
                 total_output_lines = len(all_trans_list)
                 if total_input_lines != total_output_lines:
                     LOGGER.warning(
-                        f"文件 {file_name} 的输入行数 ({total_input_lines}) 与输出行数 ({total_output_lines}) 不匹配！\n可能是拆分文件时出现问题，请关闭交叉句功能或直接关闭分割文件功能，并向开发者反馈。")
+                        f"文件 {file_name} 的输入行数 ({total_input_lines}) 与输出行数 ({total_output_lines}) 不匹配！\n"
+                        "可能是拆分文件时出现问题，请关闭交叉句功能或直接关闭分割文件功能，并向开发者反馈。")
+            else:
+                LOGGER.warning(f"文件 {file_name} 没有生成有效的翻译结果")
         else:
             LOGGER.warning(f"没有成功处理任何内容: {file_name}")

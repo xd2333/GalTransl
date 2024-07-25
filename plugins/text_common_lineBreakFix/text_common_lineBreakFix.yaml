@@ -1,0 +1,58 @@
+Core:
+  Name: 行内换行修复
+  Type: text
+  Module: text_common_lineBreakFix
+
+Documentation:
+  Author: PiDanShouRouZhou
+  Version: 1.0
+  Description: 对比翻译前后的文本，把翻译后的文本的行内换行符的数量补足/减少到相同数量。
+
+Settings: 
+  换行符: "[r]"
+
+  换行模式: "保持位置"  # [平均|开头|结尾|切最长|保持位置] 
+  # 平均模式下，会忽略原有换行符，将文本等分，在等分点插入换行符
+  # 开头模式下，会保留原有换行符，在第一个片段内均匀插入或删除换行符
+  # 结尾模式下，会保留原有换行符，在最后一个片段内均匀插入或删除换行符
+  # 切最长模式下，会保留原有换行符，反复找最长片段从中间切分，直到达到目标换行符数量
+  # 保持位置模式下，会忽略原有换行符，根据原文的换行符相对位置，重新计算目标换行符的位置，保证相对位置不变
+
+  强制修复: false  # 是否强制修复，即使原文和译文的换行符数量相同也会进行修复
+
+
+# 举例
+
+# 原文：
+# This is a piece of text, [r]which contains some line breaks. [r]The number of these line breaks is uncertain. [r]
+
+# 丢失换行符的译文：
+# 这是一段文本，其中包含了一些换行符。[r]这些换行符的数量是不确定的。
+
+# 平均：
+# 这是一段文本，其[r]中包含了一些换行[r]符。这些换行符的[r]数量是不确定的。
+
+# 开头：
+# 这是一段文本[r]，其中包含了[r]一些换行符。[r]这些换行符的数量是不确定的。
+
+# 结尾：
+# 这是一段文本，其中包含了一些换行符。[r]这些换行[r]符的数量[r]是不确定的。
+
+# 切最长：
+# 这是一段文本，其中[r]包含了一些换行符。[r]这些换行符的数[r]量是不确定的。
+
+# 保持位置：
+# "This [r] is a piece of text, which contains [r] some line[r] breaks."
+# 这是一[r]段文本，其中包含了一些换行符。[r]额外的换[r]行符。
+
+
+# 如果是四个换行符：
+# 原文：
+# This is a piece of text, [r]which contains some line breaks. [r]The number of these line breaks is uncertain. [r]And here's one more break.[r]
+
+# 丢失换行符的译文：
+# 这是一段文本，其中包含了一些换行符。[r]这些换行符的数量是不确定的。这里还有一个换行符。
+
+# 切最长（四个换行符）：
+# 这是一段文本，其中[r]包含了一些换行符。[r]这些换行符的[r]数量是不确定[r]的。这里还有一个换行符。
+

@@ -659,7 +659,6 @@ async def doLLMTranslate(
     for file_name in file_list:
         origin_input, save_func = load_input(file_name, fPlugins)
         file_save_funcs[file_name] = save_func
-        # 再次使用修改后的拆分逻辑
         split_chunks = input_splitter.split(origin_input, cross_num) if split_file else [
             SplitChunkMetadata(0, len(origin_input), len(origin_input), len(origin_input), 0, origin_input)]
 

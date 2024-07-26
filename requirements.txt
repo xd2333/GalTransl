@@ -13,3 +13,4 @@ openpyxl
 orjson
 EbookLib
 beautifulsoup4
+budoux

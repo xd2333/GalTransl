@@ -1,11 +1,11 @@
+from GalTransl import LOGGER
+from GalTransl.CSentense import CSentense
+from GalTransl.GTPlugin import GTextPlugin
+
 try:
     import budoux
 except ImportError:
     LOGGER.warning("缺少依赖包budoux, 请更新依赖")
-
-from GalTransl import LOGGER
-from GalTransl.CSentense import CSentense
-from GalTransl.GTPlugin import GTextPlugin
 
 class LineBreakFix(GTextPlugin):
     def gtp_init(self, plugin_conf: dict, project_conf: dict):
@@ -23,14 +23,60 @@ class LineBreakFix(GTextPlugin):
         self.linebreak = settings.get("换行符", "[r]")  # 换行符，默认为"[r]"
         self.mode = settings.get("换行模式", "保持位置")  # 换行模式，默认为"保持位置"
         self.force_fix = settings.get("强制修复", False)  # 是否强制修复，默认为False
+        self.tokenizer_module = settings.get("分词器", "budoux")  # 分词器，默认为"budoux"
 
         # 输出设置信息
         LOGGER.info(f"[{self.pname}] 换行符: {self.linebreak}")
         LOGGER.info(f"[{self.pname}] 换行模式: {self.mode}")
         LOGGER.info(f"[{self.pname}] 强制修复: {self.force_fix}")
 
-        # 初始化BudouX解析器（简体中文）
-        self.parser = budoux.load_default_simplified_chinese_parser()
+        # 初始化分词器
+        if self.tokenizer_module == "budoux":
+            self.tokenizer = budoux.load_default_simplified_chinese_parser()
+        elif self.tokenizer_module == "jieba":
+            try:
+                import jieba
+
+                self.tokenizer = jieba
+            except ImportError:
+                LOGGER.warning("缺少依赖包jieba, 请更新依赖")
+                raise ImportError("缺少依赖包jieba")
+        elif self.tokenizer_module == "pkuseg":
+            try:
+                import pkuseg
+                self.tokenizer = pkuseg.pkuseg()
+            except ImportError:
+                LOGGER.warning("缺少依赖包pkuseg, 请更新依赖")
+                raise ImportError("缺少依赖包pkuseg")
+        elif self.tokenizer_module == "hanlp":
+            try:
+                import hanlp
+                self.tokenizer = hanlp.load(hanlp.pretrained.mtl.UD_ONTONOTES_TOK_POS_LEM_FEA_NER_SRL_DEP_SDP_CON_XLMR_BASE)
+            except ImportError:
+                LOGGER.warning("缺少依赖包hanlp, 请更新依赖")
+                raise ImportError("缺少依赖包hanlp")
+        else:
+            LOGGER.error(f"[{self.pname}] 未知的分词器: {self.tokenizer_module}")
+            raise ValueError("未知的分词器")
+        
+        self.fix_count = 0  # 修复次数
+        
+    def tokenize(self, text):
+        """
+        统一分词接口
+        :param text: 要分词的文本
+        :return: 分词后的词语列表
+        """
+        if self.tokenizer_module == "budoux":
+            return self.tokenizer.parse(text)
+        elif self.tokenizer_module == "jieba":
+            return list(self.tokenizer.cut(text))
+        elif self.tokenizer_module == "pkuseg":
+            return self.tokenizer.cut(text)
+        elif self.tokenizer_module == "hanlp":
+            return self.tokenizer(text)["tok"]
+        else:
+            LOGGER.error(f"[{self.pname}] 未知的分词器: {self.tokenizer_module}")
 
     def after_dst_processed(self, tran: CSentense) -> CSentense:
         """
@@ -47,6 +93,7 @@ class LineBreakFix(GTextPlugin):
             return tran
 
         LOGGER.info(f"[{self.pname}] {'强制修复' if self.force_fix else '发现源文本和目标文本的换行符数量不一致'}，正在进行换行符修复，模式: {self.mode}")
+        self.fix_count += 1
 
         # 根据不同的换行模式调用相应的处理方法
         if self.mode == "平均":
@@ -54,7 +101,7 @@ class LineBreakFix(GTextPlugin):
         elif self.mode == "切最长":
             tran.post_zh = self.intersperse_mode(tran.post_zh, src_breaks)
         elif self.mode == "保持位置":
-            tran.post_zh = self.keep_position_mode(tran.post_zh, tran.post_jp, src_breaks)
+            tran.post_zh = self.keep_position_mode(tran.post_zh, tran.pre_jp, src_breaks)
         else:
             LOGGER.warning(f"[{self.pname}] 未知的换行模式: {self.mode}")
 
@@ -71,7 +118,7 @@ class LineBreakFix(GTextPlugin):
         total_length = len(text_without_breaks)
         chars_per_slice = total_length // (target_breaks + 1)
         
-        phrases = self.parser.parse(text_without_breaks)
+        phrases = self.tokenize(text_without_breaks)
         result = []
         current_length = 0
         breaks_added = 0
@@ -102,7 +149,7 @@ class LineBreakFix(GTextPlugin):
         while len(slices) - 1 < target_breaks:
             longest_slice_index = max(range(len(slices)), key=lambda i: len(slices[i]))
             longest_slice = slices[longest_slice_index]
-            phrases = self.parser.parse(longest_slice)
+            phrases = self.tokenize(longest_slice)
             
             if len(phrases) < 2:
                 # 如果无法再分割，就在最后添加空字符串
@@ -117,7 +164,7 @@ class LineBreakFix(GTextPlugin):
 
     def keep_position_mode(self, text: str, src_text: str, target_breaks: int) -> str:
         """
-        保持位置模式：忽略原有换行符，根据原文的换行符相对位置，重新计算目标换行符的位置，保证相对位置不变
+        保持位置模式：根据原文的换行符相对位置，重新计算目标换行符的位置，保证相对位置不变
         :param text: 目标文本
         :param src_text: 源文本
         :param target_breaks: 目标换行符数量
@@ -130,12 +177,22 @@ class LineBreakFix(GTextPlugin):
         break_positions = []
         current_length = 0
         
+        LOGGER.debug(f"[{self.pname}] 源文本: {src_text}")
+        LOGGER.debug(f"[{self.pname}] 目标文本: {text}")
+        LOGGER.debug(f"[{self.pname}] 源文本分片: {src_breaks}")
+        
         for i, slice in enumerate(src_breaks):
             if i < len(src_breaks) - 1:  # 不计算最后一个换行符后的位置
                 current_length += len(slice)
-                break_positions.append(int(current_length / src_length * dst_length))
+                relative_position = current_length / src_length
+                dst_position = int(relative_position * dst_length)
+                break_positions.append(dst_position)
+                LOGGER.debug(f"[{self.pname}] 计算换行位置: 当前长度 {current_length}, 相对位置 {relative_position:.2f}, 目标位置 {dst_position}")
         
-        phrases = self.parser.parse(text.replace(self.linebreak, ''))
+        phrases = self.tokenize(text.replace(self.linebreak, ''))
+        LOGGER.debug(f"[{self.pname}] 目标文本分词结果: {phrases}")
+        LOGGER.debug(f"[{self.pname}] 计算出的换行符位置: {break_positions}")
+        
         result = []
         current_length = 0
         break_index = 0
@@ -146,16 +203,19 @@ class LineBreakFix(GTextPlugin):
             if break_index < len(break_positions) and current_length >= break_positions[break_index]:
                 result.append(self.linebreak)
                 break_index += 1
+                LOGGER.debug(f"[{self.pname}] 插入换行符，当前长度: {current_length}")
         
         # 如果还没有添加足够的换行符，在最后添加
         while break_index < target_breaks:
             result.append(self.linebreak)
             break_index += 1
         
-        return ''.join(result)
+        final_result = ''.join(result)
+        LOGGER.debug(f"[{self.pname}] 最终结果: {final_result}")
+        return final_result
 
     def gtp_final(self):
         """
         插件结束时的操作
         """
-        pass
+        LOGGER.info(f"[{self.pname}] 共修复{self.fix_count}处换行符")

@@ -13,4 +13,12 @@ openpyxl
 orjson
 EbookLib
 beautifulsoup4
+
+# 分词器
 budoux
+# 可选分词器
+# jieba
+# pkuseg
+# 非常重量级的分词器，建议安装时手动选择
+# numpy < 2.0.0
+# hanlp

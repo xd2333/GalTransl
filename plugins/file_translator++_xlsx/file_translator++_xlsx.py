@@ -18,9 +18,9 @@ class file_plugin(GFilePlugin):
             f"[{self.pname}] 当前配置：是否自动识别名称:{settings.get('是否自动识别名称', True)}")
         # 读取配置文件中的设置，并保存到变量中。
         self.是否自动识别名称 = settings.get("是否自动识别名称", True)
-        self.名称识别拼接方案 = settings.get("名称识别拼接方案", "{name}\n「{message}」")
+        self.名称识别拼接方案 = settings.get("名称识别拼接方案", "{name}\n{message}")
         self.名称识别正则表达式 = re.compile(
-            settings.get("名称识别正则表达式", r"^(?P<name>.*?)「(?P<message>.*?)」$"), re.DOTALL)
+            settings.get("名称识别正则表达式", r"^(?P<name>.*?)(?P<message>「.*?」)$"), re.DOTALL)
         self.清除换行符 = settings.get("清除换行符", True)
 
     def load_file(self, file_path: str) -> list:

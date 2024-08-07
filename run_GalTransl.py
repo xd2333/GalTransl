@@ -77,11 +77,11 @@ class ProjectManager:
         return self.project_dir.split(os.sep)[-1] if self.project_dir else ""
 
     def create_shortcut_win(self):
-        TEMPLATE = 'chcp 65001\ncd /d "{0}"\n{1} "{2}" {3}\npause'
+        TEMPLATE = '@echo off\nchcp 65001\nset "CURRENT_PATH=%CD%"\ncd /d "{0}"\n{1} "{2}" {3}\npause\ncd /d "%CURRENT_PATH%"'
         run_com = "python.exe " + os.path.basename(__file__)
         program_dir = os.path.dirname(os.path.abspath(__file__))
         shortcut_path = f"{self.project_dir}{os.sep}run_GalTransl_v{GALTRANSL_VERSION}_{self.translator}.bat"
-        conf_path = os.path.join(self.project_dir, self.config_file_name)
+        conf_path = "%CURRENT_PATH%\\" + self.config_file_name
         if "nt" not in os.name:  # not windows
             return
         if getattr(sys, "frozen", False):  # PyInstaller

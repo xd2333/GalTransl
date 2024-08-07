@@ -252,6 +252,7 @@ def get_transCache_from_json_new(
         # cache_key不在缓存
         if cache_key not in cache_dict:
             trans_list_unhit.append(tran)
+            LOGGER.debug(f"未命中缓存: {line_now}")
             continue
 
         no_proofread = cache_dict[cache_key]["proofread_zh"] == ""
@@ -261,6 +262,7 @@ def get_transCache_from_json_new(
             if load_post_jp == ignr_post_jp == False:
                 if tran.post_jp != cache_dict[cache_key]["post_jp"]:
                     trans_list_unhit.append(tran)
+                    LOGGER.debug(f"post_jp被改变: {line_now}")
                     continue
             # pre_zh为空
             if tran.post_jp != "":
@@ -269,6 +271,7 @@ def get_transCache_from_json_new(
                     or cache_dict[cache_key]["pre_zh"] == ""
                 ):
                     trans_list_unhit.append(tran)
+                    LOGGER.debug(f"pre_zh为空: {line_now}")
                     continue
             # 重试失败的
             if retry_failed and "Failed translation" in cache_dict[cache_key]["pre_zh"]:
@@ -276,16 +279,19 @@ def get_transCache_from_json_new(
                     no_proofread or "Fail" in cache_dict[cache_key]["proofread_by"]
                 ):  # 且未校对
                     trans_list_unhit.append(tran)
+                    LOGGER.debug(f"重试失败的: {line_now}")
                     continue
 
             # retran_key在pre_jp中
             if retran_key and retran_key in cache_dict[cache_key]["pre_jp"]:
                 trans_list_unhit.append(tran)
+                LOGGER.debug(f"retran_key在pre_jp中: {line_now}")
                 continue
             # retran_key在problem中
             if retran_key and "problem" in cache_dict[cache_key]:
                 if retran_key in cache_dict[cache_key]["problem"]:
                     trans_list_unhit.append(tran)
+                    LOGGER.debug(f"retran_key在problem中: {line_now}")
                     continue
 
         # 击中缓存的,post_zh初始值赋pre_zh

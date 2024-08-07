@@ -328,7 +328,7 @@ async def get_gptapi(projectConfig: CProjectConfig, eng_type: str, endpoint: Opt
             for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
                 cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
             return CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
-        case "sakura-009" | "sakura-010" | "galtransl-v1.5":
+        case "sakura-009" | "sakura-010" | "galtransl-v2":
             if endpoint is None:
                 raise ValueError(
                     f"Endpoint is required for engine type {eng_type}")

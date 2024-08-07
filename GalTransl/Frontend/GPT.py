@@ -639,54 +639,51 @@ async def doLLMTranslate(
     all_tasks = []
     file_save_funcs = {}
     cross_num = projectConfig.getKey("splitFileCrossNum") or 0
+    cross_num = cross_num + 1 if cross_num % 2 == 0 else cross_num
     split_file = projectConfig.getKey("splitFile") or False
 
     file_list = get_file_list(projectConfig.getInputPath())
     if not file_list:
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
     semaphore = asyncio.Semaphore(workersPerProject)
-    total_chunks = 0
-    for file_name in file_list:
-        origin_input, _ = load_input(file_name, fPlugins)
-        # 修改：即使不拆分文件，也创建一个包含整个文件内容的SplitChunkMetadata对象
-        split_chunks = input_splitter.split(origin_input, cross_num) if split_file else [
-            SplitChunkMetadata(0, len(origin_input), len(origin_input), len(origin_input), 0, origin_input)]
-        total_chunks += len(split_chunks)
-    progress_bar = atqdm(total=total_chunks, desc="Processing chunks/files", dynamic_ncols=True, leave=False)
-
+    
     async def run_task(task):
         result = await task
         progress_bar.update(1)
         progress_bar.set_postfix(file=result[3].split(os_sep)[-1], chunk=f"{result[4].start_index}-{result[4].end_index}")
         return result
 
+    total_chunks = []
     for file_name in file_list:
         origin_input, save_func = load_input(file_name, fPlugins)
         file_save_funcs[file_name] = save_func
         split_chunks = input_splitter.split(origin_input, cross_num) if split_file else [
             SplitChunkMetadata(0, len(origin_input), len(origin_input), len(origin_input), 0, origin_input)]
+        total_chunks.extend(split_chunks)
 
-        for i, split_chunk in enumerate(split_chunks):
-            task = run_task(
-                doLLMTranslateSingleFile(
-                    semaphore,
-                    sakura_endpoint_queue,
-                    file_name,
-                    projectConfig,
-                    eng_type,
-                    pre_dic,
-                    post_dic,
-                    gpt_dic,
-                    tPlugins,
-                    fPlugins,
-                    proxyPool,
-                    tokenPool,
-                    split_chunk,
-                    i,
-                    len(split_chunks)
-                )
+    progress_bar = atqdm(total=len(total_chunks), desc="Processing chunks/files", dynamic_ncols=True, leave=False)
+
+    for i, split_chunk in enumerate(total_chunks):
+        task = run_task(
+            doLLMTranslateSingleFile(
+                semaphore,
+                sakura_endpoint_queue,
+                file_name,
+                projectConfig,
+                eng_type,
+                pre_dic,
+                post_dic,
+                gpt_dic,
+                tPlugins,
+                fPlugins,
+                proxyPool,
+                tokenPool,
+                split_chunk,
+                i,
+                len(split_chunks)
             )
-            all_tasks.append(task)
+        )
+        all_tasks.append(task)
 
     results = await asyncio.gather(*all_tasks)
     progress_bar.close()

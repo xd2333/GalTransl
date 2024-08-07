@@ -243,7 +243,7 @@ class DictionaryCombiner(OutputCombiner):
         return all_trans_list, all_json_list
 
 
-async def init_endpoint_queue(projectConfig: CProjectConfig, workersPerProject: int, eng_type: str) -> Optional[Queue]:
+async def init_sakura_endpoint_queue(projectConfig: CProjectConfig, workersPerProject: int, eng_type: str) -> Optional[Queue]:
     """
     初始化端点队列，用于Sakura或GalTransl引擎。
 
@@ -256,7 +256,7 @@ async def init_endpoint_queue(projectConfig: CProjectConfig, workersPerProject: 
     初始化的端点队列，如果不需要则返回None
     """
     if "sakura" in eng_type or "galtransl" in eng_type:
-        endpoint_queue = asyncio.Queue()
+        sakura_endpoint_queue = asyncio.Queue()
         backendSpecific = projectConfig.projectConfig["backendSpecific"]
         section_name = "SakuraLLM" if "SakuraLLM" in backendSpecific else "Sakura"
         if "endpoints" in projectConfig.getBackendConfigSection(section_name):
@@ -268,9 +268,9 @@ async def init_endpoint_queue(projectConfig: CProjectConfig, workersPerProject: 
         repeated = (workersPerProject + len(endpoints) - 1) // len(endpoints)
         for _ in range(repeated):
             for endpoint in endpoints:
-                await endpoint_queue.put(endpoint)
+                await sakura_endpoint_queue.put(endpoint)
         LOGGER.info(f"当前使用 {workersPerProject} 个Sakura worker引擎")
-        return endpoint_queue
+        return sakura_endpoint_queue
     else:
         return None
 
@@ -488,7 +488,7 @@ async def process_input(
 
 async def doLLMTranslateSingleFile(
     semaphore: asyncio.Semaphore,
-    endpoint_queue: asyncio.Queue,
+    sakura_endpoint_queue: asyncio.Queue,
     file_path: str,
     projectConfig: CProjectConfig,
     eng_type: str,
@@ -508,7 +508,7 @@ async def doLLMTranslateSingleFile(
 
     参数:
     semaphore: 用于控制并发的信号量
-    endpoint_queue: API端点队列
+    sakura_endpoint_queue: API端点队列
     file_path: 文件路径
     projectConfig: 项目配置对象
     eng_type: 引擎类型
@@ -529,8 +529,8 @@ async def doLLMTranslateSingleFile(
     async with semaphore:
         endpoint = None
         try:
-            if endpoint_queue is not None:
-                endpoint = await endpoint_queue.get()
+            if sakura_endpoint_queue is not None:
+                endpoint = await sakura_endpoint_queue.get()
 
             st = time()
             proj_dir = projectConfig.getProjectDir()
@@ -543,10 +543,14 @@ async def doLLMTranslateSingleFile(
             output_file_path = input_file_path.replace(input_dir, output_dir)
             output_file_dir = dirname(output_file_path)
             makedirs(output_file_dir, exist_ok=True)
-            cache_file_path = joinpath(cache_dir, f"{file_name}_{file_index}")
+            if total_splits>1:
+                cache_file_path = joinpath(cache_dir, f"{file_name}_{file_index}")
+            else:
+                cache_file_path = joinpath(cache_dir, f"{file_name}")
             print("\n", flush=True)
+            part_info=f" (part {file_index+1}/{total_splits})" if total_splits>1 else ""
             LOGGER.info(
-                f"开始翻译文件: {file_name} (part {file_index+1}/{total_splits}), 引擎类型: {eng_type}")
+                f"开始翻译文件: {file_name}{part_info}, 引擎类型: {eng_type}")
 
             gptapi = await get_gptapi(projectConfig, eng_type, endpoint, proxyPool, tokenPool)
 
@@ -596,11 +600,11 @@ async def doLLMTranslateSingleFile(
 
             et = time()
             LOGGER.info(
-                f"文件 {file_name} (part {file_index+1}/{total_splits}) 翻译完成，用时 {et-st:.3f}s.")
+                f"文件 {file_name}{part_info} 翻译完成，用时 {et-st:.3f}s.")
             return True, trans_list, json_list, file_path, split_chunk
         finally:
-            if endpoint_queue is not None and endpoint is not None:
-                endpoint_queue.put_nowait(endpoint)
+            if sakura_endpoint_queue is not None and endpoint is not None:
+                sakura_endpoint_queue.put_nowait(endpoint)
 
 
 async def doLLMTranslate(
@@ -631,7 +635,7 @@ async def doLLMTranslate(
     """
     pre_dic, post_dic, gpt_dic = init_dictionaries(projectConfig)
     workersPerProject = projectConfig.getKey("workersPerProject")
-    endpoint_queue = await init_endpoint_queue(projectConfig, workersPerProject, eng_type)
+    sakura_endpoint_queue = await init_sakura_endpoint_queue(projectConfig, workersPerProject, eng_type)
     all_tasks = []
     file_save_funcs = {}
     cross_num = projectConfig.getKey("splitFileCrossNum") or 0
@@ -666,7 +670,7 @@ async def doLLMTranslate(
             task = run_task(
                 doLLMTranslateSingleFile(
                     semaphore,
-                    endpoint_queue,
+                    sakura_endpoint_queue,
                     file_name,
                     projectConfig,
                     eng_type,

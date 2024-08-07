@@ -1,7 +1,7 @@
 ---
 # 程序设置
 common:
-  loggingLevel: info # 日志级别[DEBUG/INFO/WARNING/ERROR/CRITICAL]
+  loggingLevel: info # 日志级别[debug/info/warning]
   saveLog: false # 是否记录日志到文件[True/False]
   workersPerProject: 1 # 多线程，同时翻译的**文件**数量。当开启splitFile时，允许单文件多线程。
 

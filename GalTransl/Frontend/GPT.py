@@ -64,7 +64,7 @@ class InputSplitter:
     """
 
     @staticmethod
-    def split(content: Union[str, List], cross_num: int) -> List[SplitChunkMetadata]:
+    def split(content: Union[str, List], cross_num: int, file_name: str = "") -> List[SplitChunkMetadata]:
         """
         分割输入内容的方法，由子类实现。
 
@@ -93,7 +93,7 @@ class DictionaryCountSplitter(InputSplitter):
         self.dict_count = dict_count
 
     def split(
-        self, content: Union[str, List], cross_num: int
+        self, content: Union[str, List], cross_num: int, file_name: str = ""
     ) -> List[SplitChunkMetadata]:
         """
         实现分割方法，将输入内容按字典数量分割。
@@ -142,6 +142,7 @@ class DictionaryCountSplitter(InputSplitter):
                     chunk_real_size=len(chunk),
                     cross_num=cross_num,
                     content=json.dumps(chunk, ensure_ascii=False, indent=2),
+                    file_name=file_name,
                 )
             )
 
@@ -163,7 +164,7 @@ class EqualPartsSplitter(InputSplitter):
         self.parts = parts
 
     def split(
-        self, content: Union[str, List], cross_num: int
+        self, content: Union[str, List], cross_num: int, file_name: str = ""
     ) -> List[SplitChunkMetadata]:
         """
         实现分割方法，将输入内容平均分割。
@@ -209,6 +210,7 @@ class EqualPartsSplitter(InputSplitter):
                     chunk_real_size=len(chunk),
                     cross_num=cross_num,
                     content=json.dumps(chunk, ensure_ascii=False, indent=2),
+                    file_name=file_name,
                 )
             )
             start = end
@@ -723,7 +725,7 @@ async def doLLMTranslate(
         origin_input, save_func = load_input(file_name, fPlugins)
         file_save_funcs[file_name] = save_func
         split_chunks = (
-            input_splitter.split(origin_input, cross_num)
+            input_splitter.split(origin_input, cross_num, file_name)
             if split_file
             else [
                 SplitChunkMetadata(

@@ -1,6 +1,12 @@
 from typing import List, Dict, Any, Optional, Union, Tuple
 from os import makedirs, sep as os_sep
-from os.path import join as joinpath, exists as isPathExists, getsize as getFileSize, basename, dirname
+from os.path import (
+    join as joinpath,
+    exists as isPathExists,
+    getsize as getFileSize,
+    basename,
+    dirname,
+)
 from tqdm.asyncio import tqdm as atqdm
 from asyncio import Semaphore, gather, Queue
 from time import time
@@ -42,6 +48,7 @@ class SplitChunkMetadata:
     cross_num: 交叉句子数量
     content: 块的实际内容
     """
+
     start_index: int
     end_index: int
     chunk_non_cross_size: int
@@ -55,6 +62,7 @@ class InputSplitter:
     """
     输入分割器的基类，定义了分割方法的接口。
     """
+
     @staticmethod
     def split(content: Union[str, List], cross_num: int) -> List[SplitChunkMetadata]:
         """
@@ -84,7 +92,9 @@ class DictionaryCountSplitter(InputSplitter):
         """
         self.dict_count = dict_count
 
-    def split(self, content: Union[str, List], cross_num: int) -> List[SplitChunkMetadata]:
+    def split(
+        self, content: Union[str, List], cross_num: int
+    ) -> List[SplitChunkMetadata]:
         """
         实现分割方法，将输入内容按字典数量分割。
 
@@ -100,12 +110,20 @@ class DictionaryCountSplitter(InputSplitter):
                 data = json.loads(content)
             except json.JSONDecodeError:
                 LOGGER.warning(f"无法解析JSON：{content[:100]}...")
-                return [SplitChunkMetadata(0, len(content), len(content), len(content), 0, content)]
+                return [
+                    SplitChunkMetadata(
+                        0, len(content), len(content), len(content), 0, content
+                    )
+                ]
         else:
             data = content
 
         if not isinstance(data, list):
-            return [SplitChunkMetadata(0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2))]
+            return [
+                SplitChunkMetadata(
+                    0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2)
+                )
+            ]
 
         total_items = len(data)
         result = []
@@ -115,15 +133,17 @@ class DictionaryCountSplitter(InputSplitter):
             chunk_start = max(0, start - cross_num)
             chunk_end = min(total_items, end + cross_num)
             chunk = data[chunk_start:chunk_end]
-            
-            result.append(SplitChunkMetadata(
-                start_index=start,
-                end_index=end,
-                chunk_non_cross_size=end - start,
-                chunk_real_size=len(chunk),
-                cross_num=cross_num,
-                content=json.dumps(chunk, ensure_ascii=False, indent=2)
-            ))
+
+            result.append(
+                SplitChunkMetadata(
+                    start_index=start,
+                    end_index=end,
+                    chunk_non_cross_size=end - start,
+                    chunk_real_size=len(chunk),
+                    cross_num=cross_num,
+                    content=json.dumps(chunk, ensure_ascii=False, indent=2),
+                )
+            )
 
         return result
 
@@ -142,7 +162,9 @@ class EqualPartsSplitter(InputSplitter):
         """
         self.parts = parts
 
-    def split(self, content: Union[str, List], cross_num: int) -> List[SplitChunkMetadata]:
+    def split(
+        self, content: Union[str, List], cross_num: int
+    ) -> List[SplitChunkMetadata]:
         """
         实现分割方法，将输入内容平均分割。
 
@@ -162,7 +184,11 @@ class EqualPartsSplitter(InputSplitter):
             data = content
 
         if not isinstance(data, list):
-            return [SplitChunkMetadata(0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2))]
+            return [
+                SplitChunkMetadata(
+                    0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2)
+                )
+            ]
 
         total_items = len(data)
         items_per_part = total_items // self.parts
@@ -175,14 +201,16 @@ class EqualPartsSplitter(InputSplitter):
             chunk_start = max(0, start - cross_num)
             chunk_end = min(total_items, end + cross_num)
             chunk = data[chunk_start:chunk_end]
-            result.append(SplitChunkMetadata(
-                start_index=start,
-                end_index=end,
-                chunk_non_cross_size=end - start,
-                chunk_real_size=len(chunk),
-                cross_num=cross_num,
-                content=json.dumps(chunk, ensure_ascii=False, indent=2)
-            ))
+            result.append(
+                SplitChunkMetadata(
+                    start_index=start,
+                    end_index=end,
+                    chunk_non_cross_size=end - start,
+                    chunk_real_size=len(chunk),
+                    cross_num=cross_num,
+                    content=json.dumps(chunk, ensure_ascii=False, indent=2),
+                )
+            )
             start = end
 
         return result
@@ -192,8 +220,11 @@ class OutputCombiner:
     """
     输出合并器的基类，定义了合并方法的接口。
     """
+
     @staticmethod
-    def combine(results: List[Tuple[List, List, SplitChunkMetadata]]) -> Tuple[List, List]:
+    def combine(
+        results: List[Tuple[List, List, SplitChunkMetadata]]
+    ) -> Tuple[List, List]:
         """
         合并输出结果的方法，由子类实现。
 
@@ -210,8 +241,11 @@ class DictionaryCombiner(OutputCombiner):
     """
     基于字典的输出合并器，用于合并分割后的翻译结果。
     """
+
     @staticmethod
-    def combine(results: List[Tuple[List, List, SplitChunkMetadata]]) -> Tuple[List, List]:
+    def combine(
+        results: List[Tuple[List, List, SplitChunkMetadata]]
+    ) -> Tuple[List, List]:
         """
         实现合并方法，合并分割后的翻译结果。
 
@@ -232,8 +266,8 @@ class DictionaryCombiner(OutputCombiner):
         for i, (trans_list, json_list, metadata) in enumerate(sorted_results):
             if i == 0:
                 # 对于第一个块，我们取全部内容
-                all_trans_list.extend(trans_list[:metadata.chunk_non_cross_size])
-                all_json_list.extend(json_list[:metadata.chunk_non_cross_size])
+                all_trans_list.extend(trans_list[: metadata.chunk_non_cross_size])
+                all_json_list.extend(json_list[: metadata.chunk_non_cross_size])
             else:
                 # 对于后续块，我们只取非交叉部分
                 start = metadata.cross_num
@@ -244,7 +278,9 @@ class DictionaryCombiner(OutputCombiner):
         return all_trans_list, all_json_list
 
 
-async def init_sakura_endpoint_queue(projectConfig: CProjectConfig, workersPerProject: int, eng_type: str) -> Optional[Queue]:
+async def init_sakura_endpoint_queue(
+    projectConfig: CProjectConfig, workersPerProject: int, eng_type: str
+) -> Optional[Queue]:
     """
     初始化端点队列，用于Sakura或GalTransl引擎。
 
@@ -261,11 +297,11 @@ async def init_sakura_endpoint_queue(projectConfig: CProjectConfig, workersPerPr
         backendSpecific = projectConfig.projectConfig["backendSpecific"]
         section_name = "SakuraLLM" if "SakuraLLM" in backendSpecific else "Sakura"
         if "endpoints" in projectConfig.getBackendConfigSection(section_name):
-            endpoints = projectConfig.getBackendConfigSection(section_name)[
-                "endpoints"]
+            endpoints = projectConfig.getBackendConfigSection(section_name)["endpoints"]
         else:
-            endpoints = [projectConfig.getBackendConfigSection(section_name)[
-                "endpoint"]]
+            endpoints = [
+                projectConfig.getBackendConfigSection(section_name)["endpoint"]
+            ]
         repeated = (workersPerProject + len(endpoints) - 1) // len(endpoints)
         for _ in range(repeated):
             for endpoint in endpoints:
@@ -276,7 +312,9 @@ async def init_sakura_endpoint_queue(projectConfig: CProjectConfig, workersPerPr
         return None
 
 
-def init_dictionaries(projectConfig: CProjectConfig) -> Tuple[CNormalDic, CNormalDic, CGptDict]:
+def init_dictionaries(
+    projectConfig: CProjectConfig,
+) -> Tuple[CNormalDic, CNormalDic, CGptDict]:
     """
     初始化翻译使用的字典。
 
@@ -292,10 +330,8 @@ def init_dictionaries(projectConfig: CProjectConfig) -> Tuple[CNormalDic, CNorma
     default_dic_dir = projectConfig.getDictCfgSection()["defaultDictFolder"]
     project_dir = projectConfig.getProjectDir()
 
-    pre_dic = CNormalDic(initDictList(
-        pre_dic_dir, default_dic_dir, project_dir))
-    post_dic = CNormalDic(initDictList(
-        post_dic_dir, default_dic_dir, project_dir))
+    pre_dic = CNormalDic(initDictList(pre_dic_dir, default_dic_dir, project_dir))
+    post_dic = CNormalDic(initDictList(post_dic_dir, default_dic_dir, project_dir))
     gpt_dic = CGptDict(initDictList(gpt_dic_dir, default_dic_dir, project_dir))
 
     if projectConfig.getDictCfgSection().get("sortPrePostDict", False):
@@ -305,7 +341,13 @@ def init_dictionaries(projectConfig: CProjectConfig) -> Tuple[CNormalDic, CNorma
     return pre_dic, post_dic, gpt_dic
 
 
-async def get_gptapi(projectConfig: CProjectConfig, eng_type: str, endpoint: Optional[str], proxyPool: Optional[CProxyPool], tokenPool: COpenAITokenPool):
+async def get_gptapi(
+    projectConfig: CProjectConfig,
+    eng_type: str,
+    endpoint: Optional[str],
+    proxyPool: Optional[CProxyPool],
+    tokenPool: COpenAITokenPool,
+):
     """
     根据引擎类型获取相应的API实例。
 
@@ -331,8 +373,7 @@ async def get_gptapi(projectConfig: CProjectConfig, eng_type: str, endpoint: Opt
             return CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
         case "sakura-009" | "sakura-010" | "galtransl-v2":
             if endpoint is None:
-                raise ValueError(
-                    f"Endpoint is required for engine type {eng_type}")
+                raise ValueError(f"Endpoint is required for engine type {eng_type}")
             return CSakuraTranslate(projectConfig, eng_type, endpoint, proxyPool)
         case "rebuildr" | "rebuilda" | "dump-name":
             return CRebuildTranslate(projectConfig, eng_type)
@@ -363,17 +404,20 @@ def load_input(file_path: str, fPlugins: list) -> Tuple[str, Any]:
             break
         except AttributeError as e:
             LOGGER.error(
-                f"插件 {getattr(plugin, 'name', 'Unknown')} 缺少必要的属性或方法: {e}")
+                f"插件 {getattr(plugin, 'name', 'Unknown')} 缺少必要的属性或方法: {e}"
+            )
         except TypeError as e:
             LOGGER.error(
-                f"{file_path} 不是文件插件'{getattr(plugin, 'name', 'Unknown')}'支持的格式：{e}")
+                f"{file_path} 不是文件插件'{getattr(plugin, 'name', 'Unknown')}'支持的格式：{e}"
+            )
         except Exception as e:
             LOGGER.error(
-                f"插件 {getattr(plugin, 'name', 'Unknown')} 读取文件 {file_path} 出错: {e}")
+                f"插件 {getattr(plugin, 'name', 'Unknown')} 读取文件 {file_path} 出错: {e}"
+            )
 
     if not origin_input and file_path.endswith(".json"):
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 origin_input = f.read()
             save_func = save_json
         except Exception as e:
@@ -392,7 +436,7 @@ async def process_input(
     projectConfig: CProjectConfig,
     gpt_dic: CGptDict,
     cache_file_path: str,
-    post_dic: CNormalDic
+    post_dic: CNormalDic,
 ) -> Tuple[List, List]:
     """
     处理输入内容，包括翻译前处理、翻译和翻译后处理。
@@ -444,7 +488,10 @@ async def process_input(
 
         # 执行校对（如果启用）
         if projectConfig.getKey("gpt.enableProofRead"):
-            if "newbing" in gptapi.__class__.__name__.lower() or "gpt4" in gptapi.__class__.__name__.lower():
+            if (
+                "newbing" in gptapi.__class__.__name__.lower()
+                or "gpt4" in gptapi.__class__.__name__.lower()
+            ):
                 await gptapi.batch_translate(
                     file_name,
                     cache_file_path,
@@ -469,10 +516,15 @@ async def process_input(
             tran.post_zh = post_dic.do_replace(tran.post_zh, tran)
             if projectConfig.getDictCfgSection("usePostDictInName"):
                 if tran._speaker:
-                    if isinstance(tran.speaker, list) and isinstance(tran._speaker, list):
-                        tran._speaker = [post_dic.do_replace(
-                            s, tran) for s in tran.speaker]
-                    elif isinstance(tran.speaker, str) and isinstance(tran._speaker, str):
+                    if isinstance(tran.speaker, list) and isinstance(
+                        tran._speaker, list
+                    ):
+                        tran._speaker = [
+                            post_dic.do_replace(s, tran) for s in tran.speaker
+                        ]
+                    elif isinstance(tran.speaker, str) and isinstance(
+                        tran._speaker, str
+                    ):
                         tran._speaker = post_dic.do_replace(tran.speaker, tran)
             for plugin in tPlugins:
                 try:
@@ -502,7 +554,7 @@ async def doLLMTranslateSingleFile(
     tokenPool: COpenAITokenPool,
     split_chunk: SplitChunkMetadata,
     file_index: int = 0,
-    total_splits: int = 1
+    total_splits: int = 1,
 ) -> Tuple[bool, List, List, str, SplitChunkMetadata]:
     """
     处理单个文件的翻译任务。
@@ -544,16 +596,19 @@ async def doLLMTranslateSingleFile(
             output_file_path = input_file_path.replace(input_dir, output_dir)
             output_file_dir = dirname(output_file_path)
             makedirs(output_file_dir, exist_ok=True)
-            if total_splits>1:
+            if total_splits > 1:
                 cache_file_path = joinpath(cache_dir, f"{file_name}_{file_index}")
             else:
                 cache_file_path = joinpath(cache_dir, f"{file_name}")
             print("\n", flush=True)
-            part_info=f" (part {file_index+1}/{total_splits})" if total_splits>1 else ""
-            LOGGER.info(
-                f"开始翻译文件: {file_name}{part_info}, 引擎类型: {eng_type}")
+            part_info = (
+                f" (part {file_index+1}/{total_splits})" if total_splits > 1 else ""
+            )
+            LOGGER.info(f"开始翻译文件: {file_name}{part_info}, 引擎类型: {eng_type}")
 
-            gptapi = await get_gptapi(projectConfig, eng_type, endpoint, proxyPool, tokenPool)
+            gptapi = await get_gptapi(
+                projectConfig, eng_type, endpoint, proxyPool, tokenPool
+            )
 
             origin_input = split_chunk.content
             LOGGER.debug(f"原始输入: {str(origin_input)[:10]}...")
@@ -563,8 +618,12 @@ async def doLLMTranslateSingleFile(
             except Exception as e:
                 LOGGER.error(f"文件 {file_name} 加载翻译列表失败: {e}")
                 return False, [], [], file_path, split_chunk
-            
-            input_length = len(json.loads(origin_input)) if isinstance(origin_input, str) else len(origin_input)
+
+            input_length = (
+                len(json.loads(origin_input))
+                if isinstance(origin_input, str)
+                else len(origin_input)
+            )
             LOGGER.debug(f"文件 {file_name} 分块 {file_index+1}/{total_splits}:")
             LOGGER.debug(f"  原始输入长度: {input_length}")
             LOGGER.debug(f"  分割后长度: {len(trans_list)}")
@@ -593,15 +652,15 @@ async def doLLMTranslateSingleFile(
                 projectConfig,
                 gpt_dic,
                 cache_file_path,
-                post_dic
+                post_dic,
             )
 
             LOGGER.debug(
-                f"翻译后长度: trans_list={len(trans_list)}, json_list={len(json_list)}")
+                f"翻译后长度: trans_list={len(trans_list)}, json_list={len(json_list)}"
+            )
 
             et = time()
-            LOGGER.info(
-                f"文件 {file_name}{part_info} 翻译完成，用时 {et-st:.3f}s.")
+            LOGGER.info(f"文件 {file_name}{part_info} 翻译完成，用时 {et-st:.3f}s.")
             return True, trans_list, json_list, file_path, split_chunk
         finally:
             if sakura_endpoint_queue is not None and endpoint is not None:
@@ -616,7 +675,7 @@ async def doLLMTranslate(
     fPlugins: list,
     eng_type: str = "offapi",
     input_splitter: InputSplitter = InputSplitter(),
-    output_combiner: OutputCombiner = OutputCombiner()
+    output_combiner: OutputCombiner = OutputCombiner(),
 ) -> bool:
     """
     执行LLM翻译的主函数。
@@ -636,7 +695,9 @@ async def doLLMTranslate(
     """
     pre_dic, post_dic, gpt_dic = init_dictionaries(projectConfig)
     workersPerProject = projectConfig.getKey("workersPerProject")
-    sakura_endpoint_queue = await init_sakura_endpoint_queue(projectConfig, workersPerProject, eng_type)
+    sakura_endpoint_queue = await init_sakura_endpoint_queue(
+        projectConfig, workersPerProject, eng_type
+    )
     all_tasks = []
     file_save_funcs = {}
     cross_num = projectConfig.getKey("splitFileCrossNum") or 0
@@ -647,22 +708,43 @@ async def doLLMTranslate(
     if not file_list:
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
     semaphore = asyncio.Semaphore(workersPerProject)
-    
+
     async def run_task(task):
         result = await task
         progress_bar.update(1)
-        progress_bar.set_postfix(file=result[3].split(os_sep)[-1], chunk=f"{result[4].start_index}-{result[4].end_index}")
+        progress_bar.set_postfix(
+            file=result[3].split(os_sep)[-1],
+            chunk=f"{result[4].start_index}-{result[4].end_index}",
+        )
         return result
 
     total_chunks = []
     for file_name in file_list:
         origin_input, save_func = load_input(file_name, fPlugins)
         file_save_funcs[file_name] = save_func
-        split_chunks = input_splitter.split(origin_input, cross_num) if split_file else [
-            SplitChunkMetadata(0, len(origin_input), len(origin_input), len(origin_input), 0, origin_input, file_name)]
+        split_chunks = (
+            input_splitter.split(origin_input, cross_num)
+            if split_file
+            else [
+                SplitChunkMetadata(
+                    0,
+                    len(origin_input),
+                    len(origin_input),
+                    len(origin_input),
+                    0,
+                    origin_input,
+                    file_name,
+                )
+            ]
+        )
         total_chunks.extend(split_chunks)
 
-    progress_bar = atqdm(total=len(total_chunks), desc="Processing chunks/files", dynamic_ncols=True, leave=False)
+    progress_bar = atqdm(
+        total=len(total_chunks),
+        desc="Processing chunks/files",
+        dynamic_ncols=True,
+        leave=False,
+    )
 
     for i, chunk in enumerate(total_chunks):
         task = run_task(
@@ -681,7 +763,7 @@ async def doLLMTranslate(
                 tokenPool,
                 chunk,
                 i,
-                len(split_chunks)
+                len(split_chunks),
             )
         )
         all_tasks.append(task)
@@ -697,7 +779,7 @@ async def doLLMTranslate(
         file_save_funcs,
         fPlugins,
         gpt_dic,
-        output_combiner
+        output_combiner,
     )
 
     return True
@@ -711,7 +793,7 @@ async def postprocess_results(
     file_save_funcs: Dict[str, Any],
     fPlugins: list,
     gpt_dic: CGptDict,
-    output_combiner: OutputCombiner
+    output_combiner: OutputCombiner,
 ):
     """
     处理翻译结果，包括保存结果、生成人名表等。
@@ -728,52 +810,77 @@ async def postprocess_results(
     """
     if "dump-name" in eng_type:
         import csv
+
         global name_dict
         proj_dir = projectConfig.getProjectDir()
         LOGGER.info(f"开始保存人名表...{name_dict}")
         name_dict = dict(
-            sorted(name_dict.items(), key=lambda item: item[1], reverse=True))
+            sorted(name_dict.items(), key=lambda item: item[1], reverse=True)
+        )
         LOGGER.info(f"共发现 {len(name_dict)} 个人名，按出现次数排序如下：")
         for name, count in name_dict.items():
             LOGGER.info(f"{name}: {count}")
-        with open(joinpath(proj_dir, "人名替换表.csv"), "w", encoding="utf-8", newline="") as f:
+        with open(
+            joinpath(proj_dir, "人名替换表.csv"), "w", encoding="utf-8", newline=""
+        ) as f:
             writer = csv.writer(f)
             writer.writerow(["JP_Name", "CN_Name", "Count"])  # 写入表头
             for name, count in name_dict.items():
                 writer.writerow([name, "", count])
         LOGGER.info(
-            f"name已保存到'人名替换表.csv'（UTF-8编码，用Emeditor编辑），填入CN_Name后可用于后续翻译name字段。")
+            f"name已保存到'人名替换表.csv'（UTF-8编码，用Emeditor编辑），填入CN_Name后可用于后续翻译name字段。"
+        )
 
     for file_name in file_list:
-        file_results = [result for result in results if result[0]
-                        and result[1] and result[2] and result[3] == file_name]
+        file_results = [
+            result
+            for result in results
+            if result[0] and result[1] and result[2] and result[3] == file_name
+        ]
         if file_results:
             LOGGER.debug(f"处理文件 {file_name}")
             LOGGER.debug(f"分块数量: {len(file_results)}")
-            for i, (_, trans_list, json_list, _, chunk_metadata) in enumerate(file_results):
-                LOGGER.debug(f"分块 {i}: start_index={chunk_metadata.start_index}, "
-                             f"end_index={chunk_metadata.end_index}, "
-                             f"chunk_non_cross_size={chunk_metadata.chunk_non_cross_size}, "
-                             f"chunk_real_size={chunk_metadata.chunk_real_size}, "
-                             f"cross_num={chunk_metadata.cross_num}, "
-                             f"处理后长度={len(trans_list)}")
-            LOGGER.debug(f"合并前总行数: {sum(len(trans_list) for _, trans_list, _, _, _ in file_results)}")
-            
+            for i, (_, trans_list, json_list, _, chunk_metadata) in enumerate(
+                file_results
+            ):
+                LOGGER.debug(
+                    f"分块 {i}: start_index={chunk_metadata.start_index}, "
+                    f"end_index={chunk_metadata.end_index}, "
+                    f"chunk_non_cross_size={chunk_metadata.chunk_non_cross_size}, "
+                    f"chunk_real_size={chunk_metadata.chunk_real_size}, "
+                    f"cross_num={chunk_metadata.cross_num}, "
+                    f"处理后长度={len(trans_list)}"
+                )
+            LOGGER.debug(
+                f"合并前总行数: {sum(len(trans_list) for _, trans_list, _, _, _ in file_results)}"
+            )
+
             # 使用output_combiner合并结果，即使只有一个结果
             all_trans_list, all_json_list = output_combiner.combine(
-                [(trans_list, json_list, chunk_metadata)
-                for _, trans_list, json_list, _, chunk_metadata in file_results]
+                [
+                    (trans_list, json_list, chunk_metadata)
+                    for _, trans_list, json_list, _, chunk_metadata in file_results
+                ]
             )
             LOGGER.debug(f"合并后总行数: {len(all_trans_list)}")
 
             if all_trans_list and all_json_list:
-                name_dict = load_name_table(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")) \
-                    if isPathExists(joinpath(projectConfig.getProjectDir(), "人名替换表.csv")) else {}
+                name_dict = (
+                    load_name_table(
+                        joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
+                    )
+                    if isPathExists(
+                        joinpath(projectConfig.getProjectDir(), "人名替换表.csv")
+                    )
+                    else {}
+                )
                 final_result = update_json_with_transList(
-                    all_trans_list, all_json_list, name_dict)
+                    all_trans_list, all_json_list, name_dict
+                )
 
                 output_file_path = file_name.replace(
-                    projectConfig.getInputPath(), projectConfig.getOutputPath())
+                    projectConfig.getInputPath(), projectConfig.getOutputPath()
+                )
                 save_func = file_save_funcs.get(file_name, save_json)
                 save_func(output_file_path, final_result)
                 LOGGER.info(f"已保存文件: {output_file_path}")  # 添加保存确认日志
@@ -781,19 +888,25 @@ async def postprocess_results(
                 if eng_type != "rebuildr":
                     find_problems(all_trans_list, projectConfig, gpt_dic)
                     cache_file_path = joinpath(
-                        projectConfig.getCachePath(), basename(file_name))
+                        projectConfig.getCachePath(), basename(file_name)
+                    )
                     save_transCache_to_json(
-                        all_trans_list, cache_file_path, post_save=True)
+                        all_trans_list, cache_file_path, post_save=True
+                    )
 
                 # 添加输入输出行数检查
                 origin_input, _ = load_input(file_name, fPlugins)
-                total_input_lines = len(json.loads(origin_input) if isinstance(
-                    origin_input, str) else origin_input)
+                total_input_lines = len(
+                    json.loads(origin_input)
+                    if isinstance(origin_input, str)
+                    else origin_input
+                )
                 total_output_lines = len(all_trans_list)
                 if total_input_lines != total_output_lines:
                     LOGGER.warning(
                         f"文件 {file_name} 的输入行数 ({total_input_lines}) 与输出行数 ({total_output_lines}) 不匹配！\n"
-                        "可能是拆分文件时出现问题，请关闭交叉句功能或直接关闭分割文件功能，并向开发者反馈。")
+                        "可能是拆分文件时出现问题，请关闭交叉句功能或直接关闭分割文件功能，并向开发者反馈。"
+                    )
             else:
                 LOGGER.warning(f"文件 {file_name} 没有生成有效的翻译结果")
         else:

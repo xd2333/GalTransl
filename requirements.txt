@@ -14,11 +14,11 @@ orjson
 EbookLib
 beautifulsoup4
 
-# 分词器
+# Tokenizer
 budoux
-# 可选分词器
+# Optional tokenizers
 # jieba
 # pkuseg
-# 非常重量级的分词器，建议安装时手动选择
+# Very heavyweight tokenizer, manual installation recommended
 # numpy < 2.0.0
 # hanlp

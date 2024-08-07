@@ -48,6 +48,7 @@ class SplitChunkMetadata:
     chunk_real_size: int
     cross_num: int
     content: Any
+    file_name: str = ""
 
 
 class InputSplitter:
@@ -658,17 +659,17 @@ async def doLLMTranslate(
         origin_input, save_func = load_input(file_name, fPlugins)
         file_save_funcs[file_name] = save_func
         split_chunks = input_splitter.split(origin_input, cross_num) if split_file else [
-            SplitChunkMetadata(0, len(origin_input), len(origin_input), len(origin_input), 0, origin_input)]
+            SplitChunkMetadata(0, len(origin_input), len(origin_input), len(origin_input), 0, origin_input, file_name)]
         total_chunks.extend(split_chunks)
 
     progress_bar = atqdm(total=len(total_chunks), desc="Processing chunks/files", dynamic_ncols=True, leave=False)
 
-    for i, split_chunk in enumerate(total_chunks):
+    for i, chunk in enumerate(total_chunks):
         task = run_task(
             doLLMTranslateSingleFile(
                 semaphore,
                 sakura_endpoint_queue,
-                file_name,
+                chunk.file_name,
                 projectConfig,
                 eng_type,
                 pre_dic,
@@ -678,7 +679,7 @@ async def doLLMTranslate(
                 fPlugins,
                 proxyPool,
                 tokenPool,
-                split_chunk,
+                chunk,
                 i,
                 len(split_chunks)
             )

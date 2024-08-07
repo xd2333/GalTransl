@@ -3,19 +3,19 @@
 common:
   loggingLevel: info # 日志级别[debug/info/warning]
   saveLog: false # 是否记录日志到文件[True/False]
-  workersPerProject: 1 # 多线程，同时翻译的**文件**数量。当开启splitFile时，允许单文件多线程。
+  workersPerProject: 1 # 多线程，同时翻译n个*文件*。当开启splitFile时，允许单文件多线程。
+  save_steps: 1 # 每翻译n次保存一次缓存，单个文件较大时可以调高到100之类的数来提高速度。[1-999]
 
-  # 单文件分割设置**重要**，不要在翻译中途修改，否则会导致缓存失效。
+  # (实验性)单文件分割设置（※重要：不要在翻译中途修改，否则会导致缓存失效）
   splitFile: false # 是否启用单文件分割。[True/False]
   splitFileMethod: "EqualPartsSplitter" # 分句方法，EqualPartsSplitter为对文件平均分句，DictionaryCountSplitter为指定条数分句。[EqualPartsSplitter/DictionaryCountSplitter]
-  splitFileNum: -1 # 选择EqualPartsSplitter分割文件时，表示每个文件拆分的数量；选择DictionaryCountSplitter分割文件时，表示拆分句子的条数上限，也就是n句拆分一次；设置为-1则表示与workersPerProject一致。
-  splitFileCrossNum: 10 # 分割文件时的交叉句数量，交叉句是指分割部分之间重叠的部分，交叉句可能可以提高翻译质量。注意，交叉句数量越多，翻译速度越慢。设为0则不使用交叉句。
+  splitFileNum: -1 # 平均分句时，表示每个文件拆分成n段，-1则与workersPerProject一致；条数分句时，表示n句拆分一次，此时建议大于1000
+  splitFileCrossNum: 0 # 分割文件时前后交叉n句，可能可以提高衔接处翻译质量[推荐0-10]。
 
   language: "ja2zh-cn" # 源语言2(to)目标语言。[zh-cn/zh-tw/en/ja/ko/ru/fr]
-  save_steps: 1 # 每翻译n次保存一次缓存，单个文件较大时可以调高到10-100来提升速度。[1-999]
   linebreakSymbol: "\r\n" # 这个项目在json中使用的换行符，找问题和自动修复时用到，不影响翻译。
   skipH: false # 跳过可能触发敏感词检测的句子。[True/False]
-  skipRetry: false # 开启则解析结果出错时跳过循环重试，直接用"Fail Translation"占位。[True/False]
+  skipRetry: false # 解析结果出错时，是否跳过循环重试，直接用"Fail Translation"占位。[True/False]
   retranslFail: false # 重启时重翻所有显示为"Fail Translation"的句子。[True/False]
   retranslKey: "" # 重启时主动重翻在problem或pre_jp中包含此关键字的句子，例如"残留日文"
 
@@ -29,15 +29,17 @@ common:
   # GPT3.5/GPT4
   gpt.restoreContextMode: true # (GPT3.5/4)重启时恢复上一轮的译文前文。[True/False]
   # Sakura/GalTransl
-  gpt.transl_dropout: 0 # (Sakura/Galtransl-v1)（实验性）丢弃翻译结果末尾的n行，可能会提高上下文准确性。[0-2]
+  gpt.transl_dropout: 0 # (Sakura/Galtransl-7b)（实验性）丢弃翻译结果末尾的n行，可能会提高上下文准确性。[0-2]
   # GalTransl
-  gpt.transl_style: "流畅" # (GalTransl-v1)翻译风格[流畅/文艺]
+  gpt.transl_style: "流畅" # (GalTransl-7b)翻译风格[流畅/文艺]
 
 # 插件选择，插件介绍可在启动程序后选择showplugs查看
 # 某个插件自己的设置进入plugins的插件目录内修改对应的yaml文件
 plugin:
-  filePlugin: file_galtransl_json # 文件插件，用于支持更多格式，默认使用file_galtransl_json
-  textPlugins: # 文本处理插件列表，按顺序执行
+  # 文件插件，用于支持更多格式，默认使用file_galtransl_json
+  filePlugin: file_galtransl_json
+  # 文本处理插件列表，按顺序执行
+  textPlugins:
     - text_common_normalfix # 默认插件，修复常规通用问题
    #- (project_dir)text_common_example # 示例，(project_dir)代表插件在项目的plugins目录里
  #file_subtitle_srt_lrc_vtt: # 示例，可以在项目配置文件中覆盖插件的设置项

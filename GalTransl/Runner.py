@@ -171,6 +171,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
             input_splitter = DictionaryCountSplitter(splitFileNum)
         elif splitFileMethod == "EqualPartsSplitter":
             input_splitter = EqualPartsSplitter(splitFileNum)
+            assert splitFileNum > 10, "EqualPartsSplitter下分割数量必须大于10"
         else:
             raise Exception(f"不支持的分割方法: {splitFileMethod}")
 

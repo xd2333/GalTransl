@@ -1,0 +1,17 @@
+Core:
+  Name: 完成消息推送
+  Type: text
+  Module: text_message_serverchan_tgbot
+
+Documentation:
+  Author: PiDanShouRouZhou
+  Version: 1.0
+  Description: 完成所有翻译后，推送完成消息到ServerChan / Telegram Bot
+
+Settings: # 这里存放插件的设置
+  推送渠道: # 推送渠道，可以选择多个
+    - ServerChan
+    - Telegram Bot
+  Telegram_Bot_Token: "" # 这里填写Telegram Bot的Token
+  Telegram_Bot_ChatID: "" # 这里填写Telegram Bot的ChatID
+  ServerChan_SendKey: "" # 这里填写ServerChan的SendKey

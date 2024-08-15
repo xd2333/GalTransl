@@ -16,6 +16,9 @@ class ServerChanNotifier(GTextPlugin):
         self.pname = plugin_conf["Core"].get("Name", "完成消息推送")
         settings = plugin_conf["Settings"]
         self.push_channels = settings.get("推送渠道", [])
+        self.tg_bot_url = settings.get("Telegram_Bot_API_URL", "https://api.telegram.org")
+        if self.tg_bot_url[-1]== "/":
+            self.tg_bot_url = self.tg_bot_url[:-1]
         self.tg_bot_token = settings.get("Telegram_Bot_Token", "")
         self.tg_chat_id = settings.get("Telegram_Bot_ChatID", "")
         self.serverchan_sendkey = settings.get("ServerChan_SendKey", "")
@@ -95,7 +98,7 @@ class ServerChanNotifier(GTextPlugin):
         :param title: 通知标题
         :param content: 通知内容
         """
-        api_url = f"https://api.telegram.org/bot{self.tg_bot_token}/sendMessage"
+        api_url = f"{self.tg_bot_url}/bot{self.tg_bot_token}/sendMessage"
         
         # 转义 Markdown 特殊字符
         def escape_markdown(text):

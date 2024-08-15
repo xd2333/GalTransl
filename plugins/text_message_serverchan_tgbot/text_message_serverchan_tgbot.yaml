@@ -12,6 +12,7 @@ Settings: # 这里存放插件的设置
   推送渠道: # 推送渠道，可以选择多个
     - ServerChan
     - Telegram Bot
+  Telegram_Bot_API_URL: "https://api.telegram.org" # 这里填写Telegram Bot的API地址
   Telegram_Bot_Token: "" # 这里填写Telegram Bot的Token
   Telegram_Bot_ChatID: "" # 这里填写Telegram Bot的ChatID
   ServerChan_SendKey: "" # 这里填写ServerChan的SendKey

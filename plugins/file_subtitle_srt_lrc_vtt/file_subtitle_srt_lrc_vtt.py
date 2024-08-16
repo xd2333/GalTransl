@@ -112,7 +112,7 @@ class file_plugin(GFilePlugin):
                     result += f"[{item['timestamp']}]{item['message']}\n"
                 elif self.保存双语字幕:
                     if self.上下双语1左右双语2 == 1:
-                        result += f"[{item['timestamp']}]{item['message']}\n{item['org_message']}\n"
+                        result += f"[{item['timestamp']}]{item['message']}\n[{item['timestamp']}]{item['org_message']}\n"
                     elif self.上下双语1左右双语2 == 2:
                         result += f"[{item['timestamp']}]{item['message']} {item['org_message']}\n"
         elif file_path.endswith(".vtt"):

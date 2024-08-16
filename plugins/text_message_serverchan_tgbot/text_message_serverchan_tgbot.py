@@ -1,34 +1,72 @@
 import re
 import requests
 import time
+import os
+import math
 from GalTransl import LOGGER
 from GalTransl.CSentense import CSentense
 from GalTransl.GTPlugin import GTextPlugin
 
+try:
+    import simpleaudio as sa
+except ImportError:
+    LOGGER.warning("缺少依赖包simpleaudio, 请更新依赖")
+
 class ServerChanNotifier(GTextPlugin):
+    SERVERCHAN_API_URL = 'https://sctapi.ftqq.com/{}.send'
+    TELEGRAM_API_URL = '{}/bot{}/sendMessage'
+
     def gtp_init(self, plugin_conf: dict, project_conf: dict):
-        """
-        This method is called when the plugin is loaded.在插件加载时被调用。
-        :param plugin_conf: The settings for the plugin.插件yaml中所有设置的dict。
-        :param project_conf: The settings for the project.项目yaml中common下设置的dict。
-        """
         self.start_time = time.time()
         self.pname = plugin_conf["Core"].get("Name", "完成消息推送")
         settings = plugin_conf["Settings"]
         self.push_channels = settings.get("推送渠道", [])
-        self.tg_bot_url = settings.get("Telegram_Bot_API_URL", "https://api.telegram.org")
-        if self.tg_bot_url[-1]== "/":
-            self.tg_bot_url = self.tg_bot_url[:-1]
+        self.tg_bot_url = settings.get("Telegram_Bot_API_URL", "https://api.telegram.org").rstrip('/')
         self.tg_bot_token = settings.get("Telegram_Bot_Token", "")
         self.tg_chat_id = settings.get("Telegram_Bot_ChatID", "")
         self.serverchan_sendkey = settings.get("ServerChan_SendKey", "")
         self.project_dir = project_conf["project_dir"]
-        self.project_name = self.project_dir.split("\\")[-1]
+        self.gt_input_dir = os.path.join(self.project_dir, "gt_input")
+        self.gt_output_dir = os.path.join(self.project_dir, "gt_output")
+        self.project_name = os.path.basename(self.project_dir)
         
+        # 声音通知设置
+        self.enable_sound = settings.get("启用声音通知", False)
+        self.use_custom_audio = settings.get("使用自定义音频", False)
+        self.use_openai_tts = settings.get("使用OpenAI TTS", False)
+        self.openai_api_key = settings.get("OpenAI_API_Key", "")
+        self.openai_api_base_url = settings.get("OpenAI_API_Base_URL", "https://api.openai.com/v1")
+        self.openai_tts_voice = settings.get("OpenAI_TTS_Voice", "alloy")
+
+        # 获取声音文件路径
+        self.plugin_dir = os.path.abspath(os.path.dirname(__file__))
+        self.success_audio_path = os.path.join(self.plugin_dir, "default_sound", "success.wav")
+        self.fail_audio_path = os.path.join(self.plugin_dir, "default_sound", "fail.wav")
+
+        if self.use_custom_audio:
+            custom_success_path = settings.get("成功音频路径", "")
+            custom_fail_path = settings.get("失败音频路径", "")
+            if custom_success_path:
+                self.success_audio_path = os.path.join(self.plugin_dir, custom_success_path)
+            if custom_fail_path:
+                self.fail_audio_path = os.path.join(self.plugin_dir, custom_fail_path)
+
+        self._validate_config()
+
+    def _validate_config(self):
         if not self.push_channels:
             LOGGER.warning(f"[{self.pname}] 未设置任何推送渠道，插件将不会发送通知。")
         else:
             LOGGER.debug(f"[{self.pname}] 插件初始化成功。推送渠道: {', '.join(self.push_channels)}")
+        
+        if self.enable_sound:
+            if self.use_custom_audio:
+                if not os.path.exists(self.success_audio_path):
+                    LOGGER.warning(f"[{self.pname}] 成功音频文件不存在: {self.success_audio_path}")
+                if not os.path.exists(self.fail_audio_path):
+                    LOGGER.warning(f"[{self.pname}] 失败音频文件不存在: {self.fail_audio_path}")
+            elif self.use_openai_tts and not self.openai_api_key:
+                LOGGER.warning(f"[{self.pname}] 未设置OpenAI API Key，无法使用OpenAI TTS")
 
     def before_src_processed(self, tran: CSentense) -> CSentense:
         return tran
@@ -43,16 +81,16 @@ class ServerChanNotifier(GTextPlugin):
         return tran
 
     def gtp_final(self):
-        """
-        This method is called after all translations are done.
-        在所有文件翻译完成之后的动作，发送通知到ServerChan或Telegram Bot。
-        """
         end_time = time.time()
         total_time = end_time - self.start_time
-        total_time_format = time.strftime("%H:%M:%S", time.gmtime(total_time))
-        title = f"[GalTransl] {self.project_name} 翻译完成"
-        content = f"所有文件的翻译工作已经完成，总耗时：{total_time_format}"
-        
+        total_time_format = time.strftime("%H小时 %M分钟 %S秒", time.gmtime(total_time))
+
+        input_files = set(os.listdir(self.gt_input_dir))
+        output_files = set(os.listdir(self.gt_output_dir))
+        untranslated_files = input_files - output_files
+
+        title, content = self._generate_notification_content(total_time_format, untranslated_files)
+
         for channel in self.push_channels:
             if channel == "ServerChan":
                 if self.serverchan_sendkey:
@@ -70,13 +108,22 @@ class ServerChanNotifier(GTextPlugin):
         if not self.push_channels:
             LOGGER.warning(f"[{self.pname}] 未设置任何推送渠道，跳过发送通知。")
 
+        # 播放声音通知
+        if self.enable_sound:
+            self.play_notification_sound(title, content)
+
+    def _generate_notification_content(self, total_time: str, untranslated_files: set) -> tuple:
+        if not untranslated_files:
+            title = f"[GalTransl] {self.project_name} 翻译完成"
+            content = f"所有文件的翻译工作已经完成，总耗时：{total_time}"
+        else:
+            title = f"[GalTransl] {self.project_name} 部分文件翻译完成"
+            content = f"以下文件翻译失败，总耗时：{total_time}\n"
+            content += "\n".join(f" - {file}" for file in sorted(untranslated_files))
+        return title, content
+
     def send_serverchan_notification(self, title, content):
-        """
-        发送通知到ServerChan
-        :param title: 通知标题
-        :param content: 通知内容
-        """
-        api_url = f'https://sctapi.ftqq.com/{self.serverchan_sendkey}.send'
+        api_url = self.SERVERCHAN_API_URL.format(self.serverchan_sendkey)
         data = {
             'text': title,
             'desp': content
@@ -84,31 +131,17 @@ class ServerChanNotifier(GTextPlugin):
         
         try:
             response = requests.post(api_url, data=data)
-            if response.status_code == 200:
-                LOGGER.info(f"[{self.pname}] ServerChan通知发送成功")
-            else:
-                LOGGER.error(f"[{self.pname}] ServerChan通知发送失败，状态码：{response.status_code}")
-        except Exception as e:
+            response.raise_for_status()
+            LOGGER.info(f"[{self.pname}] ServerChan通知发送成功")
+        except requests.RequestException as e:
             LOGGER.error(f"[{self.pname}] 发送ServerChan通知时发生错误：{str(e)}")
-
+            if hasattr(e, 'response'):
+                LOGGER.error(f"响应内容：{e.response.text}")
 
     def send_telegram_notification(self, title, content):
-        """
-        发送通知到Telegram Bot
-        :param title: 通知标题
-        :param content: 通知内容
-        """
-        api_url = f"{self.tg_bot_url}/bot{self.tg_bot_token}/sendMessage"
+        api_url = self.TELEGRAM_API_URL.format(self.tg_bot_url, self.tg_bot_token)
         
-        # 转义 Markdown 特殊字符
-        def escape_markdown(text):
-            escape_chars = r'_*[]()~`>#+-=|{}.!'
-            return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
-        
-        escaped_title = escape_markdown(title)
-        escaped_content = escape_markdown(content)
-        
-        message = f"*{escaped_title}*\n\n{escaped_content}"
+        message = f"*{self._escape_markdown(title)}*\n\n{self._escape_markdown(content)}"
         params = {
             "chat_id": self.tg_chat_id,
             "text": message,
@@ -117,10 +150,90 @@ class ServerChanNotifier(GTextPlugin):
         
         try:
             response = requests.post(api_url, params=params)
-            if response.status_code == 200:
-                LOGGER.info(f"[{self.pname}] Telegram Bot通知发送成功")
-            else:
-                LOGGER.error(f"[{self.pname}] Telegram Bot通知发送失败，状态码：{response.status_code}")
-                LOGGER.error(f"响应内容：{response.text}")
-        except Exception as e:
+            response.raise_for_status()
+            LOGGER.info(f"[{self.pname}] Telegram Bot通知发送成功")
+        except requests.RequestException as e:
             LOGGER.error(f"[{self.pname}] 发送Telegram Bot通知时发生错误：{str(e)}")
+            if hasattr(e, 'response'):
+                LOGGER.error(f"响应内容：{e.response.text}")
+
+    def play_notification_sound(self, title, content):
+        if self.use_custom_audio:
+            audio_path = self.success_audio_path if "所有文件的翻译工作已经完成" in content else self.fail_audio_path
+            if os.path.exists(audio_path):
+                self.play_audio(audio_path)
+            else:
+                LOGGER.warning(f"[{self.pname}] 音频文件不存在: {audio_path}")
+        elif self.use_openai_tts:
+            self.play_openai_tts(title, content)
+        else:
+            # 播放系统默认声音（这里使用一个简单的beep声音）
+            frequency = 440  # 设置频率为 440 Hz
+            duration = 1000  # 设置持续时间为 1000 毫秒
+            self.play_beep(frequency, duration)
+
+    def play_openai_tts(self, title, content):
+        if not self.openai_api_key:
+            LOGGER.warning(f"[{self.pname}] OpenAI API Key未设置，无法使用OpenAI TTS")
+            return
+
+        headers = {
+            "Authorization": f"Bearer {self.openai_api_key}",
+            "Content-Type": "application/json"
+        }
+
+        full_message = f"{title}。{content}"
+        data = {
+            "model": "tts-1",
+            "input": full_message,
+            "voice": self.openai_tts_voice,
+            "response_format": "wav"  # 改为 wav 格式
+        }
+
+        try:
+            response = requests.post(f"{self.openai_api_base_url}/audio/speech", headers=headers, json=data)
+            response.raise_for_status()
+            
+            wav_file = os.path.join(self.project_dir, "openai_tts.wav")
+            with open(wav_file, "wb") as f:
+                f.write(response.content)
+            
+            LOGGER.debug(f"[{self.pname}] OpenAI TTS音频文件成功保存到: {wav_file}")
+            
+            self.play_audio(wav_file)
+
+            # 成功播放音频后删除临时文件
+            os.remove(wav_file)
+            LOGGER.debug(f"[{self.pname}] OpenAI TTS音频文件成功删除: {wav_file}")
+            
+        except requests.RequestException as e:
+            LOGGER.error(f"[{self.pname}] OpenAI TTS请求失败: {str(e)}")
+        except Exception as e:
+            LOGGER.error(f"[{self.pname}] 处理或播放音频时发生错误: {str(e)}")
+
+    def play_audio(self, audio_file):
+        try:
+            wave_obj = sa.WaveObject.from_wave_file(audio_file)
+            play_obj = wave_obj.play()
+            play_obj.wait_done()
+            LOGGER.debug(f"[{self.pname}] 音频文件成功播放")
+        except Exception as e:
+            LOGGER.error(f"[{self.pname}] 播放音频文件时发生错误: {str(e)}")
+
+    def play_beep(self, frequency, duration):
+        # 生成一个简单的 beep 音
+        sample_rate = 44100
+        num_samples = int(duration * sample_rate / 1000)
+        audio = []
+        for i in range(num_samples):
+            sample = int(32767 * math.sin(2 * math.pi * frequency * i / sample_rate))
+            audio.append(sample)
+        
+        audio = bytes([(sample >> 8) & 255, sample & 255] for sample in audio)
+        play_obj = sa.play_buffer(audio, 1, 2, sample_rate)
+        play_obj.wait_done()
+
+    @staticmethod
+    def _escape_markdown(text):
+        escape_chars = r'_*[]()~`>#+-=|{}.!'
+        return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)

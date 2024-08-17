@@ -5,7 +5,6 @@ import os
 import math
 import wave
 import struct
-import os
 from GalTransl import LOGGER
 from GalTransl.CSentense import CSentense
 from GalTransl.GTPlugin import GTextPlugin
@@ -191,24 +190,24 @@ class ServerChanNotifier(GTextPlugin):
             "model": "tts-1",
             "input": full_message,
             "voice": self.openai_tts_voice,
-            "response_format": "wav"  # 改为 wav 格式
+            "response_format": "mp3"  # 改为 mp3 格式
         }
 
         try:
             response = requests.post(f"{self.openai_api_base_url}/audio/speech", headers=headers, json=data)
             response.raise_for_status()
             
-            wav_file = os.path.join(self.project_dir, "openai_tts.wav")
-            with open(wav_file, "wb") as f:
+            mp3_file = os.path.join(self.project_dir, "openai_tts.mp3")
+            with open(mp3_file, "wb") as f:
                 f.write(response.content)
             
-            LOGGER.debug(f"[{self.pname}] OpenAI TTS音频文件成功保存到: {wav_file}")
+            LOGGER.debug(f"[{self.pname}] OpenAI TTS音频文件成功保存到: {mp3_file}")
             
-            self.play_audio(wav_file)
+            self.play_audio(mp3_file)
 
             # 成功播放音频后删除临时文件
-            os.remove(wav_file)
-            LOGGER.debug(f"[{self.pname}] OpenAI TTS音频文件成功删除: {wav_file}")
+            os.remove(mp3_file)
+            LOGGER.debug(f"[{self.pname}] OpenAI TTS音频文件成功删除: {mp3_file}")
             
         except requests.RequestException as e:
             LOGGER.error(f"[{self.pname}] OpenAI TTS请求失败: {str(e)}")

@@ -842,9 +842,9 @@ async def postprocess_results(
         if file_results:
             LOGGER.debug(f"处理文件 {file_name}")
             LOGGER.debug(f"分块数量: {len(file_results)}")
-            for i, (_, trans_list, json_list, _, chunk_metadata) in enumerate(
-                file_results
-            ):
+
+            # 对每个分块执行错误检查和缓存保存
+            for i, (_, trans_list, json_list, _, chunk_metadata) in enumerate(file_results):
                 LOGGER.debug(
                     f"分块 {i}: start_index={chunk_metadata.start_index}, "
                     f"end_index={chunk_metadata.end_index}, "
@@ -853,6 +853,16 @@ async def postprocess_results(
                     f"cross_num={chunk_metadata.cross_num}, "
                     f"处理后长度={len(trans_list)}"
                 )
+                
+                if eng_type != "rebuildr":
+                    find_problems(trans_list, projectConfig, gpt_dic)
+                    cache_file_path = joinpath(
+                        projectConfig.getCachePath(), f"{basename(file_name)}_{i}"
+                    )
+                    save_transCache_to_json(
+                        trans_list, cache_file_path, post_save=True
+                    )
+
             LOGGER.debug(
                 f"合并前总行数: {sum(len(trans_list) for _, trans_list, _, _, _ in file_results)}"
             )
@@ -887,6 +897,7 @@ async def postprocess_results(
                 save_func(output_file_path, final_result)
                 LOGGER.info(f"已保存文件: {output_file_path}")  # 添加保存确认日志
 
+                # 对合并后的结果再次执行错误检查和缓存保存
                 if eng_type != "rebuildr":
                     find_problems(all_trans_list, projectConfig, gpt_dic)
                     cache_file_path = joinpath(

@@ -74,6 +74,7 @@ def get_transCache_from_json(
         cache_file_path (str): 包含翻译缓存的 JSON 文件的路径。
         retry_failed (bool, optional): 是否重试失败的翻译。默认为 False。
         proofread (bool, optional): 是否是校对模式。默认为 False。
+        retran_key: 重译关键字
         load_post_jp: 不检查post_jp是否被改变, 且直接使用cache的post_jp
         ignr_post_jp: 仅不检查post_jp是否被改变
 
@@ -199,8 +200,9 @@ def get_transCache_from_json_new(
         cache_file_path (str): 包含翻译缓存的 JSON 文件的路径。
         retry_failed (bool, optional): 是否重试失败的翻译。默认为 False。
         proofread (bool, optional): 是否是校对模式。默认为 False。
-        load_post_jp: 不检查post_jp是否被改变, 且直接使用cache的post_jp
-        ignr_post_jp: 仅不检查post_jp是否被改变
+        retran_key (str or list, optional): 重译关键字，可以是字符串或字符串列表。默认为空字符串。
+        load_post_jp (bool, optional): 不检查post_jp是否被改变, 且直接使用cache的post_jp。默认为 False。
+        ignr_post_jp (bool, optional): 仅不检查post_jp是否被改变。默认为 False。
 
     Returns:
         Tuple[List[CTrans], List[CTrans]]: 包含两个列表的元组：击中缓存的翻译列表和未击中缓存的翻译列表。
@@ -283,13 +285,13 @@ def get_transCache_from_json_new(
                     continue
 
             # retran_key在pre_jp中
-            if retran_key and retran_key in cache_dict[cache_key]["pre_jp"]:
+            if retran_key and check_retran_key(retran_key, cache_dict[cache_key]["pre_jp"]):
                 trans_list_unhit.append(tran)
                 LOGGER.debug(f"retran_key在pre_jp中: {line_now}")
                 continue
             # retran_key在problem中
             if retran_key and "problem" in cache_dict[cache_key]:
-                if retran_key in cache_dict[cache_key]["problem"]:
+                if check_retran_key(retran_key, cache_dict[cache_key]["problem"]):
                     trans_list_unhit.append(tran)
                     LOGGER.debug(f"retran_key在problem中: {line_now}")
                     continue
@@ -326,3 +328,20 @@ def get_transCache_from_json_new(
         trans_list_hit.append(tran)
 
     return trans_list_hit, trans_list_unhit
+
+def check_retran_key(retran_key, target):
+    """
+    检查 retran_key 是否存在于目标字符串中。
+
+    Args:
+        retran_key (str or list): 需要检查的关键字，可以是字符串或字符串列表。
+        target (str): 目标字符串。
+
+    Returns:
+        bool: 如果 retran_key 存在于目标字符串中，返回 True；否则返回 False。
+    """
+    if isinstance(retran_key, str):
+        return retran_key in target
+    elif isinstance(retran_key, list):
+        return any(key in target for key in retran_key)
+    return False

@@ -13,7 +13,7 @@ openpyxl
 orjson
 EbookLib
 beautifulsoup4
-simpleaudio
+playsound3
 
 # Tokenizer
 budoux

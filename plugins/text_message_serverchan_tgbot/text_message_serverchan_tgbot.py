@@ -3,14 +3,17 @@ import requests
 import time
 import os
 import math
+import wave
+import struct
+import os
 from GalTransl import LOGGER
 from GalTransl.CSentense import CSentense
 from GalTransl.GTPlugin import GTextPlugin
 
 try:
-    import simpleaudio as sa
+    import playsound3
 except ImportError:
-    LOGGER.warning("缺少依赖包simpleaudio, 请更新依赖")
+    LOGGER.warning("缺少依赖包playsound3, 请更新依赖, 否则无法播放声音通知。")
 
 class ServerChanNotifier(GTextPlugin):
     SERVERCHAN_API_URL = 'https://sctapi.ftqq.com/{}.send'
@@ -158,19 +161,20 @@ class ServerChanNotifier(GTextPlugin):
                 LOGGER.error(f"响应内容：{e.response.text}")
 
     def play_notification_sound(self, title, content):
-        if self.use_custom_audio:
-            audio_path = self.success_audio_path if "所有文件的翻译工作已经完成" in content else self.fail_audio_path
+        is_success = "所有文件的翻译工作已经完成" in content
+        audio_path = self.success_audio_path if is_success else self.fail_audio_path
+
+        if self.use_openai_tts:
+            self.play_openai_tts(title, content)
+        elif self.use_custom_audio or not self.use_openai_tts:
             if os.path.exists(audio_path):
                 self.play_audio(audio_path)
             else:
                 LOGGER.warning(f"[{self.pname}] 音频文件不存在: {audio_path}")
-        elif self.use_openai_tts:
-            self.play_openai_tts(title, content)
-        else:
-            # 播放系统默认声音（这里使用一个简单的beep声音）
-            frequency = 440  # 设置频率为 440 Hz
-            duration = 1000  # 设置持续时间为 1000 毫秒
-            self.play_beep(frequency, duration)
+                LOGGER.warning(f"[{self.pname}] 播放beep音")
+                frequency = 440  # 设置频率为 440 Hz
+                duration = 1000  # 设置持续时间为 1000 毫秒
+                self.play_beep(frequency, duration)
 
     def play_openai_tts(self, title, content):
         if not self.openai_api_key:
@@ -213,25 +217,32 @@ class ServerChanNotifier(GTextPlugin):
 
     def play_audio(self, audio_file):
         try:
-            wave_obj = sa.WaveObject.from_wave_file(audio_file)
-            play_obj = wave_obj.play()
-            play_obj.wait_done()
+            playsound3.playsound(audio_file)
             LOGGER.debug(f"[{self.pname}] 音频文件成功播放")
         except Exception as e:
             LOGGER.error(f"[{self.pname}] 播放音频文件时发生错误: {str(e)}")
 
     def play_beep(self, frequency, duration):
-        # 生成一个简单的 beep 音
+        # 采样参数
         sample_rate = 44100
-        num_samples = int(duration * sample_rate / 1000)
-        audio = []
-        for i in range(num_samples):
-            sample = int(32767 * math.sin(2 * math.pi * frequency * i / sample_rate))
-            audio.append(sample)
-        
-        audio = bytes([(sample >> 8) & 255, sample & 255] for sample in audio)
-        play_obj = sa.play_buffer(audio, 1, 2, sample_rate)
-        play_obj.wait_done()
+        num_samples = int(sample_rate * duration / 1000)
+
+        # 生成正弦波
+        samples = [int(32767 * math.sin(2 * math.pi * frequency * t / sample_rate)) for t in range(num_samples)]
+
+        # 创建 WAV 文件
+        temp_file = "temp_beep.wav"
+        with wave.open(temp_file, "w") as wav_file:
+            wav_file.setnchannels(1)  # 单声道
+            wav_file.setsampwidth(2)  # 2 字节采样
+            wav_file.setframerate(sample_rate)
+            wav_file.writeframes(struct.pack('{}h'.format(len(samples)), *samples))
+
+        # 播放音频
+        playsound3.playsound(temp_file, block=True)  # 改为阻塞模式,确保播放完成
+
+        # 删除临时文件
+        os.remove(temp_file)
 
     @staticmethod
     def _escape_markdown(text):

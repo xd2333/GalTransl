@@ -598,10 +598,11 @@ async def doLLMTranslateSingleFile(
             output_file_path = input_file_path.replace(input_dir, output_dir)
             output_file_dir = dirname(output_file_path)
             makedirs(output_file_dir, exist_ok=True)
-            if total_splits > 1:
-                cache_file_path = joinpath(cache_dir, f"{file_name}_{file_index}")
-            else:
-                cache_file_path = joinpath(cache_dir, f"{file_name}")
+            cache_file_path = joinpath(
+                projectConfig.getCachePath(),
+                file_name.replace(projectConfig.getInputPath(), "").lstrip(os_sep).replace(os_sep, "-}") + 
+                (f"_{file_index}" if total_splits > 1 else "")
+            )
             print("\n", flush=True)
             part_info = (
                 f" (part {file_index+1}/{total_splits})" if total_splits > 1 else ""
@@ -901,7 +902,8 @@ async def postprocess_results(
                 if eng_type != "rebuildr":
                     find_problems(all_trans_list, projectConfig, gpt_dic)
                     cache_file_path = joinpath(
-                        projectConfig.getCachePath(), basename(file_name)
+                        projectConfig.getCachePath(),
+                        file_name.replace(projectConfig.getInputPath(), "").lstrip(os_sep).replace(os_sep, "-}")
                     )
                     save_transCache_to_json(
                         all_trans_list, cache_file_path, post_save=True

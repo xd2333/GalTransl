@@ -2,12 +2,17 @@ import os, time, sys
 from os.path import exists as isPathExists
 from os import makedirs as mkdir
 import logging, colorlog
-from GalTransl import LOGGER, TRANSLATOR_SUPPORTED,new_version,GALTRANSL_VERSION
+from GalTransl import LOGGER, TRANSLATOR_SUPPORTED, new_version, GALTRANSL_VERSION
 from GalTransl.GTPlugin import GTextPlugin, GFilePlugin
 from GalTransl.COpenAI import COpenAITokenPool
 from GalTransl.yapsy.PluginManager import PluginManager
 from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
-from GalTransl.Frontend.GPT import doLLMTranslate, DictionaryCountSplitter, DictionaryCombiner, EqualPartsSplitter
+from GalTransl.Frontend.GPT import doLLMTranslate
+from GalTransl.CSplitter import (
+    DictionaryCountSplitter,
+    EqualPartsSplitter,
+    DictionaryCombiner,
+)
 
 
 CONSOLE_FORMAT = colorlog.ColoredFormatter(
@@ -124,7 +129,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         plugin_conf = plugin.yaml_dict
         plugin_module = plugin_conf["Core"]["Module"]
         project_conf = cfg.getCommonConfigSection()
-        project_plugin_conf=cfg.getPluginConfigSection()
+        project_plugin_conf = cfg.getPluginConfigSection()
         if plugin_module in project_plugin_conf:
             plugin_conf["Settings"].update(project_plugin_conf[plugin_module])
         project_conf["project_dir"] = cfg.getProjectDir()
@@ -140,7 +145,12 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
 
     # proxyPool初始化
     proxyPool = CProxyPool(cfg) if cfg.getKey("internals.enableProxy") else None
-    if proxyPool and translator not in ["rebuildr","rebuilda","dump-name","showplugs"]:
+    if proxyPool and translator not in [
+        "rebuildr",
+        "rebuilda",
+        "dump-name",
+        "showplugs",
+    ]:
         await proxyPool.checkAvailablity()
         if not proxyPool.proxies:
             raise Exception("没有可用的代理，请检查代理设置")
@@ -155,11 +165,15 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         )
     else:
         OpenAITokenPool = None
-    
+
     # 检查更新
-    if new_version and new_version[0]!=GALTRANSL_VERSION:
-        LOGGER.info(f"\033[32m检测到新版本: {new_version[0]}\033[0m  当前版本: {GALTRANSL_VERSION}")
-        LOGGER.info(f"\033[32m更新地址：https://github.com/xd2333/GalTransl/releases\033[0m")
+    if new_version and new_version[0] != GALTRANSL_VERSION:
+        LOGGER.info(
+            f"\033[32m检测到新版本: {new_version[0]}\033[0m  当前版本: {GALTRANSL_VERSION}"
+        )
+        LOGGER.info(
+            f"\033[32m更新地址：https://github.com/xd2333/GalTransl/releases\033[0m"
+        )
 
     if project_conf.get("splitFile", False):
 
@@ -182,7 +196,14 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         output_combiner = DictionaryCombiner()
 
     await doLLMTranslate(
-        cfg, OpenAITokenPool, proxyPool, text_plugins, file_plugins, translator, input_splitter, output_combiner
+        cfg,
+        OpenAITokenPool,
+        proxyPool,
+        text_plugins,
+        file_plugins,
+        translator,
+        input_splitter,
+        output_combiner,
     )
 
     for plugin in file_plugins + text_plugins:

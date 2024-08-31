@@ -209,11 +209,12 @@ class CNormalDic:
             )
         )
 
-    def do_replace(self, input_text: str, input_tran: CSentense) -> str:
+    def do_replace(self, input_text: str, input_tran: CSentense, full_match:bool=False) -> str:
         """
         通过这个dic字典来优化一个句子。
         input_text：要被润色的句子
         input_translate：这个句子所在的Translate对象
+        full_match：是否全匹配，默认False，开启后查找词完全等于input_text才替换
         """
         # 遍历每个BasicDicElement做替换
         for dic in self.dic_list:
@@ -301,7 +302,10 @@ class CNormalDic:
             elif dic.onetime_flag:  # onetime情况，只替换一次
                 input_text = input_text.replace(search_word, replace_word, 1)
             else:  # 普通情况
-                input_text = input_text.replace(search_word, replace_word)
+                if not full_match:
+                    input_text = input_text.replace(search_word, replace_word)
+                elif search_word == input_text:
+                    input_text = replace_word
 
         return input_text
 

@@ -278,12 +278,12 @@ async def process_input(
                         tran._speaker, list
                     ):
                         tran._speaker = [
-                            post_dic.do_replace(s, tran) for s in tran.speaker
+                            post_dic.do_replace(s, tran, True) for s in tran.speaker
                         ]
                     elif isinstance(tran.speaker, str) and isinstance(
                         tran._speaker, str
                     ):
-                        tran._speaker = post_dic.do_replace(tran.speaker, tran)
+                        tran._speaker = post_dic.do_replace(tran.speaker, tran, True)
             for plugin in tPlugins:
                 try:
                     tran = plugin.plugin_object.after_dst_processed(tran)

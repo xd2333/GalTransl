@@ -18,6 +18,7 @@ class SplitChunkMetadata:
     content: 块的实际内容
     """
 
+    chunk_index: int
     start_index: int
     end_index: int
     chunk_non_cross_size: int
@@ -83,7 +84,13 @@ class DictionaryCountSplitter(InputSplitter):
                 LOGGER.warning(f"无法解析JSON：{content[:100]}...")
                 return [
                     SplitChunkMetadata(
-                        0, len(content), len(content), len(content), 0, content
+                        chunk_index=0,
+                        start_index=0,
+                        end_index=len(content),
+                        chunk_non_cross_size=len(content),
+                        chunk_real_size=len(content),
+                        cross_num=0,
+                        content=content,
                     )
                 ]
         else:
@@ -92,7 +99,13 @@ class DictionaryCountSplitter(InputSplitter):
         if not isinstance(data, list):
             return [
                 SplitChunkMetadata(
-                    0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2)
+                    chunk_index=0,
+                    start_index=0,
+                    end_index=1,
+                    chunk_non_cross_size=1,
+                    chunk_real_size=1,
+                    cross_num=0,
+                    content=json.dumps(data, ensure_ascii=False, indent=2),
                 )
             ]
 
@@ -107,6 +120,7 @@ class DictionaryCountSplitter(InputSplitter):
 
             result.append(
                 SplitChunkMetadata(
+                    chunk_index=len(result),
                     start_index=start,
                     end_index=end,
                     chunk_non_cross_size=end - start,
@@ -151,14 +165,14 @@ class EqualPartsSplitter(InputSplitter):
             try:
                 data = json.loads(content)
             except json.JSONDecodeError:
-                return [SplitChunkMetadata(0, 1, 1, 1, 0, content)]
+                return [SplitChunkMetadata(0,0, 1, 1, 1, 0, content)]
         else:
             data = content
 
         if not isinstance(data, list):
             return [
                 SplitChunkMetadata(
-                    0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2)
+                    0,0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2)
                 )
             ]
 
@@ -175,6 +189,7 @@ class EqualPartsSplitter(InputSplitter):
             chunk = data[chunk_start:chunk_end]
             result.append(
                 SplitChunkMetadata(
+                    chunk_index=len(result),
                     start_index=start,
                     end_index=end,
                     chunk_non_cross_size=end - start,

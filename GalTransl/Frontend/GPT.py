@@ -523,7 +523,7 @@ async def doLLMTranslate(
                 proxyPool,
                 tokenPool,
                 chunk,
-                i,
+                chunk.chunk_index,
                 len(split_chunks),
             )
         )
@@ -622,7 +622,7 @@ async def postprocess_results(
                         file_name.replace(projectConfig.getInputPath(), "")
                         .lstrip(os_sep)
                         .replace(os_sep, "-}")
-                        + (f"_{i}" if len(file_results) > 1 else ""),
+                        + (f"_{chunk_metadata.chunk_index}" if len(file_results) > 1 else ""),
                     )
                     save_transCache_to_json(trans_list, cache_file_path, post_save=True)
 

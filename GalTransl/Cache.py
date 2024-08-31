@@ -56,6 +56,7 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, post_save=F
     with open(cache_file_path, mode="wb") as f:
         f.write(orjson.dumps(cache_json, option=orjson.OPT_INDENT_2))
 
+
 def get_transCache_from_json_new(
     trans_list: CTransList,
     cache_file_path,
@@ -98,6 +99,8 @@ def get_transCache_from_json_new(
                         line_priv = f'{cache_dictList[i-1]["name"]}{cache_dictList[i-1]["pre_jp"]}'
                     if i < len(cache_dictList) - 1:
                         line_next = f'{cache_dictList[i+1]["name"]}{cache_dictList[i+1]["pre_jp"]}'
+                    line_priv = "None" if line_priv == "" else line_priv
+                    line_next = "None" if line_next == "" else line_next
                     cache_dict[line_priv + line_now + line_next] = cache
             except Exception as e:
                 f.close()
@@ -118,10 +121,21 @@ def get_transCache_from_json_new(
 
         line_now, line_priv, line_next = "", "None", "None"
         line_now = f"{tran.speaker}{tran.pre_jp}"
-        if tran.prev_tran:
-            line_priv = f"{tran.prev_tran.speaker}{tran.prev_tran.pre_jp}"
-        if tran.next_tran:
-            line_next = f"{tran.next_tran.speaker}{tran.next_tran.pre_jp}"
+        prev_tran=tran.prev_tran
+        # 找非空前句
+        while prev_tran and prev_tran.pre_jp=="":
+            prev_tran=prev_tran.prev_tran
+        if prev_tran:
+            line_priv = f"{prev_tran.speaker}{prev_tran.pre_jp}"
+        # 找非空后句
+        next_tran=tran.next_tran
+        while next_tran and next_tran.pre_jp=="":
+            next_tran=next_tran.next_tran
+        if next_tran:
+            line_next = f"{next_tran.speaker}{next_tran.pre_jp}"
+
+        line_priv = "None" if line_priv == "" else line_priv
+        line_next = "None" if line_next == "" else line_next
         cache_key = line_priv + line_now + line_next
 
         # cache_key不在缓存
@@ -158,7 +172,9 @@ def get_transCache_from_json_new(
                     continue
 
             # retran_key在pre_jp中
-            if retran_key and check_retran_key(retran_key, cache_dict[cache_key]["pre_jp"]):
+            if retran_key and check_retran_key(
+                retran_key, cache_dict[cache_key]["pre_jp"]
+            ):
                 trans_list_unhit.append(tran)
                 LOGGER.debug(f"retran_key在pre_jp中: {line_now}")
                 continue
@@ -201,6 +217,7 @@ def get_transCache_from_json_new(
         trans_list_hit.append(tran)
 
     return trans_list_hit, trans_list_unhit
+
 
 def check_retran_key(retran_key, target):
     """

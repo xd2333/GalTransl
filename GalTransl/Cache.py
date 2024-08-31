@@ -219,7 +219,7 @@ def get_transCache_from_json_new(
             try:
                 cache_dictList = orjson.loads(f.read())
                 for i, cache in enumerate(cache_dictList):
-                    line_now, line_priv, line_next = "", "", ""
+                    line_now, line_priv, line_next = "", "None", "None"
                     line_now = f'{cache["name"]}{cache["pre_jp"]}'
                     if i > 0:
                         line_priv = f'{cache_dictList[i-1]["name"]}{cache_dictList[i-1]["pre_jp"]}'
@@ -243,7 +243,7 @@ def get_transCache_from_json_new(
             trans_list_hit.append(tran)
             continue
 
-        line_now, line_priv, line_next = "", "", ""
+        line_now, line_priv, line_next = "", "None", "None"
         line_now = f"{tran.speaker}{tran.pre_jp}"
         if tran.prev_tran:
             line_priv = f"{tran.prev_tran.speaker}{tran.prev_tran.pre_jp}"

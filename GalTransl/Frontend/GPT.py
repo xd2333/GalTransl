@@ -489,6 +489,7 @@ async def doLLMTranslate(
             else [
                 SplitChunkMetadata(
                     0,
+                    0,
                     len(origin_input),
                     len(origin_input),
                     len(origin_input),

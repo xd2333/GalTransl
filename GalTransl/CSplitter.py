@@ -165,14 +165,14 @@ class EqualPartsSplitter(InputSplitter):
             try:
                 data = json.loads(content)
             except json.JSONDecodeError:
-                return [SplitChunkMetadata(0,0, 1, 1, 1, 0, content)]
+                return [SplitChunkMetadata(0, 0, 1, 1, 1, 0, content)]
         else:
             data = content
 
         if not isinstance(data, list):
             return [
                 SplitChunkMetadata(
-                    0,0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2)
+                    0, 0, 1, 1, 1, 0, json.dumps(data, ensure_ascii=False, indent=2)
                 )
             ]
 

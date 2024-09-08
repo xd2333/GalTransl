@@ -146,6 +146,11 @@ class FilePlugin(GFilePlugin):
         if isinstance(html_content, bytes):
             html_content = html_content.decode('utf-8')
         
+        # 检查是否只包含图片
+        if '<img' in html_content and len(re.findall(r'<p', html_content)) <= 1:
+            # 如果只包含图片,返回一个包含原始HTML内容的对象
+            return [{"index": 1, "name": "", "message": "", "original_message": "", "html": html_content}]
+        
         paragraphs = self.extract_paragraphs(html_content)
         if not paragraphs or paragraphs == [''] or paragraphs == ['\n'] or paragraphs == []:
             return [{"index": 1, "name": "", "message": "", "original_message": "", "html": ""}]
@@ -255,11 +260,23 @@ class FilePlugin(GFilePlugin):
         :param file_path: 保存文件路径。
         :param transl_json: 包含翻译内容的JSON对象列表。
         """
+        if len(transl_json) == 1 and not transl_json[0]['message'] and transl_json[0]['html']:
+            # 如果只有一个对象,且message为空但html不为空,说明是只包含图片的文件
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(transl_json[0]['html'])
+            return
+
         text_dict = {item['index']: item for item in transl_json if 'index' in item}
 
         input_file_path = file_path.replace("gt_output", "gt_input")
         with open(input_file_path, 'r', encoding='utf-8') as file:
             content_html = file.read()
+
+        if not content_html.strip():
+            # 如果输入文件为空,直接写入空文件
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write('')
+            return
 
         content_html = self.replace_content(content_html, text_dict)
 

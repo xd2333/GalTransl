@@ -1,11 +1,11 @@
+import os
+import sys
 from GalTransl import LOGGER
 from GalTransl.CSentense import CSentense
 from GalTransl.GTPlugin import GTextPlugin
 
-try:
-    import budoux
-except ImportError:
-    LOGGER.warning("缺少依赖包budoux, 请更新依赖")
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+import budoux
 
 class LineBreakFix(GTextPlugin):
     def gtp_init(self, plugin_conf: dict, project_conf: dict):

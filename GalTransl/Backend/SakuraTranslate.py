@@ -128,7 +128,8 @@ class CSakuraTranslate:
         input_str = "\n".join(input_list).strip("\n")
 
         # 检测退化阈值
-        self.JP_REPETITION_CNT = max_repeat
+        self.JP_REPETITION_THRESHOLD_LINE = max_repeat
+        _,self.JP_REPETITION_THRESHOLD_ALL=find_most_repeated_substring(input_str)
         self.JP_LINE_LENS = line_lens
 
         prompt_req = self.trans_prompt
@@ -156,7 +157,7 @@ class CSakuraTranslate:
                         print(data, end="", flush=True)
                     resp += data
                     # 检测是否反复重复输出同一内容，如果超过一定次数，则判定为退化并打断。
-                    if token_count % 10 == 0:  # 每10个token检测一次
+                    if token_count % 4 == 0:  # 每4个token检测一次
                         degen_flag = self.check_degen_in_process(resp)
                         if degen_flag:
                             await ask_stream.aclose()
@@ -462,18 +463,22 @@ class CSakuraTranslate:
         LOGGER.info("-> 恢复了上下文")
 
     def check_degen_in_process(self, cn: str = ""):
-        # 长度不超当前行
+        
         line_count = cn.count("\n") + 1
-        if line_count < len(self.JP_LINE_LENS):
+        if line_count < len(self.JP_LINE_LENS): # 长度不超当前行直接放行
             if len(cn.split("\n")[-1]) < self.JP_LINE_LENS[line_count - 1]:
                 return False
-
-        repeated_str, repeated_count = find_most_repeated_substring(cn)
-        if repeated_count > max(self.JP_REPETITION_CNT * 2, 12):
-            return True
-        if repeated_count > self.JP_REPETITION_CNT:
-            if len(repeated_str) * repeated_count > max(self.JP_LINE_LENS) * 1.3:
+        else: # 行数超过当前行，某行反复输出的情况
+            repeated_str, repeated_count = find_most_repeated_substring(cn)
+            if repeated_count > max(self.JP_REPETITION_THRESHOLD_ALL * 2, 12):
                 return True
+
+        # 行内反复输出的情况
+        last_line = cn.split("\n")[-1]
+        repeated_str, repeated_count = find_most_repeated_substring(last_line)
+        if repeated_count > max(self.JP_REPETITION_THRESHOLD_LINE * 2, 12):
+            return True
+
         return False
 
 

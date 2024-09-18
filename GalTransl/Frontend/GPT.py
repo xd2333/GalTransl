@@ -222,7 +222,9 @@ async def process_input(
                     tran = plugin.plugin_object.before_src_processed(tran)
                 except Exception as e:
                     LOGGER.error(f"插件 {plugin.name} 执行失败: {e}")
-            tran.analyse_dialogue()
+
+            if projectConfig.getFilePlugin() == "file_galtransl_json":
+                tran.analyse_dialogue()
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)
             if projectConfig.getDictCfgSection("usePreDictInName"):
                 if isinstance(tran.speaker, str) and isinstance(tran._speaker, str):

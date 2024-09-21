@@ -17,20 +17,17 @@ common:
   skipH: false # 跳过可能触发敏感词检测的句子。[True/False]
   skipRetry: false # 解析结果出错时，是否跳过循环重试，直接用"Fail Translation"占位。[True/False]
   retranslFail: false # 重启时重翻所有显示为"Fail Translation"的句子。[True/False]
-  retranslKey: "" # 重启时主动重翻在problem或pre_jp中包含此关键字的句子，例如"残留日文"。现在也支持列表形，使用列表时请删去双引号。
-    # - 词频过高 # 重复大于20次
-    # - 标点错漏 # 标点符号多加或漏加
-    # - 残留日文 # 日文平假名片假名残留
-    # - 丢失换行 # 缺少换行符
-    # - 多加换行 # 多余的换行符
-    # - 比日文长 # 比日文长1.3倍以上
-    # - 字典使用 # LLM没有按GPT字典要求翻译
-    # - 引入英文 # 本来没有英文，译文引入了英文
+  retranslKey:
+    - "重启时主动重翻在缓存的problem或pre_jp中包含对应**关键字**的句子，去掉下面列表中的注释来使用，也可添加自定义的关键字。"
+    #- "词频过高" # 重复大于20次
+    #- "残留日文" # 日文平假名片假名残留
+    #- "项目GPT字典" # LLM没有按GPT字典要求翻译
+    #- "引入英文" # 本来没有英文，译文引入了英文
 
   # 通用翻译设置
   gpt.numPerRequestTranslate: 8 # 单次翻译句子数量，推荐值 < 15
   gpt.streamOutputMode: true # 流式输出效果，多线程下无效。[True/False]
-  gpt.tooManyRequestsWaitTime: 60 #Too Many Requests 错误等待时间，单位秒
+  gpt.tooManyRequestsWaitTime: 60 # Too Many Requests 错误等待时间，单位秒
   # NewBing/GPT4
   gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。（不建议使用，很久未维护）[True/False]
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改
@@ -41,17 +38,19 @@ common:
   # GalTransl
   gpt.transl_style: "流畅" # (GalTransl-7b)翻译风格[流畅/文艺]
 
-# 插件选择，插件介绍可在启动程序后选择showplugs查看
-# 某个插件自己的设置进入plugins的插件目录内修改对应的yaml文件
+# 插件，插件介绍可在启动程序后选择showplugs查看，或在plugins目录内查看
 plugin:
-  # 文件插件，用于支持更多格式，默认使用file_galtransl_json
-  filePlugin: file_galtransl_json
-  # 文本处理插件列表，按顺序执行
-  textPlugins:
-    - text_common_normalfix # 默认插件，修复常规通用问题
-#    - (project_dir)text_common_example # 示例，(project_dir)代表插件在项目的plugins目录里
-#  file_subtitle_srt_lrc_vtt: # 示例，可以在项目配置文件中覆盖插件的设置项
-#    保存双语字幕: true
+  filePlugin: file_galtransl_json # 文件插件，用于支持更多格式，file_galtransl_json是本程序的标准格式插件
+  # 翻译字幕时使用file_subtitle_srt_lrc_vtt
+  # 翻译小说时使用file_epub_epub或file_plaintext_txt
+  # 翻译mtool导出json时使用file_i18n_json
+  textPlugins: # 文本处理插件列表，可以设置多个，按顺序执行
+    - text_common_normalfix # 常规文本修复插件
+    #- text_common_skipNoJP # 跳过无日语句子插件
+
+  # 某个插件自己的设置可以进入plugins目录内修改对应的yaml文件，也可以这样设置：
+  file_subtitle_srt_lrc_vtt: # 示例，可以在项目配置文件中覆盖插件yaml的设置项
+    保存双语字幕: true
 
 # 代理设置，使用中转供应商时一般不用开代理
 proxy:
@@ -114,7 +113,7 @@ problemAnalyze:
     - 多加换行 # 多余的换行符
     - 比日文长 # 比日文长1.3倍以上
     - 字典使用 # LLM没有按GPT字典要求翻译
-    #- 引入英文 # 本来没有英文，译文引入了英文
+    - 引入英文 # 本来没有英文，译文引入了英文
   arinashiDict: # 格式为 aaa:<空格>bbb（将被废弃）
     aaa: bbb
     ccc: ddd

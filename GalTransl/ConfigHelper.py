@@ -8,6 +8,7 @@ from GalTransl import (
     OUTPUT_FOLDERNAME,
     CACHE_FOLDERNAME,
 )
+from GalTransl.Dictionary import CGptDict, CNormalDic
 from asyncio import gather
 from tenacity import retry, stop_after_attempt, wait_fixed
 from httpx import AsyncClient, TimeoutException
@@ -79,6 +80,19 @@ class CProjectConfig:
             self.cachePath,
             self.keyValues,
         )
+
+        self.select_translator = "" # 本次选择的翻译器
+        self.pre_dic: CNormalDic = None # 预处理字典
+        self.post_dic: CNormalDic = None # 后处理字典
+        self.gpt_dic: CGptDict = None # gpt字典
+        self.file_save_funcs = {} # 文件保存函数
+        self.name_replaceDict = {} # 名字替换字典
+        self.tPlugins = [] # 文本插件列表
+        self.fPlugins = [] # 文件插件列表
+        self.tokenPool = None # 令牌池
+        self.proxyPool = None # 代理池
+        self.endpointQueue = None # 端点队列
+        self.input_splitter = None # 输入分割器
 
     def getProjectConfig(self) -> dict:
         """

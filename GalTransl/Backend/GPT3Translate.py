@@ -19,6 +19,7 @@ from GalTransl.Backend.revChatGPT.typings import APIConnectionError
 from GalTransl.Utils import extract_code_blocks, fix_quotes
 from httpx import ProtocolError
 from GalTransl import LOGGER, LANG_SUPPORTED
+from GalTransl.Backend.BaseTranslate import BaseTranslate
 from GalTransl.Backend.Prompts import (
     GPT35_0613_NAME_PROMPT3,
     GPT35_0613_TRANS_PROMPT,
@@ -30,7 +31,7 @@ from GalTransl.Backend.Prompts import (
 )
 
 
-class CGPT35Translate:
+class CGPT35Translate(BaseTranslate):
     def __init__(
         self,
         config: CProjectConfig,

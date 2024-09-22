@@ -10,6 +10,7 @@ from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json_new, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Utils import find_most_repeated_substring
+from GalTransl.Backend.BaseTranslate import BaseTranslate
 from GalTransl.Backend.Prompts import (
     Sakura_TRANS_PROMPT,
     Sakura_SYSTEM_PROMPT,
@@ -20,7 +21,7 @@ from GalTransl.Backend.Prompts import (
 )
 
 
-class CSakuraTranslate:
+class CSakuraTranslate(BaseTranslate):
     # init
     def __init__(
         self,
@@ -29,6 +30,7 @@ class CSakuraTranslate:
         endpoint: str,
         proxy_pool: Optional[CProxyPool],
     ):
+        self.projectConfig = config
         self.eng_type = eng_type
         self.endpoint = endpoint
         self.last_file_name = ""
@@ -107,6 +109,11 @@ class CSakuraTranslate:
         )
         self._current_temp_type = "precies"
         self._set_temp_type("precise")
+    
+    def clean_up(self):
+        endpointQueue = self.projectConfig.endpointQueue
+        endpointQueue.put_nowait(self.endpoint)
+
 
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
@@ -480,6 +487,7 @@ class CSakuraTranslate:
             return True
 
         return False
+
 
 
 if __name__ == "__main__":

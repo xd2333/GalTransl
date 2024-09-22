@@ -10,6 +10,7 @@ from GalTransl import LOGGER
 from GalTransl.ConfigHelper import CProjectConfig, CProxy
 from typing import Optional, Tuple
 from random import choice
+from asyncio import Queue
 
 TRANSLATOR_ENGINE = {
     "gpt35": "gpt-3.5-turbo",
@@ -237,3 +238,36 @@ class COpenAITokenPool:
                 rounds += 1
             except IndexError:
                 raise RuntimeError("没有可用的 API key！")
+
+
+async def init_sakura_endpoint_queue(
+    projectConfig: CProjectConfig
+) -> Optional[Queue]:
+    """
+    初始化端点队列，用于Sakura或GalTransl引擎。
+
+    参数:
+    projectConfig: 项目配置对象
+    workersPerProject: 每个项目的工作线程数
+    eng_type: 引擎类型
+
+    返回:
+    初始化的端点队列，如果不需要则返回None
+    """
+
+    workersPerProject = projectConfig.getKey("workersPerProject") or 1
+    sakura_endpoint_queue = asyncio.Queue()
+    backendSpecific = projectConfig.projectConfig["backendSpecific"]
+    section_name = "SakuraLLM" if "SakuraLLM" in backendSpecific else "Sakura"
+    if "endpoints" in projectConfig.getBackendConfigSection(section_name):
+        endpoints = projectConfig.getBackendConfigSection(section_name)["endpoints"]
+    else:
+        endpoints = [
+            projectConfig.getBackendConfigSection(section_name)["endpoint"]
+        ]
+    repeated = (workersPerProject + len(endpoints) - 1) // len(endpoints)
+    for _ in range(repeated):
+        for endpoint in endpoints:
+            await sakura_endpoint_queue.put(endpoint)
+    LOGGER.info(f"当前使用 {workersPerProject} 个Sakura worker引擎")
+    return sakura_endpoint_queue

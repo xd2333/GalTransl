@@ -20,6 +20,7 @@ from GalTransl.Backend.Prompts import (
     GPT4_PROOFREAD_PROMPT,
     NAME_PROMPT4,
 )
+from GalTransl.Backend.BaseTranslate import BaseTranslate
 from GalTransl.Backend.Prompts import (
     GPT4Turbo_SYSTEM_PROMPT,
     GPT4Turbo_TRANS_PROMPT,
@@ -29,7 +30,7 @@ from GalTransl.Backend.Prompts import (
 )
 
 
-class CGPT4Translate:
+class CGPT4Translate(BaseTranslate):
     # init
     def __init__(
         self,

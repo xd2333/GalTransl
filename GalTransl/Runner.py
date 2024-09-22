@@ -4,10 +4,10 @@ from os import makedirs as mkdir
 import logging, colorlog
 from GalTransl import LOGGER, TRANSLATOR_SUPPORTED, new_version, GALTRANSL_VERSION
 from GalTransl.GTPlugin import GTextPlugin, GFilePlugin
-from GalTransl.COpenAI import COpenAITokenPool
+from GalTransl.COpenAI import COpenAITokenPool,init_sakura_endpoint_queue
 from GalTransl.yapsy.PluginManager import PluginManager
 from GalTransl.ConfigHelper import CProjectConfig, CProxyPool
-from GalTransl.Frontend.GPT import doLLMTranslate
+from GalTransl.Frontend.LLMTranslate import doLLMTranslate
 from GalTransl.CSplitter import (
     DictionaryCountSplitter,
     EqualPartsSplitter,
@@ -33,6 +33,7 @@ File_FORMAT = logging.Formatter(
 
 async def run_galtransl(cfg: CProjectConfig, translator: str):
     PROJECT_DIR = cfg.getProjectDir()
+    cfg.select_translator=translator
 
     def get_pluginInfo_path(name):
         if "(project_dir)" in name:
@@ -165,6 +166,11 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         )
     else:
         OpenAITokenPool = None
+    
+    # 初始化sakura端点队列
+    if "sakura" in translator or "galtransl" in translator:
+        sakura_endpoint_queue = await init_sakura_endpoint_queue(cfg)
+        cfg.endpointQueue = sakura_endpoint_queue
 
     # 检查更新
     if new_version and new_version[0] != GALTRANSL_VERSION:
@@ -176,16 +182,18 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         )
 
     if project_conf.get("splitFile", False):
-
         splitFileNum = int(project_conf.get("splitFileNum", -1))
+        cross_num = int(project_conf.get("splitFileCrossNum", 0))
+        if "dump-name" in translator: # 提取人名表时不交叉
+            cross_num = 0
         if splitFileNum == -1:
             splitFileNum = int(project_conf.get("workersPerProject", -1))
         splitFileMethod = project_conf.get("splitFileMethod", "EqualPartsSplitter")
         if splitFileMethod == "DictionaryCountSplitter":
             assert splitFileNum > 10, "DictionaryCountSplitter下分割数量必须大于10"
-            input_splitter = DictionaryCountSplitter(splitFileNum)
+            input_splitter = DictionaryCountSplitter(splitFileNum, cross_num)
         elif splitFileMethod == "EqualPartsSplitter":
-            input_splitter = EqualPartsSplitter(splitFileNum)
+            input_splitter = EqualPartsSplitter(splitFileNum, cross_num)
         else:
             raise Exception(f"不支持的分割方法: {splitFileMethod}")
 
@@ -194,17 +202,14 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     else:
         input_splitter = EqualPartsSplitter(1)
         output_combiner = DictionaryCombiner()
+    
+    cfg.tPlugins = text_plugins
+    cfg.fPlugins = file_plugins
+    cfg.tokenPool = OpenAITokenPool
+    cfg.proxyPool = proxyPool
+    cfg.input_splitter = input_splitter
 
-    await doLLMTranslate(
-        cfg,
-        OpenAITokenPool,
-        proxyPool,
-        text_plugins,
-        file_plugins,
-        translator,
-        input_splitter,
-        output_combiner,
-    )
+    await doLLMTranslate(cfg)
 
     for plugin in file_plugins + text_plugins:
         plugin.plugin_object.gtp_final()

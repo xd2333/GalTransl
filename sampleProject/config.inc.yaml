@@ -11,7 +11,7 @@ common:
   splitFile: false # 是否启用单文件分割。[True/False]
   splitFileMethod: "EqualPartsSplitter" # 分句方法，EqualPartsSplitter为对文件平均分句，DictionaryCountSplitter为指定条数分句。[EqualPartsSplitter/DictionaryCountSplitter]
   splitFileNum: -1 # 平均分句时，表示每个文件拆分成n段，-1则与workersPerProject一致；条数分句时，表示n句拆分一次，此时建议大于1000
-  splitFileCrossNum: 0 # 分割文件时前后交叉n句，可能可以提高衔接处翻译质量[推荐0-10]。
+  splitFileCrossNum: 0 # 分割文件时前后交叉n句，可能可以提高衔接处翻译质量[推荐0或10]。
 
   linebreakSymbol: "\r\n" # 这个项目在json中使用的换行符，找问题和自动修复时用到，不影响翻译。
   skipH: false # 跳过可能触发敏感词检测的句子。[True/False]

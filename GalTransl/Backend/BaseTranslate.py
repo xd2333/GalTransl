@@ -42,3 +42,9 @@ class BaseTranslate:
 
     def init_chatbot(self, eng_type, config):
         pass
+
+    def clean_up(self):
+        pass
+
+    def translate(self, trans_list: CTransList, gptdict=""):
+        pass

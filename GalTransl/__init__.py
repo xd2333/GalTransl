@@ -102,3 +102,5 @@ update_thread = threading.Thread(
     target=check_for_tool_updates, args=(new_version,)
 )
 update_thread.start()
+
+

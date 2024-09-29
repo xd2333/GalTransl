@@ -339,11 +339,12 @@ class CGptDict:
         for line in dic_lines:
             if line.startswith("\n"):
                 continue
-            # elif line.startswith("\\\\") or line.startswith("//"):  # 注释行跳过
-            #     continue
 
-            # 四个空格换成Tab
+            # 兼容四个空格
             line = line.replace("    ", "\t")
+            # 兼容src->dst #note
+            if "->" in line:
+                line = line.replace("->","\t").replace("#","\t")
 
             sp = line.rstrip("\r\n").split("\t")  # 去多余换行符，Tab分割
             len_sp = len(sp)

@@ -36,9 +36,9 @@ async def doLLMTranslate(
     input_dir = projectConfig.getInputPath()
     output_dir = projectConfig.getOutputPath()
     cache_dir = projectConfig.getCachePath()
-    pre_dic_dir = projectConfig.getDictCfgSection()["preDict"]
-    post_dic_dir = projectConfig.getDictCfgSection()["postDict"]
-    gpt_dic_dir = projectConfig.getDictCfgSection()["gpt.dict"]
+    pre_dic_list = projectConfig.getDictCfgSection()["preDict"]
+    post_dic_list = projectConfig.getDictCfgSection()["postDict"]
+    gpt_dic_list = projectConfig.getDictCfgSection()["gpt.dict"]
     default_dic_dir = projectConfig.getDictCfgSection()["defaultDictFolder"]
     workersPerProject = projectConfig.getKey("workersPerProject") or 1
     semaphore = asyncio.Semaphore(workersPerProject)
@@ -59,13 +59,13 @@ async def doLLMTranslate(
 
     # 初始化字典
     projectConfig.pre_dic = CNormalDic(
-        initDictList(pre_dic_dir, default_dic_dir, project_dir)
+        initDictList(pre_dic_list, default_dic_dir, project_dir)
     )
     projectConfig.post_dic = CNormalDic(
-        initDictList(post_dic_dir, default_dic_dir, project_dir)
+        initDictList(post_dic_list, default_dic_dir, project_dir)
     )
     projectConfig.gpt_dic = CGptDict(
-        initDictList(gpt_dic_dir, default_dic_dir, project_dir)
+        initDictList(gpt_dic_list, default_dic_dir, project_dir)
     )
     if projectConfig.getDictCfgSection().get("sortPrePostDict", False):
         projectConfig.pre_dic.sort_dic()

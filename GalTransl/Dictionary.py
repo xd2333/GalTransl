@@ -361,10 +361,15 @@ class CGptDict:
             else:
                 note = ""
 
+            redundant_flag = False
             for d in self._dic_list:
                 if d.search_word == search_word and d.replace_word == replace_word:
-                    LOGGER.warning(f"重复的GPT字典词条 {search_word} -> {replace_word} 已忽略")
-                    continue
+                    if d.note and d.note == note:
+                        LOGGER.warning(f"重复的GPT字典词条 {search_word} -> {replace_word} 已忽略")
+                        redundant_flag = True
+                        break
+            if redundant_flag:
+                continue
 
             dic = CBasicDicElement(search_word, replace_word, dic_name=dic_name)
             dic.note = note

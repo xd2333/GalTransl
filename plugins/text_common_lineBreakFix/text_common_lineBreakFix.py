@@ -3,8 +3,6 @@ import sys
 from GalTransl import LOGGER
 from GalTransl.CSentense import CSentense
 from GalTransl.GTPlugin import GTextPlugin
-
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 import budoux
 
 class LineBreakFix(GTextPlugin):

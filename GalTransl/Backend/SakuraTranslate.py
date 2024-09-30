@@ -481,7 +481,7 @@ class CSakuraTranslate(BaseTranslate):
 
         if "galtransl" in self.eng_type:
             if style_name == "precise":
-                temperature, top_p = 0.3, 0.8
+                temperature, top_p = 0.2, 0.8
                 frequency_penalty, presence_penalty = 0.1, 0.0
             elif style_name == "normal":
                 temperature, top_p = 0.6, 0.95

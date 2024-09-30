@@ -175,7 +175,7 @@ class CSakuraTranslate(BaseTranslate):
                     .replace("[tran_style]", self.transl_style)
                 )
 
-                all_tokens = len(self.tokenizer.tokenize(history + prompt_req))
+                all_tokens = len(self.tokenizer.encode(history + prompt_req))
                 if all_tokens <= self.token_limit:
                     check_pass_flag = True
                 else:

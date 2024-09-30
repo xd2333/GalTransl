@@ -37,6 +37,25 @@ class CSakuraTranslate(BaseTranslate):
         self.restore_context_mode = config.getKey("gpt.restoreContextMode")
         self.retry_count = 0
 
+        # 语言设置
+        if val := config.getKey("language"):
+            sp = val.split("2")
+            self.source_lang = sp[0]
+            self.target_lang = sp[1]
+        elif val := config.getKey("sourceLanguage"):  # 兼容旧版本配置
+            self.source_lang = val
+            self.target_lang = config.getKey("targetLanguage")
+        else:
+            self.source_lang = "ja"
+            self.target_lang = "zh-cn"
+        if self.source_lang not in LANG_SUPPORTED.keys():
+            raise ValueError("错误的源语言代码：" + self.source_lang)
+        else:
+            self.source_lang = LANG_SUPPORTED[self.source_lang]
+        if self.target_lang not in LANG_SUPPORTED.keys():
+            raise ValueError("错误的目标语言代码：" + self.target_lang)
+        else:
+            self.target_lang = LANG_SUPPORTED[self.target_lang]
         # 保存间隔
         if val := config.getKey("save_steps"):
             self.save_steps = val
@@ -61,7 +80,7 @@ class CSakuraTranslate(BaseTranslate):
             self.proxyProvider = proxy_pool
         else:
             self.proxyProvider = None
-        # transl_style
+        # transl_style（废弃）
         if val := config.getKey("gpt.transl_style"):
             self.transl_style = val
         else:
@@ -80,8 +99,11 @@ class CSakuraTranslate(BaseTranslate):
         else:
             self.token_limit = 0
             self.tokenizer = None
-        # 现在只有简体
-        self.opencc = OpenCC("t2s.json")
+
+        if self.target_lang == "Simplified_Chinese":
+            self.opencc = OpenCC("t2s.json")
+        elif self.target_lang == "Traditional_Chinese":
+            self.opencc = OpenCC("s2t.json")
 
         self.init_chatbot(eng_type=eng_type, config=config)  # 模型初始化
 

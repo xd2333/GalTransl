@@ -34,6 +34,7 @@ common:
   # GPT3.5/GPT4
   gpt.restoreContextMode: true # (GPT3.5/4)重启时恢复上一轮的译文前文。[True/False]
   # Sakura/GalTransl
+  gpt.token_limit: 0 # (Sakura/Galtransl-7b)（实验性）大于0时限制每轮请求的token数量。防止爆context时可以设置为llama.cpp -c的数值除2。
   gpt.transl_dropout: 0 # (Sakura/Galtransl-7b)（实验性）丢弃翻译结果末尾的n行，可能会提高上下文准确性。[0-2]
 
 # 插件，插件介绍可在启动程序后选择showplugs查看，或在plugins目录内查看

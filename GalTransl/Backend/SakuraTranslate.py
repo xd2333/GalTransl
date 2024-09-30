@@ -71,6 +71,15 @@ class CSakuraTranslate(BaseTranslate):
             self.transl_dropout = val
         else:
             self.transl_dropout = 0
+        # token_limit
+        if val := config.getKey("gpt.token_limit"):
+            self.token_limit = val
+            import tiktoken
+
+            self.tokenizer = tiktoken.get_encoding("o200k_base")
+        else:
+            self.token_limit = 0
+            self.tokenizer = None
         # 现在只有简体
         self.opencc = OpenCC("t2s.json")
 
@@ -109,11 +118,10 @@ class CSakuraTranslate(BaseTranslate):
         )
         self._current_temp_type = "precies"
         self._set_temp_type("precise")
-    
+
     def clean_up(self):
         endpointQueue = self.projectConfig.endpointQueue
         endpointQueue.put_nowait(self.endpoint)
-
 
     async def translate(self, trans_list: CTransList, gptdict=""):
         input_list = []
@@ -134,9 +142,38 @@ class CSakuraTranslate(BaseTranslate):
             line_lens.append(len(tmp_text))
         input_str = "\n".join(input_list).strip("\n")
 
+        if self.token_limit > 0 and self.tokenizer:
+            check_pass_flag = False
+            while not check_pass_flag:
+                input_str = "\n".join(input_list).strip("\n")
+                history = self._get_gpt_history()
+                prompt_req = (
+                    self.trans_prompt.replace("[Input]", input_str)
+                    .replace("[Glossary]", gptdict)
+                    .replace("[tran_style]", self.transl_style)
+                )
+
+                all_tokens = len(self.tokenizer.tokenize(history + prompt_req))
+                if all_tokens <= self.token_limit:
+                    check_pass_flag = True
+                else:
+                    if len(input_list) > 1:
+                        input_list = input_list[:-1]
+                        trans_list = trans_list[:-1]
+                        line_lens = line_lens[:-1]
+                        continue
+                    elif len(self.chatbot.conversation["default"]) > 1:
+                        self.reset_conversation()
+                        continue
+                    else:
+                        LOGGER.error(
+                            f"-> 输入超出token限制，且无法再减少，请检查输入的文本"
+                        )
+                        check_pass_flag = True
+
         # 检测退化阈值
         self.JP_REPETITION_THRESHOLD_LINE = max_repeat
-        _,self.JP_REPETITION_THRESHOLD_ALL=find_most_repeated_substring(input_str)
+        _, self.JP_REPETITION_THRESHOLD_ALL = find_most_repeated_substring(input_str)
         self.JP_LINE_LENS = line_lens
 
         prompt_req = self.trans_prompt
@@ -412,14 +449,14 @@ class CSakuraTranslate(BaseTranslate):
         if self._current_temp_type == style_name:
             return
         self._current_temp_type = style_name
-        
+
         if style_name == "precise":
             temperature, top_p = 0.1, 0.8
             frequency_penalty, presence_penalty = 0.1, 0.0
         elif style_name == "normal":
             temperature, top_p = 0.4, 0.95
             frequency_penalty, presence_penalty = 0.3, 0.0
-        
+
         if "galtransl" in self.eng_type:
             if style_name == "precise":
                 temperature, top_p = 0.3, 0.8
@@ -470,12 +507,12 @@ class CSakuraTranslate(BaseTranslate):
         LOGGER.info("-> 恢复了上下文")
 
     def check_degen_in_process(self, cn: str = ""):
-        
+
         line_count = cn.count("\n") + 1
-        if line_count < len(self.JP_LINE_LENS): # 长度不超当前行直接放行
+        if line_count < len(self.JP_LINE_LENS):  # 长度不超当前行直接放行
             if len(cn.split("\n")[-1]) < self.JP_LINE_LENS[line_count - 1]:
                 return False
-        else: # 行数超过当前行，某行反复输出的情况
+        else:  # 行数超过当前行，某行反复输出的情况
             repeated_str, repeated_count = find_most_repeated_substring(cn)
             if repeated_count > max(self.JP_REPETITION_THRESHOLD_ALL * 2, 12):
                 return True
@@ -488,6 +525,11 @@ class CSakuraTranslate(BaseTranslate):
 
         return False
 
+    def _get_gpt_history(self):
+        gpt_history = []
+        for message in self.chatbot.conversation["default"]:
+            gpt_history.append(message["content"])
+        return "\n".join(gpt_history)
 
 
 if __name__ == "__main__":

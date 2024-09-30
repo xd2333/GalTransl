@@ -121,16 +121,16 @@ def get_transCache_from_json_new(
 
         line_now, line_priv, line_next = "", "None", "None"
         line_now = f"{tran.speaker}{tran.pre_jp}"
-        prev_tran=tran.prev_tran
+        prev_tran = tran.prev_tran
         # 找非空前句
-        while prev_tran and prev_tran.pre_jp=="":
-            prev_tran=prev_tran.prev_tran
+        while prev_tran and prev_tran.post_jp == "":
+            prev_tran = prev_tran.prev_tran
         if prev_tran:
             line_priv = f"{prev_tran.speaker}{prev_tran.pre_jp}"
         # 找非空后句
-        next_tran=tran.next_tran
-        while next_tran and next_tran.pre_jp=="":
-            next_tran=next_tran.next_tran
+        next_tran = tran.next_tran
+        while next_tran and next_tran.post_jp == "":
+            next_tran = next_tran.next_tran
         if next_tran:
             line_next = f"{next_tran.speaker}{next_tran.pre_jp}"
 

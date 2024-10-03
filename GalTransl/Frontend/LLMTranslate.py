@@ -77,7 +77,7 @@ async def doLLMTranslate(
         raise RuntimeError(f"{projectConfig.getInputPath()}中没有待翻译的文件")
 
     # 读取所有文件获得total_chunks列表
-    with ThreadPoolExecutor(max_workers=16) as executor:
+    with ThreadPoolExecutor(max_workers=workersPerProject) as executor:
         future_to_file = {
             executor.submit(fplugins_load_file, file_path, fPlugins): file_path
             for file_path in file_list

@@ -103,4 +103,5 @@ update_thread = threading.Thread(
 )
 update_thread.start()
 
+transl_counter={"tran_count":0,"error_count":0}
 

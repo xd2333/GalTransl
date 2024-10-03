@@ -19,6 +19,7 @@ from GalTransl.Backend.Prompts import (
     GalTransl_SYSTEM_PROMPT,
     GalTransl_TRANS_PROMPT,
 )
+from GalTransl import transl_counter
 
 
 class CSakuraTranslate(BaseTranslate):
@@ -300,6 +301,11 @@ class CSakuraTranslate(BaseTranslate):
                 result_trans_list.append(trans_list[i])
 
             if error_flag:
+                transl_counter["error_count"]+=1
+                LOGGER.debug(f"错误计数：{transl_counter["error_count"]}")
+                LOGGER.debug(f"翻译句数：{transl_counter["tran_count"]}")
+                LOGGER.debug(f"千句错误率：{transl_counter['error_count']/transl_counter['tran_count']*1000:.2f}")
+
                 if self.skipRetry:
                     self.reset_conversation()
                     LOGGER.warning("-> 解析出错但跳过本轮翻译")
@@ -415,6 +421,7 @@ class CSakuraTranslate(BaseTranslate):
                     trans_result = trans_result[:num]
 
             i += num if num > 0 else 0
+            transl_counter["tran_count"]+=num
             transl_step_count += 1
             if transl_step_count >= self.save_steps:
                 save_transCache_to_json(trans_list, cache_file_path)

@@ -104,7 +104,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
     )
     plugin_manager.locatePlugins()
     # 打印插件列表
-    if translator == "showplugs":
+    if translator == "show-plugs":
         print_plugin_list(plugin_manager)
         return
     new_candidates = []
@@ -150,7 +150,7 @@ async def run_galtransl(cfg: CProjectConfig, translator: str):
         "rebuildr",
         "rebuilda",
         "dump-name",
-        "showplugs",
+        "show-plugs",
     ]:
         await proxyPool.checkAvailablity()
         if not proxyPool.proxies:

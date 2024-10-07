@@ -70,7 +70,7 @@ TRANSLATOR_SUPPORTED = {
     "rebuildr": "重建结果 用译前译后字典通过缓存刷写结果json -- 跳过翻译和写缓存",
     "rebuilda": "重建缓存和结果 用译前译后字典刷写缓存+结果json -- 跳过翻译",
     "dump-name": "导出name字段，生成人名替换表，用于翻译name字段",
-    "showplugs": "显示全部插件列表",
+    "show-plugs": "显示全部插件列表",
 }
 LANG_SUPPORTED = {
     "zh-cn": "Simplified_Chinese",

@@ -117,7 +117,7 @@ class ProjectManager:
                 except KeyboardInterrupt:
                     print("\nGoodbye.")
                     return
-            if self.translator not in ["showplugs", "dump-name"]:
+            if self.translator not in ["show-plugs", "dump-name"]:
                 self.create_shortcut_win()
             worker(
                 self.project_dir,

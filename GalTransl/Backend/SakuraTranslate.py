@@ -123,7 +123,7 @@ class CSakuraTranslate(BaseTranslate):
         if eng_type == "sakura-009":
             self.system_prompt = Sakura_SYSTEM_PROMPT
             self.trans_prompt = Sakura_TRANS_PROMPT
-        if eng_type == "sakura-010":
+        if eng_type == "sakura-v1.0":
             self.system_prompt = Sakura_SYSTEM_PROMPT010
             self.trans_prompt = Sakura_TRANS_PROMPT010
         if "galtransl" in eng_type:
@@ -152,7 +152,7 @@ class CSakuraTranslate(BaseTranslate):
         line_lens = []
         for i, trans in enumerate(trans_list):
             # 处理换行
-            if self.eng_type in ["sakura-009", "sakura-010"]:
+            if self.eng_type in ["sakura-009"]:
                 tmp_text = trans.post_jp.replace("\r\n", "↓↓").replace("\n", "↓↓")
             else:
                 tmp_text = trans.post_jp.replace("\r\n", "\\n").replace("\n", "\\n")
@@ -302,8 +302,8 @@ class CSakuraTranslate(BaseTranslate):
 
             if error_flag:
                 transl_counter["error_count"]+=1
-                LOGGER.debug(f"错误计数：{transl_counter["error_count"]}")
-                LOGGER.debug(f"翻译句数：{transl_counter["tran_count"]}")
+                LOGGER.debug(f"错误计数：{transl_counter['error_count']}")
+                LOGGER.debug(f"翻译句数：{transl_counter['tran_count']}")
                 LOGGER.debug(f"千句错误率：{transl_counter['error_count']/transl_counter['tran_count']*1000:.2f}")
 
                 if self.skipRetry:

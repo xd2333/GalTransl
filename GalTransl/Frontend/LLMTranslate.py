@@ -337,7 +337,7 @@ async def init_gptapi(
             for i in projectConfig.getBackendConfigSection("bingGPT4")["cookiePath"]:
                 cookiePool.append(joinpath(projectConfig.getProjectDir(), i))
             return CBingGPT4Translate(projectConfig, cookiePool, proxyPool)
-        case "sakura-009" | "sakura-010" | "galtransl-v2.5":
+        case "sakura-009" | "sakura-v1.0" | "galtransl-v2.5":
             sakura_endpoint = await sakuraEndpointQueue.get()
             if sakuraEndpointQueue is None:
                 raise ValueError(f"Endpoint is required for engine type {eng_type}")

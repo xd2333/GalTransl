@@ -3,6 +3,7 @@ from os import makedirs, sep as os_sep
 from os.path import (
     join as joinpath,
     exists as isPathExists,
+    dirname
 )
 from tqdm.asyncio import tqdm as atqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -302,6 +303,7 @@ async def postprocess_results(
         final_result = update_json_with_transList(
             all_trans_list, all_json_list, name_replaceDict
         )
+        makedirs(dirname(output_file_path), exist_ok=True)
         save_func(output_file_path, final_result)
         LOGGER.info(f"已保存文件: {output_file_path}")  # 添加保存确认日志
 

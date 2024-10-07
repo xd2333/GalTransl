@@ -24,7 +24,7 @@ def save_transCache_to_json(trans_list: CTransList, cache_file_path, post_save=F
     cache_json = []
 
     for tran in trans_list:
-        if tran.pre_zh == tran.post_zh == "":
+        if tran.post_jp == "": # 对齐get逻辑
             continue
 
         cache_obj = {

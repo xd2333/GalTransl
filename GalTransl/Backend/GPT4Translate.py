@@ -127,7 +127,7 @@ class CGPT4Translate(BaseTranslate):
         if self.target_lang == "Simplified_Chinese":
             self.opencc = OpenCC("t2s.json")
         elif self.target_lang == "Traditional_Chinese":
-            self.opencc = OpenCC("s2t.json")
+            self.opencc = OpenCC("s2tw.json")
 
         pass
 

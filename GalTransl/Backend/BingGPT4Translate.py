@@ -98,7 +98,7 @@ class CBingGPT4Translate:
         if self.target_lang == "Simplified_Chinese":
             self.opencc = OpenCC("t2s.json")
         elif self.target_lang == "Traditional_Chinese":
-            self.opencc = OpenCC("s2t.json")
+            self.opencc = OpenCC("s2tw.json")
 
         self.init_chatbot()
             

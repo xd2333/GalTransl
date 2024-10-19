@@ -116,6 +116,12 @@ class Chatbot:
         Add a message to the conversation
         """
         self.conversation[convo_id].append({"role": role, "content": message})
+    
+    def pop_conversation(self, convo_id: str = "default") -> None:
+        """
+        Pop the conversation
+        """
+        self.conversation[convo_id].pop()
 
     def __truncate_conversation(self, convo_id: str = "default") -> None:
         """
@@ -245,6 +251,10 @@ class Chatbot:
         if convo_id not in self.conversation:
             self.reset(convo_id=convo_id, system_prompt=self.system_prompt)
         self.add_to_conversation(prompt, "user", convo_id=convo_id)
+        if kwargs.get("assistant_prompt","")!= "":
+            self.add_to_conversation(
+                kwargs.get("assistant_prompt"), "assistant", convo_id=convo_id
+            )
         self.__truncate_conversation(convo_id=convo_id)
         # Get response
         async with self.aclient.stream(
@@ -305,6 +315,9 @@ class Chatbot:
                     content: str = delta["content"]
                     full_response += content
                     yield content
+        if kwargs.get("assistant_prompt","")!= "":
+            self.pop_conversation(convo_id=convo_id)
+        
         self.add_to_conversation(full_response, "assistant", convo_id=convo_id)
 
     async def ask_async(

@@ -28,6 +28,7 @@ common:
   gpt.numPerRequestTranslate: 8 # 单次翻译句子数量，推荐值 < 15
   gpt.streamOutputMode: true # 流式输出效果，多线程下无效。[True/False]
   gpt.tooManyRequestsWaitTime: 60 # Too Many Requests 错误等待时间，单位秒
+  gpt.enhance_jailbreak: False # 减少通用模型拒绝翻译
   # NewBing/GPT4
   gpt.enableProofRead: false # (NewBing/GPT4)是否开启译后校润。（不建议使用，很久未维护）[True/False]
   gpt.numPerRequestProofRead: 7 # (NewBing/GPT4)单次校润句子数量，不建议修改

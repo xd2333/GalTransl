@@ -13,20 +13,6 @@ from GalTransl.CSentense import CSentense, CTransList
 from GalTransl.Cache import get_transCache_from_json_new, save_transCache_to_json
 from GalTransl.Dictionary import CGptDict
 from GalTransl.Utils import extract_code_blocks, fix_quotes
-from GalTransl.Backend.Prompts import (
-    GPT4_CONF_PROMPT,
-    GPT4_TRANS_PROMPT,
-    GPT4_SYSTEM_PROMPT,
-    GPT4_PROOFREAD_PROMPT,
-    NAME_PROMPT4,
-)
-from GalTransl.Backend.Prompts import (
-    GPT4Turbo_SYSTEM_PROMPT,
-    GPT4Turbo_TRANS_PROMPT,
-    GPT4Turbo_CONF_PROMPT,
-    GPT4Turbo_PROOFREAD_PROMPT,
-    H_WORDS_LIST,
-)
 
 
 

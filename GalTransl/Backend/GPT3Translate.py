@@ -87,6 +87,11 @@ class CGPT35Translate(BaseTranslate):
             self.skipH = val
         else:
             self.skipH = False
+        # enhance_jailbreak
+        if val := config.getKey("gpt.enhance_jailbreak"):
+            self.enhance_jailbreak = val
+        else:
+            self.enhance_jailbreak = False
         # 跳过重试
         if val := config.getKey("skipRetry"):
             self.skipRetry = val
@@ -192,6 +197,10 @@ class CGPT35Translate(BaseTranslate):
             prompt_req = prompt_req.replace("[NamePrompt3]", self.name_prompt)
         else:
             prompt_req = prompt_req.replace("[NamePrompt3]", "")
+        if self.enhance_jailbreak:
+            assistant_prompt = "```jsonline"
+        else:
+            assistant_prompt = ""
         while True:  # 一直循环，直到得到数据
             try:
                 # change token
@@ -208,7 +217,7 @@ class CGPT35Translate(BaseTranslate):
                 if self.eng_type != "unoffapi":
                     if not self.full_context_mode:
                         self._del_previous_message()
-                    async for data in self.chatbot.ask_stream_async(prompt_req):
+                    async for data in self.chatbot.ask_stream_async(prompt_req,assistant_prompt=assistant_prompt):
                         if self.streamOutputMode:
                             print(data, end="", flush=True)
                         resp += data

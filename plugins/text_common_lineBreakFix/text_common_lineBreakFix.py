@@ -100,10 +100,34 @@ class LineBreakFix(GTextPlugin):
             tran.post_zh = self.intersperse_mode(tran.post_zh, src_breaks)
         elif self.mode == "保持位置":
             tran.post_zh = self.keep_position_mode(tran.post_zh, tran.pre_jp, src_breaks)
+        elif self.mode == "前置":
+            tran.post_zh = self.prepend_mode(tran.post_zh, src_breaks)
+        elif self.mode == "后置":
+            tran.post_zh = self.append_mode(tran.post_zh, src_breaks)
         else:
             LOGGER.warning(f"[{self.pname}] 未知的换行模式: {self.mode}")
 
         return tran
+
+    def prepend_mode(self, text: str, target_breaks: int) -> str:
+        """
+        前置模式：将所有换行符放在文本的最前面
+        :param text: 原文本
+        :param target_breaks: 目标换行符数量
+        :return: 处理后的文本
+        """
+        text_without_breaks = text.replace(self.linebreak, '')
+        return self.linebreak * target_breaks + text_without_breaks
+
+    def append_mode(self, text: str, target_breaks: int) -> str:
+        """
+        后置模式：将所有换行符放在文本的最后面
+        :param text: 原文本
+        :param target_breaks: 目标换行符数量
+        :return: 处理后的文本
+        """
+        text_without_breaks = text.replace(self.linebreak, '')
+        return text_without_breaks + self.linebreak * target_breaks
 
     def average_mode(self, text: str, target_breaks: int) -> str:
         """

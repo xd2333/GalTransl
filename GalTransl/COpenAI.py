@@ -123,7 +123,7 @@ class COpenAITokenPool:
                 timeout=10,
             )
 
-            if not response['choices'][0]['message']['content']:
+            if not response.choices[0].message.content:
                 # token not available, may token has been revoked
                 return False, False, False, token
             else:

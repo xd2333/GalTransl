@@ -1,7 +1,7 @@
 """
 CloseAI related classes
 """
-
+import os
 from httpx import AsyncClient
 import asyncio
 from tqdm.asyncio import tqdm
@@ -11,7 +11,7 @@ from GalTransl.ConfigHelper import CProjectConfig, CProxy
 from typing import Optional, Tuple
 from random import choice
 from asyncio import Queue
-from litellm import completion
+from openai import OpenAI
 
 TRANSLATOR_ENGINE = {
     "gpt35": "gpt-3.5-turbo",
@@ -111,13 +111,15 @@ class COpenAITokenPool:
             model_name = self.force_eng_name
         try:
             st = time()
-            response = completion(
+            client = OpenAI(
+                api_key=token.token,
+                base_url=token.domain,
+            )
+            response = client.chat.completions.create(
                 model=model_name,
                 messages=[{"role": "user", "content": "Echo OK"}],
                 temperature=0.7,
                 max_tokens=100,
-                api_key=token.token,
-                base_url=token.domain,
                 timeout=10,
             )
 

@@ -11,6 +11,7 @@ from GalTransl.ConfigHelper import CProjectConfig, CProxy
 from typing import Optional, Tuple
 from random import choice
 from asyncio import Queue
+from litellm import completion
 
 TRANSLATOR_ENGINE = {
     "gpt35": "gpt-3.5-turbo",
@@ -105,42 +106,39 @@ class COpenAITokenPool:
     ) -> Tuple[bool, bool, bool, COpenAIToken]:
         # returns isAvailable,isGPT3Available,isGPT4Available,token
         # todo: do not remove token directly, we can score the token
+        model_name = TRANSLATOR_ENGINE.get(eng_type, "gpt-3.5-turbo")
+        if self.force_eng_name:
+            model_name = self.force_eng_name
         try:
             st = time()
-            async with AsyncClient(
-                proxies={"https://": proxy.addr} if proxy else None
-            ) as client:
-                auth = {"Authorization": "Bearer " + token.token}
-                model_name = TRANSLATOR_ENGINE.get(eng_type, "gpt-3.5-turbo")
-                if self.force_eng_name:
-                    model_name = self.force_eng_name
-                # test if have balance
-                chatResponse = await client.post(
-                    token.domain + "/v1/chat/completions",
-                    headers=auth,
-                    json={
-                        "model": model_name,
-                        "messages": [{"role": "user", "content": "Echo OK"}],
-                        "temperature": 0.7,
-                    },
-                    timeout=10,
-                )
-                if chatResponse.status_code != 200:
-                    # token not available, may token has been revoked
-                    return False, False, False, token
+            response = completion(
+                model=model_name,
+                messages=[{"role": "user", "content": "Echo OK"}],
+                temperature=0.7,
+                max_tokens=100,
+                api_key=token.token,
+                base_url=token.domain,
+                timeout=10,
+            )
+
+            if not response['choices'][0]['message']['content']:
+                # token not available, may token has been revoked
+                return False, False, False, token
+            else:
+                isGPT3Available = False
+                isGPT4Available = False
+
+                if "gpt-4" in model_name:
+                    isGPT4Available = True
+                elif "gpt-3.5" in model_name:
+                    isGPT3Available = True
                 else:
-                    isGPT3Available = False
-                    isGPT4Available = False
+                    isGPT4Available, isGPT3Available = True, True
 
-                    if "gpt-4" in model_name:
-                        isGPT4Available = True
-                    elif "gpt-3.5" in model_name:
-                        isGPT3Available = True
-                    else:
-                        isGPT4Available, isGPT3Available = True, True
+                return True, isGPT3Available, isGPT4Available, token
+        except Exception as e:
+            LOGGER.debug(e)
 
-                    return True, isGPT3Available, isGPT4Available, token
-        except:
             LOGGER.debug(
                 "we got exception in testing OpenAI token %s", token.maskToken()
             )
@@ -224,9 +222,7 @@ class COpenAITokenPool:
         rounds: int = 0
         while True:
             if rounds > 20:
-                raise RuntimeError(
-                    "COpenAITokenPool::getToken: 可用的API key耗尽！"
-                )
+                raise RuntimeError("COpenAITokenPool::getToken: 可用的API key耗尽！")
             try:
                 available, token = choice(self.tokens)
                 if not available:
@@ -240,9 +236,7 @@ class COpenAITokenPool:
                 raise RuntimeError("没有可用的 API key！")
 
 
-async def init_sakura_endpoint_queue(
-    projectConfig: CProjectConfig
-) -> Optional[Queue]:
+async def init_sakura_endpoint_queue(projectConfig: CProjectConfig) -> Optional[Queue]:
     """
     初始化端点队列，用于Sakura或GalTransl引擎。
 
@@ -262,9 +256,7 @@ async def init_sakura_endpoint_queue(
     if "endpoints" in projectConfig.getBackendConfigSection(section_name):
         endpoints = projectConfig.getBackendConfigSection(section_name)["endpoints"]
     else:
-        endpoints = [
-            projectConfig.getBackendConfigSection(section_name)["endpoint"]
-        ]
+        endpoints = [projectConfig.getBackendConfigSection(section_name)["endpoint"]]
     repeated = (workersPerProject + len(endpoints) - 1) // len(endpoints)
     for _ in range(repeated):
         for endpoint in endpoints:

@@ -1,4 +1,4 @@
-httpx
+litellm
 opencc
 packaging
 prompt_toolkit

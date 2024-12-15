@@ -110,12 +110,14 @@ class COpenAITokenPool:
         if self.force_eng_name:
             model_name = self.force_eng_name
         if not token.domain.endswith("/v1"):
-            token.domain += "/v1"
+            base_url = token.domain + "/v1"
+        else:
+            base_url = token.domain
         try:
             st = time()
             client = OpenAI(
                 api_key=token.token,
-                base_url=token.domain,
+                base_url=base_url,
             )
             response = client.chat.completions.create(
                 model=model_name,

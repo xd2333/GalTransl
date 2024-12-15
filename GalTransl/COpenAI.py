@@ -109,6 +109,8 @@ class COpenAITokenPool:
         model_name = TRANSLATOR_ENGINE.get(eng_type, "gpt-3.5-turbo")
         if self.force_eng_name:
             model_name = self.force_eng_name
+        if not token.domain.endswith("/v1"):
+            token.domain += "/v1"
         try:
             st = time()
             client = OpenAI(

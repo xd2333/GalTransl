@@ -154,12 +154,12 @@ backendSpecific:
       - token: sk-yyyyyyyy # 可以填多个令牌，如果你只有一个的话，把示例文件的这两行删掉
         endpoint: "" # 可以填多个令牌，如果你只有一个的话，把示例文件的这两行删掉
     defaultEndpoint: https://api.openai.com # 默认 API 端点，一般不修改
+    rewriteModelName: "" # 你可以修改这个参数来自定义想要使用的模型，如果不自定义的话，会使用默认的模型
 ```   
 &ensp;&ensp;&ensp;&ensp;在这里需要一个openai的api key，以及需要魔法上网来走代理访问openai官方api端点。   
 &ensp;&ensp;&ensp;&ensp;如果没有api key或魔法上网的话，你还可以使用一些第三方api中转项目，例如：   
 * [GPT-API-free](https://github.com/chatanywhere/GPT_API_free)，免费API中转，提供有请求频率限制的用于测试。   
-* [GPT水龙头](https://faucet.openkey.cloud/)，免费API中转，每24小时可领取一个 $1.00 令牌用于开发测试 AI 产品   
-* 一些收费api转发项目，例如：[MAX-API](https://api.7xnn.cn/register?aff=WF6H)、[happy api](https://ngedlktfticp.cloud.sealos.io/register?aff=ldwV)等等，以上只是举例，更多中转可以谷歌，本项目不担保它们的稳定性及可用性。   
+* 一些收费api转发项目，例如：[硅基流动](https://cloud.siliconflow.cn/i/SvDatvsk)（建议设置rewriteModelName: "deepseek-ai/DeepSeek-V2.5"）、[oaipro](https://api.oaipro.com/register?aff=ceAU)等等，以上只是举例，更多中转可以谷歌，本项目不担保它们的稳定性及可用性。   
    
 &ensp;&ensp;&ensp;&ensp;但要注意这里获取的key是第三方的key，不能用于官方API端点。如果你使用类似项目的话，做以下额外的修改：   
 ```python
@@ -168,7 +168,7 @@ backendSpecific:
   GPT35: 
     tokens: 
       - token: sk-xxxxxxxx # 你的第三方令牌
-        endpoint: https://api.chatanywhere.com.cn  # 使用第三方API端点
+        endpoint: https://xxxx  # 使用对应的第三方API端点，一般在中转站里都会写
 ```   
    
 &ensp;&ensp;&ensp;&ensp;修改好项目设置后，确保你已经安装了需要的依赖（见环境准备），然后双击`run.bat`（免环境版双击exe），首先拖入项目文件夹，例如`D:\GalTransl-main\sampleProject`   

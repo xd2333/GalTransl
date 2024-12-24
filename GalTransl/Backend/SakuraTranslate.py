@@ -304,7 +304,7 @@ class CSakuraTranslate(BaseTranslate):
                 transl_counter["error_count"]+=1
                 LOGGER.debug(f"错误计数：{transl_counter['error_count']}")
                 LOGGER.debug(f"翻译句数：{transl_counter['tran_count']}")
-                LOGGER.debug(f"千句错误率：{transl_counter['error_count']/transl_counter['tran_count']*1000:.2f}")
+                LOGGER.debug(f"千句错误率：{transl_counter['error_count']/min(transl_counter['tran_count'],1)*1000:.2f}")
 
                 if self.skipRetry:
                     self.reset_conversation()

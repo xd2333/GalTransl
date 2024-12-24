@@ -183,7 +183,7 @@ async def doLLMTranslSingleChunk(
                 except Exception as e:
                     LOGGER.error(f"插件 {plugin.name} 执行失败: {e}")
 
-            if projectConfig.getFilePlugin() == "file_galtransl_json":
+            if projectConfig.getFilePlugin() in ["file_galtransl_json","file_mtbench_chrf"]:
                 tran.analyse_dialogue()
             tran.post_jp = pre_dic.do_replace(tran.post_jp, tran)
             if projectConfig.getDictCfgSection("usePreDictInName"):

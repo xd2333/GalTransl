@@ -5,5 +5,5 @@ Core:
 
 Documentation:
   Author: cx2333
-  Version: 1.0
+  Version: 1.1
   Description: 用于简单快速评估模型的chrF指标分数。输入文件为name(可选)-message格式json文件再加上ref字段，ref字段为参考译文。（注：chrF 分数只代表翻译结果在统计学上有多接近参考翻译，用于提供一种快速基线，与个人的偏好很可能不一致）

@@ -47,7 +47,8 @@ class ProjectManager:
 
             if not user_input:
                 continue
-
+            
+            user_input = user_input.strip('"').strip("'")
             self.user_input, self.project_dir, self.config_file_name = (
                 self.validate_project_path(user_input)
             )

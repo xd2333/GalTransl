@@ -20,6 +20,11 @@ class LineBreakFix(GTextPlugin):
         # 从配置中读取设置
         self.linebreak = settings.get("换行符", "[r]")  # 换行符，默认为"[r]"
         self.mode = settings.get("换行模式", "保持位置")  # 换行模式，默认为"保持位置"
+        self.auto_segment_threshold = settings.get("分段字数阈值", 21)  # 分段字数阈值，默认为"21"
+        if self.mode == "固定字数" and self.auto_segment_threshold <= 0:
+            LOGGER.error(f"[{self.pname}] 分段字数阈值必须为正整数")
+            raise ValueError("分段字数阈值无效")
+        LOGGER.info(f"[{self.pname}] 分段字数阈值: {self.auto_segment_threshold}")
         self.force_fix = settings.get("强制修复", False)  # 是否强制修复，默认为False
         self.tokenizer_module = settings.get("分词器", "budoux")  # 分词器，默认为"budoux"
 
@@ -104,6 +109,8 @@ class LineBreakFix(GTextPlugin):
             tran.post_zh = self.prepend_mode(tran.post_zh, src_breaks)
         elif self.mode == "后置":
             tran.post_zh = self.append_mode(tran.post_zh, src_breaks)
+        elif self.mode == "固定字数":
+            tran.post_zh = self.auto_segment_mode(tran.post_zh)
         else:
             LOGGER.warning(f"[{self.pname}] 未知的换行模式: {self.mode}")
 
@@ -235,6 +242,37 @@ class LineBreakFix(GTextPlugin):
         final_result = ''.join(result)
         LOGGER.debug(f"[{self.pname}] 最终结果: {final_result}")
         return final_result
+
+    def auto_segment_mode(self, text: str) -> str:
+        """
+        固定字数模式：当字符数超过阈值时，按分词结果插入换行符
+        :param text: 原文本（可能含现有换行符）
+        :return: 处理后的文本
+        """
+        # 移除所有现有换行符，获取纯文本
+        clean_text = text.replace(self.linebreak, '')
+        if len(clean_text) <= self.auto_segment_threshold:
+            return text  # 无需分段
+    
+        # 分词并累计字符数
+        phrases = self.tokenize(clean_text)
+        result = []
+        current_length = 0
+    
+        for phrase in phrases:
+            result.append(phrase)
+            current_length += len(phrase)
+            # 超过阈值且不在最后一个词语时插入换行符
+            if current_length >= self.auto_segment_threshold and len(result) < len(phrases):
+                result.append(self.linebreak)
+                current_length = 0  # 重置计数器
+    
+        # 合并结果并保留原换行符外的内容
+        new_text = ''.join(result)
+        # 移除末尾多余的换行符（如果原文本没有）
+        if not text.endswith(self.linebreak) and new_text.endswith(self.linebreak):
+            new_text = new_text[:-len(self.linebreak)]
+        return new_text
 
     def gtp_final(self):
         """

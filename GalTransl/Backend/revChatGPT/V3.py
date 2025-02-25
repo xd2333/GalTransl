@@ -312,7 +312,14 @@ class Chatbot:
                 if "role" in delta:
                     response_role = delta["role"]
                 if "content" in delta:
-                    content: str = delta["content"]
+                    content = delta.get("content")
+                    if content is None and "reasoning_content" in delta:
+                        content = f"{delta['reasoning_content']}"
+                    if content is not None:
+                        full_response += content
+                        yield content
+                elif "reasoning_content" in delta:
+                    content = f"{delta['reasoning_content']}"
                     full_response += content
                     yield content
         if kwargs.get("assistant_prompt","")!= "":

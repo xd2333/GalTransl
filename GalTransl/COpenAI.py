@@ -12,6 +12,7 @@ from typing import Optional, Tuple
 from random import choice
 from asyncio import Queue
 from openai import OpenAI
+import re
 
 TRANSLATOR_ENGINE = {
     "gpt35": "gpt-3.5-turbo",
@@ -109,7 +110,7 @@ class COpenAITokenPool:
         model_name = TRANSLATOR_ENGINE.get(eng_type, "gpt-3.5-turbo")
         if self.force_eng_name:
             model_name = self.force_eng_name
-        if not token.domain.endswith("/v1"):
+        if not token.domain.endswith("/v1") and not re.search(r"/v\d+$", token.domain):
             base_url = token.domain + "/v1"
         else:
             base_url = token.domain
